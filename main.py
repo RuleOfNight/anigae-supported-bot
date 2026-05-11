@@ -5,6 +5,7 @@ import json
 import io
 import os
 import runtime
+from aiohttp import web
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 from dotenv import load_dotenv
@@ -313,6 +314,23 @@ async def on_close():
     general.client_db.close()
     print("[DATABASE] Database connection closed.")
 
+async def health_check(request):
+    return web.Response(text="OK")
+
+async def start_web_server():
+    app = web.Application()
+    app.router.add_get("/", health_check)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.getenv("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    print(f"[WEB] Health check server running on port {port}")
+
+async def main():
+    await start_web_server()
+    await bot.start(os.getenv("DISCORD_TOKEN"))
+
 # Caeser's
-bot.run(os.getenv("DISCORD_TOKEN"))
+asyncio.run(main())
 
