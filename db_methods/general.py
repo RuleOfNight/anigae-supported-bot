@@ -12,10 +12,11 @@ cards_collection = None
 players_collection = None
 guilds_collection = None
 misc_collection = None
+weekly_donation_tracker_collection = None
 
 
 async def connect_to_db():
-    global client_db, cards_collection, players_collection, guilds_collection, misc_collection
+    global client_db, cards_collection, players_collection, guilds_collection, misc_collection, weekly_donation_tracker_collection
     db_connection = os.getenv("MONGODB_URI")
     client_db = AsyncIOMotorClient(db_connection)
     bot_db = client_db["discordbot"]
@@ -23,6 +24,9 @@ async def connect_to_db():
     players_collection = bot_db["players"]
     guilds_collection = bot_db["guilds"]
     misc_collection = bot_db["misc"]
+    weekly_donation_tracker_collection = bot_db["weekly_donation_tracker"]
+    from db_methods import weekly_donations
+    weekly_donations.init_collection(weekly_donation_tracker_collection)
     print("[DATABASE] Database successfully connected.")
 
 def get_players_collection():

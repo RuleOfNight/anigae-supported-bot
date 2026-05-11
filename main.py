@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from discord.ext import commands, tasks
 from discord import app_commands, Container
-from db_methods import cards, general, players, guilds
+from db_methods import cards, general, players, guilds, weekly_donations
 from Commands import help_def_v2, user_commands_on_message, user_commands_on_message_v2
 from Commands.admin_commands import AdminCommands
 from Commands.user_commands_prefix import UserCommandsPrefix
@@ -94,6 +94,23 @@ async def weekly_guild():
 async def daily_update():
     await players.decrement_all_premium_days()
 
+async def check_weekly_donation_pings():
+    due = await weekly_donations.get_due_pings()
+    for record in due:
+        try:
+            channel = bot.get_channel(record["channel_id"])
+            if channel is None:
+                continue
+            discord_id = record.get("discord_id")
+            ping_text = f"<@{discord_id}>" if discord_id else f"**{record['player_name']}**"
+            await channel.send(
+                f"⏰ Nhắc nhở: {ping_text} đã đến tuần donate rồi nhé! "
+                f"(Đã prepay **{record['total_weeks_credited']} tuần**)"
+            )
+            await weekly_donations.mark_pinged(record["_id"])
+        except Exception as e:
+            print(f"[WEEKLY DONATION PING] Error pinging {record.get('player_name')}: {e}")
+
 
 @bot.event
 async def on_ready():
@@ -110,6 +127,7 @@ async def on_ready():
         scheduler.add_job(monthly_guild, CronTrigger(day=1, hour=1, minute=0, timezone=utc), id="monthly_guild")
         scheduler.add_job(weekly_guild, CronTrigger(day_of_week=0, hour=1, minute=0, timezone=utc), id="weekly_guild")
         scheduler.add_job(daily_update, CronTrigger(hour=1, minute=0, timezone=utc), id="daily_update")
+        scheduler.add_job(check_weekly_donation_pings, CronTrigger(minute=0, timezone=utc), id="weekly_donation_pings")
         scheduler.start()
         print("[GUILD SCHEDULER] Guild scheduler has been started successfully.")
         print(f"[GUILD SCHEDULER] Jobs: {scheduler.get_jobs()}")

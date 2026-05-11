@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from aiohttp.web_routedef import options
 from discord.ui import View, Select, Button
 from Commands import definitions, user_commands_slash_definition_v2
-from db_methods import cards, players, guilds, general
+from db_methods import cards, players, guilds, general, weekly_donations
 from misc import time_calculations, skills
 
 raid_tracker = {}
@@ -495,6 +495,10 @@ async def player_gold_and_rubies_command(message): #TODO check it
         return player_name, embed_text
 
 
+WEEKLY_DONATION_CHANNEL_ID = 0  # TODO: thay bằng channel ID thực
+WEEKLY_DONATION_AMOUNT = 100_000
+
+
 async def clan_donation_tracker(embed_description, message):
     embed_description = embed_description.replace(",", "")
     player_data = re.findall(r"Summoner \*\*(.*)\*\* you have donated \*\*(\d+)\*\* Gold", embed_description)
@@ -510,6 +514,26 @@ async def clan_donation_tracker(embed_description, message):
     except Exception as e:
         error_view = user_commands_slash_definition_v2.DonationResultLayoutView(player_name, player_donate_amount, [])
         await message.reply(f"<a:cross:1380797973373521962> Error while processing donation: {str(e)}", view=error_view)
+
+    if message.channel.id != WEEKLY_DONATION_CHANNEL_ID:
+        return
+    if player_donate_amount == 50_000 or player_donate_amount % WEEKLY_DONATION_AMOUNT != 0:
+        return
+    weeks = player_donate_amount // WEEKLY_DONATION_AMOUNT
+    try:
+        discord_id = await weekly_donations.get_discord_id_by_player_name(player_name)
+        total_weeks = await weekly_donations.create_or_update_tracking(
+            player_name, discord_id, message.channel.id, weeks
+        )
+        await message.add_reaction("✅")
+        ping_text = f"<@{discord_id}>" if discord_id else f"**{player_name}**"
+        await message.reply(
+            f"✅ Ghi nhận **{player_donate_amount:,}** gold ({weeks} tuần) cho {ping_text}. "
+            f"Tổng: **{total_weeks} tuần** — sẽ được nhắc sau {total_weeks} tuần.",
+            mention_author=False
+        )
+    except Exception as e:
+        print(f"[WEEKLY DONATION] Error tracking {player_name}: {e}")
 
 
 async def profile_tracker(embed_fields, embed_footer):
