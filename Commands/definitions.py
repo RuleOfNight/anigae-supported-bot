@@ -162,12 +162,12 @@ async def element_converter_from_database(card_element_name):
 _SKILL_EMOJI_MAP = {
     "Lucky Coin":                  "<:Lucky_Coin:1503140731873919107>",               #done
     "Amplifier":                   "<:AMPLIFIER:1335617081013440573>",
-    "Arcane Affinity":             "<:Arcane_Affinity:1335617073505636372>",
+    "Arcane Affinity":             "<:Arcane_Affinity:1503312702100209756>",          #done
     "Balancing Strike":            "<:Balancing_Strike:1503134979851292814>",          #done
     "Berserker":                   "<:Berserker:1503151540792332458>",                 #done
     "Blaze":                       "<:Blaze:1503151560228601876>",                     #done
-    "Blood Surge":                 "<:Blood_Surge:1335617034632953949>",
-    "Bloodthirster":               "<:Bloodthirster:1335617024134610944>",
+    "Blood Surge":                 "<:Blood_Surge:1503313188261859359>",
+    "Bloodthirster":               "<:Bloodthirster:1503314241372033035>",             #done
     "Breaker":                     "<:Breaker:1503151656466907136>",                   #done
     "Brutality":                   "<:Brutality:1503151583066718389>",                 #done
     "Celestial Blessing":          "<:Celestial_Blessing:1503140689959976980>",        #done
@@ -180,12 +180,12 @@ _SKILL_EMOJI_MAP = {
     "Double-edged Strike":         "<:Double_edged_Strike:1335616913484677231>",
     "Elemental Drain":             "<:Elemental_Drain:1503152871149932634>",           #done
     "Elemental Manipulation":      "<:Elemental_Manipulation:1503152791797895379>",    #done
-    "Elemental Strike":            "<:Elemental_Strike:1335616878931873822>",
+    "Elemental Strike":            "<:Elemental_Strike:1503313097199194192>",          #done
     "Endurance":                   "<:Endurance:1335616869138169856>",
     "Executioner":                 "<:Executioner:1503152379749728409>",               #done
     "Foul Play":                   "<:Foul_Play:1503152361030422659>",                 #done
     "Vengeance":                   "<:Vengeance:1335616408347873283>",
-    "Yin Yang":                    "<:Yin_Yang:1335616388567531661>",
+    "Yin Yang":                    "<:Yin_Yang:1503313229751783596>",                  #done
     "Offensive Stance":            "<:Offensive_Stance:1335616767300468846>",
     "Overload":                    "<:Overload:1503139900797489252>",                  #done
     "Pain For Power":              "<:Pain_For_Power:1503154402884845730>",            #done
@@ -194,13 +194,13 @@ _SKILL_EMOJI_MAP = {
     "Precision":                   "<:Precision:1503151684090859710>",                 #done
     "Protector":                   "<:Protector:1503151721487011931>",                 #done
     "Recoil":                      "<:Recoil:1503151480365121730>",                    #done
-    "Life Sap":                    "<:Life_Sap:1335616663382528091>",
-    "Reflector":                   "<:Reflector:1335616644092919879>",
+    "Life Sap":                    "<:Life_Sap:1503312924410908774>",                  #done
+    "Reflector":                   "<:Reflector:1503312970388869191>",                 #done
     "Regeneration":                "<:Regeneration:1503140091969929446>",              #done
-    "Rejuvenation":                "<:Rejuvenation:1335616621724831876>",
+    "Rejuvenation":                "<:Rejuvenation:1503313451043520583>",              #done
     "Restricted Instinct":         "<:Restricted_Instinct:1335616611045998705>",
-    "Reversion":                   "<:Reversion:1335616600602316881>",
-    "Rising Resolve":              "<:Rising_Resolve:1335616590577926225>",
+    "Reversion":                   "<:Reversion:1503313135287668867>",                 #done
+    "Rising Resolve":              "<:Rising_Resolve:1503313022586851328>",            #done
     "Smokescreen":                 "<:Smokescreen:1335616580318658592>",
     "Soul Stealer":                "<:Soul_Stealer:1335616569694359603>",
     "Temporal Rewind":             "<:Temporal_Rewind:1335616556058804255>",
@@ -212,7 +212,7 @@ _SKILL_EMOJI_MAP = {
     "Undying Will":                "<:Undying_Will:1335616441176555580>",
     "Unlucky Coin":                "<:Unlucky_Coin:1503140641494794302>",              #done
     "Omniscient Hack":             "<:Omniscient_Hack:1503152467687243796>",           #done
-    "Miracle Injection":           "<:Miracle_Injection:1335616777895284776>",
+    "Miracle Injection":           "<:Miracle_Injection:1503313331858178174>",         #done
     "Mana Reaver":                 "<:Mana_Reaver:1335616788196753408>",
     "Lethal Clarity":              "<:Lethal_Clarity:1503152260073394236>",            #done
     "Grievous Limiter":            "<:Grievous_Limiter:1335616818483691580>",
@@ -221,7 +221,7 @@ _SKILL_EMOJI_MAP = {
     "Evasion":                     "<:Evasion:1503140708859646103>",                   #done
     "Atmospheric Acceleration":    "<:ATMOSPHERIC_ACCELERATION:1503151946251636787>",  #done
     "Aegis":                       "<:Aegis:1503151510530298017>",                     #done
-    "Divine Fortune":              "<:DivineFortune:1483474576657616937>",
+    "Divine Fortune":              "<:DivineFortune:1503314557597257808>",             #done
 }
 
 
