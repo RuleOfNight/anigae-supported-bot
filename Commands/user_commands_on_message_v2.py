@@ -270,9 +270,11 @@ def normalize_picture_url(url):
     cdn_match = re.search(r"images-ext-\d+\.discordapp\.net/external/[^/]+/https?/(.*)", url)
     if cdn_match:
         url = "https://" + unquote(cdn_match.group(1))
-    # Tenor URLs without extension won't animate — append .gif
-    if "media.tenor.com" in url and not re.search(r"\.(gif|mp4|webm|webp|png|jpg|jpeg)$", url, re.IGNORECASE):
-        url = url + ".gif"
+    # Tenor video URLs (.mp4/.webm) won't animate in Discord components — convert to .gif
+    if "media.tenor.com" in url:
+        url = re.sub(r"\.(mp4|webm)$", ".gif", url, flags=re.IGNORECASE)
+        if not re.search(r"\.(gif|webp|png|jpg|jpeg)$", url, re.IGNORECASE):
+            url = url + ".gif"
     return url
 
 
