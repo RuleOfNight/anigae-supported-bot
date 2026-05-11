@@ -78,7 +78,7 @@ class AdminCommands(commands.Cog):
             await ctx.channel.send("You don't have that permission peasant.")
             return
         misc_col = general.get_misc_collection()
-        misc_col.update_one(
+        await misc_col.update_one(
             {"_id": ObjectId("67ae69c3cf53d633cb1cd358")},
             {"$set": {"daily_watch_timer": timer, "daily_watch_counter": counter}},
             upsert=True

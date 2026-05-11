@@ -59,7 +59,9 @@ async def get_global_daily_watch_timer():
     _id = ObjectId("67ae69c3cf53d633cb1cd358")
     found_misc_collection = await misc_collection.find_one({"_id": _id})
     if found_misc_collection:
-        daily_watch_timer = found_misc_collection.get("daily_watch_timer", "")
+        daily_watch_timer = found_misc_collection.get("daily_watch_timer")
+        if not daily_watch_timer:
+            return None
         return int(daily_watch_timer)
 
 
