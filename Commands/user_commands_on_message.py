@@ -218,10 +218,7 @@ async def in_raid_lobby(embed_title, embed_description, embed_footer): #TODO che
     debug_observed_rate = None
 
     if total_attacks == 0:
-        embed_description = embed_description.replace("<:hp_g_r:1325526982938595489>",
-                                                      "<:hp_g_r:1325526982938595489>\n\n__End time:__ \n waiting for attacks")
-        embed_description = embed_description.replace("<:hp_b_r:1325527015381663754>",
-                                                      "<:hp_b_r:1325527015381663754>\n\n__End time:__ \n waiting for attacks")
+        pass
     elif total_attacks != 0:
         average_damage = int(total_damage) / total_attacks
         debug_average_damage = average_damage
@@ -271,15 +268,7 @@ async def in_raid_lobby(embed_title, embed_description, embed_footer): #TODO che
                 attacks_needed, total_energy_with_afk, current_player_match.group(1), count_afk_player)
             debug_end_time_afk_str = time_with_afk_player
             debug_unix_end_code_afk = unix_end_code_with_afk
-            embed_description = embed_description.replace("<:hp_g_r:1325526982938595489>",
-                                                          f"<:hp_g_r:1325526982938595489>\n\n__End time (all players):__ \n {time_with_afk_player} {unix_end_code_with_afk}")
-            embed_description = embed_description.replace("<:hp_b_r:1325527015381663754>",
-                                                          f"<:hp_b_r:1325527015381663754>\n\n__End time (all players):__ \n {time_with_afk_player} {unix_end_code_with_afk}")
             total_energy = total_energy_with_afk
-        embed_description = embed_description.replace("<:hp_g_r:1325526982938595489>",
-                                                      f"<:hp_g_r:1325526982938595489>\n\n__End time{excluding_afk}{estimate_source}:__ \n {end_time_str} {unix_end_code}")
-        embed_description = embed_description.replace("<:hp_b_r:1325527015381663754>",
-                                                      f"<:hp_b_r:1325527015381663754>\n\n__End time{excluding_afk}{estimate_source}:__ \n {end_time_str} {unix_end_code}")
 
     raid_history_description = embed_description.replace("\\", "")
     raid_history_description = raid_history_description.replace(",", "")
@@ -314,43 +303,31 @@ async def in_raid_lobby(embed_title, embed_description, embed_footer): #TODO che
             "observed_rate": debug_observed_rate,
         }
 
-    current_player_number = int(current_player_match.group(1)) if current_player_match else 0
-    active_players = current_player_number - debug_count_afk
-    debug_embed = discord.Embed(title="[DEBUG] Raid Estimate Details", color=0x2B2D31)
-    debug_embed.add_field(
-        name="Players",
-        value=f"Total: **{current_player_number}** | Active: **{active_players}** | AFK: **{debug_count_afk}**",
-        inline=False
-    )
-    debug_embed.add_field(
-        name="Attacks",
-        value=(
-            f"Total so far: **{total_attacks}**\n"
-            f"Attacks still needed: **{int(debug_attacks_needed)}**\n"
-            f"Avg damage/attack: **{int(debug_average_damage):,}**"
-        ),
-        inline=False
-    )
-    debug_embed.add_field(
-        name="Estimate (energy regen — current method)",
-        value=f"{debug_end_time_str} {debug_unix_end_code}",
-        inline=False
-    )
-    if debug_count_afk > 0:
-        debug_embed.add_field(
-            name="Estimate (including AFK in regen)",
-            value=f"{debug_end_time_afk_str} {debug_unix_end_code_afk}",
-            inline=False
+    if total_attacks == 0:
+        estimates_section = (
+            "\n\n**─── Raid Estimate ───**\n"
+            "⚔️ Attacks needed: **—**\n"
+            "⏱️ Regen: *waiting for attacks*\n"
+            "🏃 Activity: *waiting for attacks*"
         )
-    rate_text = f"{debug_observed_rate:.2f} attacks/min" if debug_observed_rate else "not enough data yet"
-    debug_embed.add_field(
-        name="Estimate (activity-based — observed rate)",
-        value=f"{debug_activity_str} {debug_activity_unix}\nObserved rate: **{rate_text}**",
-        inline=False
-    )
-    debug_embed.set_footer(text=f"Raid code: {raid_code} | Updated: {int(now)}")
+    else:
+        activity_display = (
+            f"**{debug_activity_str}** {debug_activity_unix}"
+            if debug_observed_rate and debug_attacks_needed > 0
+            else "N/A *(first observation)*"
+        )
+        rate_display = f" `{debug_observed_rate:.2f} atk/min`" if debug_observed_rate else ""
+        estimates_section = (
+            f"\n\n**─── Raid Estimate ───**\n"
+            f"⚔️ Attacks needed: **{int(debug_attacks_needed)}**\n"
+            f"⏱️ Regen: **{debug_end_time_str}** {debug_unix_end_code}"
+        )
+        if debug_count_afk > 0:
+            estimates_section += f"\n⏱️ Regen (excl. AFK): **{debug_end_time_afk_str}** {debug_unix_end_code_afk}"
+        estimates_section += f"\n🏃 Activity: {activity_display}{rate_display}"
+    embed_description += estimates_section
 
-    return embed_title, embed_description, embed_footer, debug_embed
+    return embed_title, embed_description, embed_footer
 
 
 async def raid_lobby_waiting_room(embed_title, embed_description, embed_footer): #TODO check it
