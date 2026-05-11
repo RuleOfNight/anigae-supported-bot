@@ -56,21 +56,30 @@ async def convert_to_hours_minutes(time_in_minutes):
     return f"{hours} hour(s), {minutes} minutes"
 
 
-_HP_BAR_FULL = "🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩"
+_LG = "<:hp_left_head_green:1503375587350417528>"
+_MG = "<:hp_green:1503367723852501164>"
+_RG = "<:hp_right_head_green:1503375620183294092>"
+_LY = "<:hp_left_head_yellow:1503375545277087756>"
+_MY = "<:hp_yellow:1503375563111272458>"
+_RE = "<:hp_right_head_empty:1503378097054023760>"
+_LR = "<:hp_left_head_red:1503375481045647362>"
+_ME = "<:hp_empty:1503378081845350472>"
+
+_HP_BAR_FULL = _LG + _MG * 8 + _RG
 
 # Each entry: (missing_hp_ratio_threshold, bar_emoji)
 # Iterated from highest to lowest; first match wins.
 _HP_BAR_THRESHOLDS = [
-    (0.9, "🟥⬛⬛⬛⬛⬛⬛⬛⬛⬛"),
-    (0.8, "🟨🟨⬛⬛⬛⬛⬛⬛⬛⬛"),
-    (0.7, "🟨🟨🟨⬛⬛⬛⬛⬛⬛⬛"),
-    (0.6, "🟨🟨🟨🟨⬛⬛⬛⬛⬛⬛"),
-    (0.5, "🟨🟨🟨🟨🟨⬛⬛⬛⬛⬛"),
-    (0.4, "🟩🟩🟩🟩🟩🟩⬛⬛⬛⬛"),
-    (0.3, "🟩🟩🟩🟩🟩🟩🟩⬛⬛⬛"),
-    (0.2, "🟩🟩🟩🟩🟩🟩🟩🟩⬛⬛"),
-    (0.1, "🟩🟩🟩🟩🟩🟩🟩🟩🟩⬛"),
-    (0.0, "🟩🟩🟩🟩🟩🟩🟩🟩🟩⬛"),
+    (0.9, _LR + _ME * 8 + _RE),
+    (0.8, _LY + _MY * 1 + _ME * 7 + _RE),
+    (0.7, _LY + _MY * 2 + _ME * 6 + _RE),
+    (0.6, _LY + _MY * 3 + _ME * 5 + _RE),
+    (0.5, _LY + _MY * 4 + _ME * 4 + _RE),
+    (0.4, _LG + _MG * 4 + _ME * 4 + _RE),
+    (0.3, _LG + _MG * 5 + _ME * 3 + _RE),
+    (0.2, _LG + _MG * 6 + _ME * 2 + _RE),
+    (0.1, _LG + _MG * 7 + _ME * 1 + _RE),
+    (0.0, _LG + _MG * 8 + _RE),
 ]
 
 
