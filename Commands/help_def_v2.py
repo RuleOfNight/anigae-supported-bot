@@ -4,7 +4,7 @@ from discord.ui import View, Button, MediaGallery, Thumbnail, Select
 import json
 import os
 
-picture_caeser = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
+picture_caeser = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif"
 
 
 async def help_v2(ctx, slash=None):

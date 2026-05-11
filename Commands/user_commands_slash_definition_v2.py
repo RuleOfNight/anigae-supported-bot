@@ -7,7 +7,7 @@ import json
 import os
 import asyncio
 gold_emote = "<:GOLD:1338511775448043541>"
-picture_caeser = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
+picture_caeser = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif"
 
 
 async def raid_guide_builder(boss_found, rare_string, sr_string, ur_string,

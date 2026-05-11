@@ -113,7 +113,7 @@ class PaginatorMarketDex(discord.ui.View):
                           f"UR Evo1: {formatted_price_ur} {gold_emote}** |** last update: {market_price_ur_timer}",
                     inline=False)
         market_embed.set_footer(text=f"Page {self.current_page + 1} of {self.total_pages} | {self.total_cards} cards found")
-        market_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        market_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         author_avatar = self.author.avatar.url if self.author.avatar else None
         market_embed.set_author(name=self.author.name, icon_url=author_avatar)
         return market_embed
@@ -170,7 +170,7 @@ class ButtonsForStatusTeamWarning(View):
             return
         await players.update_status_team_check_by_player_id_in_players(interaction.user.id, interaction.user.name, "yes")
         yes_embed = discord.Embed(title="Update successful", description="Your status was set to \"yes\".")
-        yes_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        yes_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         author_avatar = self.author.avatar.url if self.author.avatar else None
         yes_embed.set_author(name=self.author.name, icon_url=author_avatar)
         view = user_commands_prefix.ViewDeleteButtonPrefix(author_id=self.author.id)
@@ -181,7 +181,7 @@ class ButtonsForStatusTeamWarning(View):
             return
         await players.update_status_team_check_by_player_id_in_players(interaction.user.id, interaction.user.name, "no")
         no_embed = discord.Embed(title="Update successful", description="Your status was set to \"no\".")
-        no_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        no_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         author_avatar = self.author.avatar.url if self.author.avatar else None
         no_embed.set_author(name=self.author.name, icon_url=author_avatar)
         view = user_commands_prefix.ViewDeleteButtonPrefix(author_id=self.author.id)
@@ -219,7 +219,7 @@ async def send_daily_watch_embed(ctx_or_interaction_or_channel):
         if card_price_ur != "N/A":
             card_price_ur = f"{int(card_price_ur):,}"
         daily_watch_embed.add_field(name=f"{card_name} {card_element} {card_skill}", value=f"SR EVO 1: {card_price_sr} {gold_emote}\nUR EVO 1: {card_price_ur} {gold_emote}", inline=False)
-    daily_watch_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+    daily_watch_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
     daily_watch_embed.set_footer(text=f"Last Daily: {location_name_last}\nNext Daily: {location_name_next}")
     if isinstance(ctx_or_interaction_or_channel, commands.Context):
         avatar_url = ctx_or_interaction_or_channel.author.avatar.url if ctx_or_interaction_or_channel.author.avatar else None
@@ -871,7 +871,7 @@ class CompareViewClan(View):
 
 async def compare_embed_builder(ctx_interaction, card_data_db):
     compare_embed = discord.Embed(title="Caeser's compare", description=None, color=0x71368A)
-    compare_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+    compare_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
     if isinstance(ctx_interaction, discord.Interaction):
         avatar_url = ctx_interaction.user.avatar.url if ctx_interaction.user.avatar else None
         compare_embed.set_author(name=ctx_interaction.user.name, icon_url=avatar_url)

@@ -13,7 +13,7 @@ from db_methods import cards, players
 from Commands import definitions, help_def_v2
 from Commands.user_commands_on_message import rare_emote, super_rare_1, super_rare_2, ultra_rare_1, ultra_rare_2
 
-picture_caeser = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
+picture_caeser = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif"
 
 
 class UserCommandsPrefix_v2(commands.Cog):

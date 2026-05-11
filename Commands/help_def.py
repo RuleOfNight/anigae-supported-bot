@@ -169,7 +169,7 @@ class HelpSelectionView(View):
                                  "daily shop rotation.\nThe reminder ping is exclusive on the official Discord!")
         new_embed = discord.Embed(title="Welcome to Caeser's help command", description=f"{title_name}", color=0x71368A)
         new_embed.add_field(name="", value=embed_description, inline=True)
-        new_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        new_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         new_embed.set_author(name=self.author_name, icon_url=self.author_avatar)
         await interaction.response.edit_message(embed=new_embed, view=self)
 
@@ -254,7 +254,7 @@ class HelpSelectionView(View):
                                  "for you to copy paste. Selling has a intern cooldown of ~10s and Buying ~5s between each message.")
         new_embed = discord.Embed(title="Welcome to Caeser's help command", description=f"{title_name}", color=0x71368A)
         new_embed.add_field(name="", value=embed_description, inline=True)
-        new_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        new_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         new_embed.set_author(name=self.author_name, icon_url=self.author_avatar)
         await interaction.response.edit_message(embed=new_embed, view=self)
 
@@ -359,6 +359,6 @@ class HelpSelectionView(View):
                                  "- 5editdono example_name1743863286 50k\n- 5editdono example_name1743863286 50000")
         new_embed = discord.Embed(title="Welcome to Caeser's help command", description=f"{title_name}", color=0x71368A)
         new_embed.add_field(name="", value=embed_description, inline=True)
-        new_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        new_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         new_embed.set_author(name=self.author_name, icon_url=self.author_avatar)
         await interaction.response.edit_message(embed=new_embed, view=self)

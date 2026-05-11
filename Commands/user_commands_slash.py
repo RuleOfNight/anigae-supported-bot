@@ -119,7 +119,7 @@ class UserCommandsSlash(commands.Cog):
             floor = card_data.get('floor', '')
             element_emote = await definitions.element_converter_from_database(element)
             shards_embed.add_field(name=f"{element} {element_emote}", value=f"{card_name} **|** __Location__: {location} **|** __Floor__: {floor}", inline=False)
-        shards_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        shards_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         author_avatar = interaction.user.avatar.url if interaction.user.avatar else None
         shards_embed.set_author(name=interaction.user.name, icon_url=author_avatar)
         view = ViewDeleteButtonPrefix(author_id=interaction.user.id)
@@ -174,7 +174,7 @@ class UserCommandsSlash(commands.Cog):
         for i in range(0, total_raids, 5):
             current_raids = raid_history[i:i + 5]
             embed = discord.Embed(title="Caeser's Raid History Tracking", description=f"Raid History of player: {interaction.user.name}", color=0x71368A)
-            embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+            embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
             embed.set_author(name=interaction.user.name, icon_url=interaction.user.avatar.url if interaction.user.avatar else None)
             for raid in current_raids:
                 raid_timer = f"<t:{raid.get('raid_timer')}:R>" if raid.get("raid_timer") else "N/A"
@@ -333,7 +333,7 @@ class UserCommandsSlash(commands.Cog):
     @app_commands.command(name="set_team_warning", description="Option to toggle the team check!")
     async def setteamwarning(self, interaction: discord.Interaction):
         team_check_embed = discord.Embed(title=None, description="Option to toggle the team check!\nTo update your status simply click one of the buttons below.", color=0x71368A)
-        team_check_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        team_check_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         author_avatar = interaction.user.avatar.url if interaction.user.avatar else None
         team_check_embed.set_author(name=interaction.user.name, icon_url=author_avatar)
         view = user_commands_prefix_definition.ButtonsForStatusTeamWarning(author=interaction.user, is_slash=True)

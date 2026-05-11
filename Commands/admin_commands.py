@@ -143,7 +143,7 @@ class AdminCommands(commands.Cog):
         total_locations = len(locations)
         embeds = []
         embed = discord.Embed(title="Location Overview", color=0x71368A)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         field_count = 0
         for loc_index in range(1, total_locations + 1):
             name = locations[str(loc_index)]
@@ -155,7 +155,7 @@ class AdminCommands(commands.Cog):
                 embed.set_image(url="https://cdn.discordapp.com/attachments/790277741642776598/1376101487553544304/oie_YUqPXdSd03Y4.png")
                 embeds.append(embed)
                 embed = discord.Embed(color=0x71368A)
-                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+                embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
                 field_count = 0
         if field_count > 0:
             embed.set_image(url="https://cdn.discordapp.com/attachments/790277741642776598/1376101487553544304/oie_YUqPXdSd03Y4.png")

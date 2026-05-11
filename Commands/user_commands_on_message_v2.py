@@ -14,7 +14,7 @@ from misc import time_calculations
 from datetime import timezone, datetime
 from math import floor, ceil
 
-picture_caeser = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
+picture_caeser = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif"
 
 
 async def discord_components_v2(message, trigger):

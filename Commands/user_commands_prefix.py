@@ -164,7 +164,7 @@ class UserCommandsPrefix(commands.Cog):
             value = card_data.get('value', '')
             element_emote = await definitions.element_converter_from_database(element)
             shards_embed.add_field(name=f"{element} {element_emote}", value=f"{card_name} **|** __Location__: {location} **|** __Floor__: {floor}", inline=False)
-        shards_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        shards_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         author_avatar = ctx.author.avatar.url if ctx.author.avatar else None
         shards_embed.set_author(name=ctx.author.name, icon_url=author_avatar)
         view = ViewDeleteButtonPrefix(author_id=ctx.author.id)
@@ -224,7 +224,7 @@ class UserCommandsPrefix(commands.Cog):
             return
         raid_history.reverse()
         raid_history_embed = discord.Embed(title="Caeser's Raid History Tracking", description=f"Raid History of player: {ctx.author.name}", color=0x71368A)
-        raid_history_embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+        raid_history_embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
         raid_history_embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
         for raid in raid_history:
             raid_timer = f"<t:{raid.get('raid_timer')}:R>" if raid.get("raid_timer") else "N/A"
@@ -239,7 +239,7 @@ class UserCommandsPrefix(commands.Cog):
         for i in range(0, total_raids, 5):
             current_raids = raid_history[i:i + 5]
             embed = discord.Embed(title="Caeser's Raid History Tracking", description=f"Raid History of player: {ctx.author.name}", color=0x71368A)
-            embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg")
+            embed.set_thumbnail(url="https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif")
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
             for raid in current_raids:
                 raid_timer = f"<t:{raid.get('raid_timer')}:R>" if raid.get("raid_timer") else "N/A"
