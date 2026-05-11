@@ -136,66 +136,67 @@ async def element_converter_from_database(card_element_name):
 _SKILL_EMOJI_MAP = {
     "Lucky Coin":                  "<:Lucky_Coin:1503140731873919107>",               #done
     "Amplifier":                   "<:AMPLIFIER:1335617081013440573>",
-    "Arcane Affinity":             "<:Arcane_Affinity:1503312702100209756>",          #done
-    "Balancing Strike":            "<:Balancing_Strike:1503134979851292814>",          #done
-    "Berserker":                   "<:Berserker:1503151540792332458>",                 #done
-    "Blaze":                       "<:Blaze:1503151560228601876>",                     #done
+    "Arcane Affinity":             "<:Arcane_Affinity:1503312702100209756>",         #done
+    "Balancing Strike":            "<:Balancing_Strike:1503378775889412197>",         #done
+    "Berserker":                   "<:Berserker:1503380628165365833>",                #done
+    "Blaze":                       "<:Blaze:1503381143783870494>",                    #done
     "Blood Surge":                 "<:Blood_Surge:1503313188261859359>",
-    "Bloodthirster":               "<:Bloodthirster:1503314241372033035>",             #done
-    "Breaker":                     "<:Breaker:1503151656466907136>",                   #done
-    "Brutality":                   "<:Brutality:1503151583066718389>",                 #done
-    "Celestial Blessing":          "<:Celestial_Blessing:1503140689959976980>",        #done
+    "Bloodthirster":               "<:Bloodthirster:1503314241372033035>",            #done
+    "Breaker":                     "<:Breaker:1503381473657360464>",                  #done
+    "Brutality":                   "<:Brutality:1503382068216991754>",                #done
+    "Celestial Blessing":          "<:Celestial_Blessing:1503383124271304764>",       #done
     "Celestial Influence":         "<:Celestial_Influence:1335616977707733084>",
-    "Cursed":                      "<:Cursed:1503151604709462186>",                    #done
-    "Devour":                      "<:Devour:1503151621029363853>",                    #done
-    "Dexterity Drive":             "<:Dexterity_Drive:1503152073200373780>",           #done
-    "Divine Blessing":             "<:Divine_Blessing:1335616933323608125>",
-    "Dominance":                   "<:Dominance:1335616923668451368>",
-    "Double-edged Strike":         "<:Double_edged_Strike:1335616913484677231>",
-    "Elemental Drain":             "<:Elemental_Drain:1503152871149932634>",           #done
-    "Elemental Manipulation":      "<:Elemental_Manipulation:1503152791797895379>",    #done
-    "Elemental Strike":            "<:Elemental_Strike:1503313097199194192>",          #done
-    "Endurance":                   "<:Endurance:1335616869138169856>",
-    "Executioner":                 "<:Executioner:1503152379749728409>",               #done
-    "Foul Play":                   "<:Foul_Play:1503152361030422659>",                 #done
-    "Vengeance":                   "<:Vengeance:1335616408347873283>",
-    "Yin Yang":                    "<:Yin_Yang:1503313229751783596>",                  #done
+    "Cursed":                      "<:Cursed:1503383448499523784>",                   #done
+    "Devour":                      "<:Devour:1503383579978108959>",                   #done
+    "Dexterity Drive":             "<:Dexterity_Drive:1503383848652636190>",          #done
+    "Divine Blessing":             "<:Divine_Blessing:1503398806484418691>",          #done
+    "Dominance":                   "<:Dominance:1503398788558094516>",                #done
+    "Double-edged Strike":         "<:Double_edged_Strike:1503399030217248888>",      #done
+    "Elemental Drain":             "<:Elemental_Drain:1503384401055186944>",          #done
+    "Elemental Manipulation":      "<:Elemental_Manipulation:1503384884134023289>",   #done
+    "Elemental Strike":            "<:Elemental_Strike:1503313097199194192>",         #done
+    "Endurance":                   "<:Endurance:1503390994979229847>",                #done
+    "Executioner":                 "<:Executioner:1503385327853764760>",               #done
+    "Foul Play":                   "<:Foul_Play:1503385750224502814>",                #done
+    "Vengeance":                   "<:Vengeance:1503392342630072390>",                #done
+    "Yin Yang":                    "<:Yin_Yang:1503313229751783596>",                 #done
     "Offensive Stance":            "<:Offensive_Stance:1335616767300468846>",
-    "Overload":                    "<:Overload:1503139900797489252>",                  #done
-    "Pain For Power":              "<:Pain_For_Power:1503154402884845730>",            #done
-    "Paralysis":                   "<:Paralysis:1335616727312109589>",
-    "Poison":                      "<:Poison:1503140041038495847>",                    #done
-    "Precision":                   "<:Precision:1503151684090859710>",                 #done
-    "Protector":                   "<:Protector:1503151721487011931>",                 #done
-    "Recoil":                      "<:Recoil:1503151480365121730>",                    #done
-    "Life Sap":                    "<:Life_Sap:1503312924410908774>",                  #done
-    "Reflector":                   "<:Reflector:1503312970388869191>",                 #done
-    "Regeneration":                "<:Regeneration:1503140091969929446>",              #done
-    "Rejuvenation":                "<:Rejuvenation:1503313451043520583>",              #done
-    "Restricted Instinct":         "<:Restricted_Instinct:1335616611045998705>",
-    "Reversion":                   "<:Reversion:1503313135287668867>",                 #done
-    "Rising Resolve":              "<:Rising_Resolve:1503313022586851328>",            #done
-    "Smokescreen":                 "<:Smokescreen:1335616580318658592>",
-    "Soul Stealer":                "<:Soul_Stealer:1335616569694359603>",
-    "Temporal Rewind":             "<:Temporal_Rewind:1335616556058804255>",
-    "Time Attack":                 "<:Time_Attack:1503140758302232576>",               #done
-    "Time Bomb":                   "<:Time_Bomb:1335616525352308839>",
-    "Trick Room":                  "<:Trick_Room:1503140789310718002>",                #done
-    "Transformation":              "<:Transformation:1335616512152567901>",
-    "Ultimate Combo":              "<:Ultimate_Combo:1335616472709333023>",
-    "Undying Will":                "<:Undying_Will:1335616441176555580>",
-    "Unlucky Coin":                "<:Unlucky_Coin:1503140641494794302>",              #done
-    "Omniscient Hack":             "<:Omniscient_Hack:1503152467687243796>",           #done
-    "Miracle Injection":           "<:Miracle_Injection:1503313331858178174>",         #done
-    "Mana Reaver":                 "<:Mana_Reaver:1335616788196753408>",
-    "Lethal Clarity":              "<:Lethal_Clarity:1503152260073394236>",            #done
-    "Grievous Limiter":            "<:Grievous_Limiter:1335616818483691580>",
-    "Underdog":                    "<:Underdog:1336428564739915837>",
-    "Freeze":                      "<:Freeze:1503151744832639078>",                    #done
-    "Evasion":                     "<:Evasion:1503140708859646103>",                   #done
-    "Atmospheric Acceleration":    "<:ATMOSPHERIC_ACCELERATION:1503151946251636787>",  #done
-    "Aegis":                       "<:Aegis:1503151510530298017>",                     #done
-    "Divine Fortune":              "<:DivineFortune:1503314557597257808>",             #done
+    "Overload":                    "<:Overload:1503397302537031893>",                 #done
+    "Pain For Power":              "<:Pain_For_Power:1503397361874112674>",           #done
+    "Paralysis":                   "<:Paralysis:1503389270809907332>",                #done
+    "Poison":                      "<:Poison:1503396280305455144>",                   #done
+    "Precision":                   "<:Precision:1503396747752374395>",                #done
+    "Protector":                   "<:Protector:1503397455981576242>",                #done
+    "Recoil":                      "<:Recoil:1503151480365121730>",                   #done
+    "Life Sap":                    "<:Life_Sap:1503312924410908774>",                 #done
+    "Reflector":                   "<:Reflector:1503312970388869191>",                #done
+    "Regeneration":                "<:Regeneration:1503140091969929446>",             #done
+    "Rejuvenation":                "<:Rejuvenation:1503313451043520583>",             #done
+    "Restricted Instinct":         "<:Restricted_Instinct:1503391863368056942>",      #done
+    "Reversion":                   "<:Reversion:1503313135287668867>",                #done
+    "Rising Resolve":              "<:Rising_Resolve:1503313022586851328>",           #done
+    "Smokescreen":                 "<:Smokescreen:1503388127367266364>",              #done
+    "Soul Stealer":                "<:Soul_Stealer:1503388387283959858>",             #done
+    "Temporal Rewind":             "<:Temporal_Rewind:1503388665928224798>",          #done
+    "Time Attack":                 "<:Time_Attack:1503140758302232576>",              #done
+    "Time Bomb":                   "<:Time_Bomb:1503388871914819657>",                #done
+    "Trick Room":                  "<:Trick_Room:1503397702342545418>",               #done
+    "Transformation":              "<:Transformation:1503389480567050240>",           #done
+    "Ultimate Combo":              "<:Ultimate_Combo:1503389940669612153>",           #done
+    "Undying Will":                "<:Undying_Will:1503390242588200970>",             #done
+    "Unlucky Coin":                "<:Unlucky_Coin:1503397771384979476>",             #done
+    "Omniscient Hack":             "<:Omniscient_Hack:1503397245251485798>",          #done
+    "Miracle Injection":           "<:Miracle_Injection:1503313331858178174>",        #done
+    "Mana Reaver":                 "<:Mana_Reaver:1503400009666924675>",              #done
+    "Lethal Clarity":              "<:Lethal_Clarity:1503399712785567786>",           #done
+    "Grievous Limiter":            "<:Grievous_Limiter:1503391367328436405>",         #done
+    "Underdog":                    "<:Underdog:1503400563734351973>",                 #done
+    "Freeze":                      "<:Freeze:1503385910983655618>",                   #done
+    "Evasion":                     "<:Evasion:1503385050815660142>",                  #done
+    "Atmospheric Acceleration":    "<:ATMOSPHERIC_ACCELERATION:1503151946251636787>", #done
+    "Aegis":                       "<:Aegis:1503379066600816710>",                    #done
+    "Divine Fortune":              "<:DivineFortune:1503314557597257808>",            #done
+    "Final Verdict":               "<:Final_Verdict:1503405518105088010>",            #done
 }
 
 
