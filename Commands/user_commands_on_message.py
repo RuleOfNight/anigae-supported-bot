@@ -495,7 +495,7 @@ async def player_gold_and_rubies_command(message): #TODO check it
         return player_name, embed_text
 
 
-WEEKLY_DONATION_CHANNEL_ID = 0  # TODO: thay bằng channel ID thực
+WEEKLY_DONATION_CHANNEL_ID = 925618781777199114
 WEEKLY_DONATION_AMOUNT = 100_000
 
 
