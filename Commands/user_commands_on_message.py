@@ -8,7 +8,7 @@ from misc import time_calculations, skills
 
 raid_tracker = {}
 
-gold_emote = "<:GOLD:1338511775448043541>"
+gold_emote = "<a:GOLD:1503359399438319716>"
 element_null_emote = "<:NULL:1338512039156645992>"
 rubies_emote = "<:RUBIES:1339686347715252275>"
 ultra_rare_1 = "<:ultra:1339690444216467557>"
