@@ -77,17 +77,20 @@ class AdminCommands(commands.Cog):
         if ctx.author.id not in admins:
             await ctx.channel.send("You don't have that permission peasant.")
             return
-        misc_col = general.get_misc_collection()
-        await misc_col.update_one(
-            {"_id": ObjectId("67ae69c3cf53d633cb1cd358")},
-            {"$set": {"daily_watch_timer": timer, "daily_watch_counter": counter}},
-            upsert=True
-        )
-        await ctx.channel.send(
-            f"Daily watch set.\n"
-            f"Timer: `{timer}` → <t:{timer}:f>\n"
-            f"Counter (current location): `{counter}`"
-        )
+        try:
+            misc_col = general.get_misc_collection()
+            await misc_col.update_one(
+                {"_id": ObjectId("67ae69c3cf53d633cb1cd358")},
+                {"$set": {"daily_watch_timer": timer, "daily_watch_counter": counter}},
+                upsert=True
+            )
+            await ctx.channel.send(
+                f"Daily watch set.\n"
+                f"Timer: `{timer}` → <t:{timer}:f>\n"
+                f"Counter (current location): `{counter}`"
+            )
+        except Exception as e:
+            await ctx.channel.send(f"Error: `{type(e).__name__}: {e}`")
 
     def get_next_tick_from_base_daily_watch(self, base_tick):
         now = int(time.time())
