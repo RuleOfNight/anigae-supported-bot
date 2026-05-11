@@ -12,7 +12,7 @@ from Commands.user_commands_on_message import (rubies_emote, gold_emote, ascensi
 from db_methods import cards, general, players
 from misc import time_calculations
 from datetime import timezone, datetime
-from math import floor
+from math import floor, ceil
 
 picture_caeser = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
 
@@ -519,11 +519,36 @@ async def v2_improved_card_info(message):
                      f"**Market Price SR:** {market_price_sr} <t:{card_data[0]['market_price_sr_timer']}:R>\n"
                      f"**Market Price UR:** {market_price_ur} <t:{card_data[0]['market_price_ur_timer']}:R>\n")
     container.thumbnail.children[0].content = thumbnail_text
+    _sr_hp  = ceil(int(card_hp)    * 3.5)
+    _sr_atk = ceil(int(card_atk)   * 3.5)
+    _sr_def = ceil(int(card_def)   * 3.5)
+    _sr_spd = ceil(int(card_speed) * 3.5)
+    _ur_hp  = ceil(int(card_hp)    * 4.22)
+    _ur_atk = ceil(int(card_atk)   * 4.22)
+    _ur_def = ceil(int(card_def)   * 4.22)
+    _ur_spd = ceil(int(card_speed) * 4.22)
     if player_settings["cinfo_stat_display"] == "compact":
-        container.card_stats.content = f"**__Base__**\n**HP:** {card_hp} (+{clan_stat_hp}%) **|** **ATK:** {card_atk} (+{clan_stat_atk}%) **|** **DEF:** {card_def} (+{clan_stat_def}%) **|** **SPD:** {card_speed} (+{clan_stat_def}%)"
+        container.card_stats.content = (
+            f"**HP:** {card_hp} / **{_sr_hp}** / **{_ur_hp}** **|** "
+            f"**ATK:** {card_atk} / **{_sr_atk}** / **{_ur_atk}** **|** "
+            f"**DEF:** {card_def} / **{_sr_def}** / **{_ur_def}** **|** "
+            f"**SPD:** {card_speed} / **{_sr_spd}** / **{_ur_spd}**\n"
+            f"-# Base / SR A4 / UR A5"
+        )
     else:
-        container.card_stats.content = f"**__Base__**\n**HP:** {card_hp} (+{clan_stat_hp}%)\n**ATK:** {card_atk} (+{clan_stat_hp}%)\n**DEF:** {card_def} (+{clan_stat_def}%)\n**SPD:** {card_speed} (+{clan_stat_def}%)"
-    container.card_talent.content = f"**__Talent__**\n{card_talent_emote} **{card_talent_name.group(1)}:** {card_talent_description.group(1)}"
+        container.card_stats.content = (
+            f"**HP:** {card_hp} / **{_sr_hp}** / **{_ur_hp}**\n"
+            f"**ATK:** {card_atk} / **{_sr_atk}** / **{_ur_atk}**\n"
+            f"**DEF:** {card_def} / **{_sr_def}** / **{_ur_def}**\n"
+            f"**SPD:** {card_speed} / **{_sr_spd}** / **{_ur_spd}**\n"
+            f"-# Base / SR A4 / UR A5"
+        )
+    container.card_talent.content = (
+        f"**__Talent__**\n"
+        f"{card_talent_emote} **{card_talent_name.group(1)}:**\n"
+        f"SR: {card_talent_text_sr}\n"
+        f"UR: {card_talent_text_ur}"
+    )
     rarity_select = container.rarity_row.children[0]
     clan_select = container.clan_row.children[0]
     fam_select = container.fam_row.children[0]
