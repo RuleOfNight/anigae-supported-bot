@@ -161,12 +161,10 @@ async def on_ready():
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         return
-    elif isinstance(error.original, NotFound):
-        return
     elif isinstance(error, MissingPermissions):
         return
     else:
-        return
+        print(f"[CMD ERROR] {ctx.command}: {type(error).__name__}: {error}")
 
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
