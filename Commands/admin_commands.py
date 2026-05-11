@@ -13,7 +13,7 @@ from db_methods import general, players
 from discord.ext import commands
 from Commands import user_commands_prefix_definition
 LOG_FILE = "data/command_log.txt" # Logging the guide commands to prevent malicious editing - just in case...
-admins = (703335523925753903) # List for all admins
+admins = (703335523925753903,) # List for all admins
 raid_guide_editors = () # List for all users to be able to access the commands
 
 
