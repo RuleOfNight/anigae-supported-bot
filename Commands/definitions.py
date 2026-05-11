@@ -120,7 +120,7 @@ async def build_boss_hp_bar(current_boss_hp, max_boss_hp):
     return _HP_BAR_THRESHOLDS[-1][1]
 
 
-_ELEMENT_NULL = "<:Null:1329746549382582285>"
+_ELEMENT_NULL = "<:Null:1503313357426528298>"
 
 _ELEMENT_TABLE = {
     "⚡": {"⚡": 1,  "⛰": -1, "🍃": 0,  "🔥": 0,  "💧": 2,  "🌙": 0,  "☀": 0,  "✨": 1, _ELEMENT_NULL: -0.5},
@@ -140,7 +140,7 @@ async def element_effectiveness(element_1, element_2):
     return _ELEMENT_TABLE[element_1][element_2]
 
 
-_ELEMENT_NULL_DB = "<:NULL:1338512039156645992>"
+_ELEMENT_NULL_DB = "<:Null:1503313357426528298>"
 
 _ELEMENT_NAME_MAP = {
     "Null":     _ELEMENT_NULL_DB,
