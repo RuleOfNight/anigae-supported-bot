@@ -4,6 +4,7 @@ import asyncio
 import json
 import time
 import runtime
+from urllib.parse import urlparse, unquote
 from discord import MediaGalleryItem, ComponentType
 from discord.ui import View, Button, MediaGallery, Thumbnail, Select
 from Commands import definitions
@@ -262,6 +263,19 @@ async def v2_improved_clan_shop(message):
     await message.channel.send(view=view)
 
 
+def normalize_picture_url(url):
+    if not url:
+        return url
+    # Discord CDN proxy: extract original URL then normalize
+    cdn_match = re.search(r"images-ext-\d+\.discordapp\.net/external/[^/]+/https?/(.*)", url)
+    if cdn_match:
+        url = "https://" + unquote(cdn_match.group(1))
+    # Tenor URLs without extension won't animate — append .gif
+    if "media.tenor.com" in url and not re.search(r"\.(gif|mp4|webm|webp|png|jpg|jpeg)$", url, re.IGNORECASE):
+        url = url + ".gif"
+    return url
+
+
 class CardInfoContainer1(discord.ui.Container):
     thumbnail = discord.ui.Section(discord.ui.TextDisplay("card data"), accessory=discord.ui.Thumbnail(media=f"{picture_caeser}"))
     sep = discord.ui.Separator()
@@ -507,6 +521,7 @@ async def v2_improved_card_info(message):
     clan_stat_atk = 0
     clan_stat_def = 0
     clan_stat_spd = 0
+    card_info_picture = normalize_picture_url(card_info_picture)
     if player_settings["cinfo_picture"] == "original":
         container = CardInfoContainer1(id=1, accent_colour=0x71368A)
         container.card_picture.items[0].media = card_info_picture
