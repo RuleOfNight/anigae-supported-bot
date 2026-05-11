@@ -475,6 +475,8 @@ async def v2_improved_card_info(message):
             card_data = await cards.get_cinfo_card_data_by_name(card_name)
         else:
             return
+    if card_data[0].get("card_picture"):
+        card_info_picture = card_data[0]["card_picture"]
     if card_data[0]["card_price_sr"] == "N/A":
         market_price_sr = "N/A"
     else:

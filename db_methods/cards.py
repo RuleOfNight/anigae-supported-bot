@@ -169,7 +169,8 @@ async def get_cinfo_card_data_by_name(card_name):
             "card_price_ur": card.get("market_price_ur", ""),
             "market_price_ur_timer": card.get("market_price_ur_timestamp", ""),
             "card_element": card.get("card_element", ""),
-            "card_talent": card.get("card_talent", "")}]
+            "card_talent": card.get("card_talent", ""),
+            "card_picture": card.get("card_picture", "")}]
     return []
 
 
