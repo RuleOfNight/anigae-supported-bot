@@ -427,12 +427,14 @@ async def v2_improved_card_info(message):
                                 total_locations = len(locations)
                                 current_counter = await general.get_daily_watch_counter()
                                 loc_index = next((int(i) for i, name in locations.items() if name.lower() == card_series.lower()), None)
+                                print(f"[CINFO DEBUG] card_series={card_series!r} loc_index={loc_index} current_counter={current_counter}")
                                 if loc_index is None or current_counter is None:
                                     next_daily = "not available"
                                 else:
                                     relative_offset = (loc_index - current_counter - 1) % total_locations
                                     daily_watch_tick = 43200
                                     base_tick = await general.get_global_daily_watch_timer()
+                                    print(f"[CINFO DEBUG] base_tick={base_tick} relative_offset={relative_offset}")
                                     if base_tick is None:
                                         next_daily = "not available"
                                     else:
@@ -532,7 +534,7 @@ async def v2_improved_card_info(message):
     _ur_total   = _ur_hp + _ur_atk + _ur_def + _ur_spd
     _W = 16
     _stats_table = (
-        f"{'Base Stats':<{_W}}{'Maxed SR':<{_W}}Maxed UR\n"
+        f"{'**__Base Stats__**':<{_W}}{'**__SR A4__** ':<{_W}}**__UR A5__**\n"
         f"{'HP: '+str(card_hp):<{_W}}{'HP: '+str(_sr_hp):<{_W}}HP: {_ur_hp}\n"
         f"{'ATK: '+str(card_atk):<{_W}}{'ATK: '+str(_sr_atk):<{_W}}ATK: {_ur_atk}\n"
         f"{'DEF: '+str(card_def):<{_W}}{'DEF: '+str(_sr_def):<{_W}}DEF: {_ur_def}\n"
@@ -541,9 +543,9 @@ async def v2_improved_card_info(message):
     )
     container.card_stats.content = f"```\n{_stats_table}\n```"
     container.card_talent.content = (
-        f"**SR Talent**\n"
+        f"**__SR Talent__**\n"
         f"{card_talent_emote} **{card_talent_name.group(1)}:** {card_talent_text_sr}\n\n"
-        f"**UR Talent**\n"
+        f"**__UR Talent__**\n"
         f"{card_talent_emote} **{card_talent_name.group(1)}:** {card_talent_text_ur}"
     )
     rarity_select = container.rarity_row.children[0]
