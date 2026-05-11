@@ -266,12 +266,8 @@ async def v2_improved_clan_shop(message):
 def normalize_picture_url(url):
     if not url:
         return url
-    # Discord CDN proxy: extract original URL then normalize
-    cdn_match = re.search(r"images-ext-\d+\.discordapp\.net/external/[^/]+/https?/(.*)", url)
-    if cdn_match:
-        url = "https://" + unquote(cdn_match.group(1))
-    # Tenor video URLs (.mp4/.webm) won't animate in Discord components — convert to .gif
-    if "media.tenor.com" in url:
+    # Direct Tenor CDN video URLs won't animate — swap to .gif if possible
+    if "media.tenor.com" in url and "discordapp.net" not in url:
         url = re.sub(r"\.(mp4|webm)$", ".gif", url, flags=re.IGNORECASE)
         if not re.search(r"\.(gif|webp|png|jpg|jpeg)$", url, re.IGNORECASE):
             url = url + ".gif"
