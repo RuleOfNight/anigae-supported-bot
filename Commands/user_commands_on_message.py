@@ -57,8 +57,8 @@ async def in_raid_lobby(embed_title, embed_description, embed_footer): #TODO che
                              old_emoji_list[6] + old_emoji_list[7] + old_emoji_list[8] +
                              old_emoji_list[9])
         embed_description_cleaned = embed_description_cleaned.replace(old_emoji_pattern, boss_hp_bar)
-        old_heart = "<:HP\\_HEART:696453924902928536>"
-        new_heart = "<:hp_heart:1325532335482863677>"
+        old_heart = "❤️"
+        new_heart = "❤️"
         embed_description_cleaned = embed_description_cleaned.replace(old_heart, new_heart)
         embed_description_cleaned = embed_description_cleaned.replace(f"{int(current_hp)} / {int(max_hp)}",
                                                                       f"{int(current_hp):,} / {int(max_hp):,}")
