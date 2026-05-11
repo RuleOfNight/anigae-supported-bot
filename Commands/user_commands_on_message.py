@@ -325,7 +325,12 @@ async def in_raid_lobby(embed_title, embed_description, embed_footer): #TODO che
         if debug_count_afk > 0:
             estimates_section += f"\n⏱️ Regen (excl. AFK): **{debug_end_time_afk_str}** {debug_unix_end_code_afk}"
         estimates_section += f"\n🏃 Activity: {activity_display}{rate_display}"
-    embed_description += estimates_section
+    _hp_bar_right_green = "<:hp_right_head_green:1503375620183294092>"
+    _hp_bar_right_empty = "<:hp_right_head_empty:1503378097054023760>"
+    new_desc = embed_description.replace(_hp_bar_right_green, _hp_bar_right_green + estimates_section, 1)
+    if new_desc == embed_description:
+        new_desc = embed_description.replace(_hp_bar_right_empty, _hp_bar_right_empty + estimates_section, 1)
+    embed_description = new_desc
 
     return embed_title, embed_description, embed_footer
 
