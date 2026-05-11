@@ -190,6 +190,12 @@ class ButtonsForStatusTeamWarning(View):
 
 async def send_daily_watch_embed(ctx_or_interaction_or_channel):
     daily_watch_counter = await general.get_daily_watch_counter()
+    if daily_watch_counter is None:
+        if isinstance(ctx_or_interaction_or_channel, discord.Interaction):
+            await ctx_or_interaction_or_channel.response.send_message("Daily watch chưa được khởi tạo. Admin cần chạy `.set_daily_watch <timer> <counter>`.", ephemeral=True)
+        else:
+            await ctx_or_interaction_or_channel.send("Daily watch chưa được khởi tạo. Admin cần chạy `.set_daily_watch <timer> <counter>`.")
+        return
     daily_watch_counter_last = int(daily_watch_counter) - 1
     daily_watch_counter_next = int(daily_watch_counter) + 1
     card_list = await cards.get_cards_from_daily_watch_counter(daily_watch_counter)
