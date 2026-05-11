@@ -74,6 +74,7 @@ class AdminCommands(commands.Cog):
 
     @commands.command()
     async def set_daily_watch(self, ctx, timer: int, counter: int):
+        await ctx.channel.send(f"[DEBUG] Received: timer={timer} counter={counter} author={ctx.author.id}")
         if ctx.author.id not in admins:
             await ctx.channel.send("You don't have that permission peasant.")
             return
