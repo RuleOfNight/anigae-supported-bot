@@ -534,7 +534,7 @@ async def v2_improved_card_info(message):
     _ur_total   = _ur_hp + _ur_atk + _ur_def + _ur_spd
     _W = 16
     _stats_table = (
-        f"{'**__Base Stats__**':<{_W}}{'**__SR A4__** ':<{_W}}**__UR A5__**\n"
+        f"{'Base Stats':<{_W}}{'SR A4':<{_W}}UR A5\n"
         f"{'HP: '+str(card_hp):<{_W}}{'HP: '+str(_sr_hp):<{_W}}HP: {_ur_hp}\n"
         f"{'ATK: '+str(card_atk):<{_W}}{'ATK: '+str(_sr_atk):<{_W}}ATK: {_ur_atk}\n"
         f"{'DEF: '+str(card_def):<{_W}}{'DEF: '+str(_sr_def):<{_W}}DEF: {_ur_def}\n"
