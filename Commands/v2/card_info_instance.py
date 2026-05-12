@@ -5,7 +5,7 @@ from db_methods import cards as cards_db
 
 
 # ---------------------------------------------------------------------------
-# Parser helpers — làm việc trên full text string từ components
+# Parser helpers
 # ---------------------------------------------------------------------------
 
 def _extract_card_id(text: str) -> str | None:
@@ -17,21 +17,73 @@ def _extract_card_name(text: str) -> str | None:
     m = re.search(r"Card Name:\*{0,2}\s*(.+)", text)
     if not m:
         return None
-    # Strip markdown bold/italic markers thừa
     return re.sub(r"^\*+", "", m.group(1)).strip()
 
 
+def _split_text_sections(full_text: str) -> tuple[str, str]:
+    """Tách full_text thành (card_info, talent_footer).
+    Talent section bắt đầu ở dòng chứa 'Talent'.
+    """
+    # ****Talent**** hoặc **Talent** hoặc Talent đứng một mình trên dòng
+    m = re.search(r"(\*{2,4}Talent\*{2,4}.*)", full_text, re.DOTALL)
+    if m:
+        talent_start = m.start()
+        card_info = full_text[:talent_start].rstrip()
+        talent_footer = full_text[talent_start:]
+    else:
+        card_info = full_text
+        talent_footer = ""
+    return card_info, talent_footer
+
+
 # ---------------------------------------------------------------------------
-# Delete button view
+# Container builder
 # ---------------------------------------------------------------------------
 
-class _DeleteView(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=None)
+class _InfoInstanceView(discord.ui.LayoutView):
+    async def on_timeout(self):
+        try:
+            if hasattr(self, "message"):
+                # Disable delete button on timeout
+                for child in self.children:
+                    if hasattr(child, "children"):
+                        for sub in child.children:
+                            if isinstance(sub, discord.ui.ActionRow):
+                                for item in sub.children:
+                                    item.disabled = True
+                await self.message.edit(view=self)
+        except Exception:
+            pass
+        self.stop()
 
-    @discord.ui.button(label="🗑️", style=discord.ButtonStyle.danger)
-    async def delete_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+def _build_container(card_info_text: str, talent_footer_text: str, picture_url: str) -> discord.ui.Container:
+    container = discord.ui.Container(accent_colour=0x71368A)
+
+    # Phần 1: thông tin card
+    container.add_item(discord.ui.TextDisplay(card_info_text))
+    container.add_item(discord.ui.Separator())
+
+    # Phần 2: ảnh custom
+    container.add_item(discord.ui.MediaGallery(
+        discord.MediaGalleryItem(media=picture_url, spoiler=False)
+    ))
+
+    # Phần 3: talent + footer (nếu có)
+    if talent_footer_text:
+        container.add_item(discord.ui.Separator())
+        container.add_item(discord.ui.TextDisplay(talent_footer_text))
+
+    # Delete button
+    del_button = discord.ui.Button(label="🗑️", style=discord.ButtonStyle.danger, custom_id="info_instance_delete")
+
+    async def _del_callback(interaction: discord.Interaction):
         await interaction.message.delete()
+
+    del_button.callback = _del_callback
+    container.add_item(discord.ui.ActionRow(del_button))
+
+    return container
 
 
 # ---------------------------------------------------------------------------
@@ -39,7 +91,7 @@ class _DeleteView(discord.ui.View):
 # ---------------------------------------------------------------------------
 
 async def v2_card_info_instance(message: discord.Message):
-    """Khi .info message được detect, thay ảnh mặc định bằng custom picture nếu đã set."""
+    """Khi .info message được detect, thay ảnh bằng custom picture nếu đã set."""
     full_text = get_all_component_text(message)
     print(f"[CINFO_INSTANCE] full_text={full_text!r}")
 
@@ -55,13 +107,13 @@ async def v2_card_info_instance(message: discord.Message):
     if not custom_picture:
         return
 
-    # Gửi embed mới với custom picture, xóa tin nhắn gốc
-    embed = discord.Embed(title=card_name, color=0x71368A)
-    embed.set_image(url=custom_picture)
-    embed.set_footer(text=f"Card ID: {card_id} | Custom picture")
+    card_info_text, talent_footer_text = _split_text_sections(full_text)
+    container = _build_container(card_info_text, talent_footer_text, custom_picture)
 
-    view = _DeleteView()
-    await message.channel.send(embed=embed, view=view)
+    view = _InfoInstanceView(timeout=120)
+    view.add_item(container)
+    msg = await message.channel.send(view=view)
+    view.message = msg
 
     try:
         await message.delete()
