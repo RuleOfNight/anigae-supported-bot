@@ -387,7 +387,7 @@ async def main():
     await bot.start(os.getenv("DISCORD_TOKEN"))
 
 
-#asyncio.run(main())
+asyncio.run(main())
 
-bot.run(os.getenv("DISCORD_TOKEN"))          
+#bot.run(os.getenv("DISCORD_TOKEN"))          
 
