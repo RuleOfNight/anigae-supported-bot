@@ -12,7 +12,11 @@ async def on_raw_reaction_add(payload, bot):
     """Khi user react bằng cart emoji vào inventory message, mở InventoryHelperView."""
     if payload.user_id == bot.user.id:
         return
-    if payload.emoji.id != 1495870697577250888:
+
+    # Chấp nhận cả custom emoji (ID) lẫn unicode 🛒 mà bot đã react
+    emoji_matches = (payload.emoji.id == 1495870697577250888
+                     or payload.emoji.name == "🛒")
+    if not emoji_matches:
         return
 
     message = discord.utils.get(bot.cached_messages, id=payload.message_id)
@@ -22,15 +26,17 @@ async def on_raw_reaction_add(payload, bot):
             return
         message = await channel.fetch_message(payload.message_id)
 
-    if not (message.reference and message.reference.message_id):
-        return
+    # Xác định user_id: ưu tiên lấy từ message gốc nếu có reference,
+    # fallback về người react để tránh bị chặn khi bot gửi standalone message
+    user_id = payload.user_id
+    if message.reference and message.reference.message_id:
+        original_message = (message.reference.resolved
+                            or await message.channel.fetch_message(message.reference.message_id))
+        if original_message.author.id != payload.user_id:
+            return
+        user_id = original_message.author.id
 
-    original_message = (message.reference.resolved
-                        or await message.channel.fetch_message(message.reference.message_id))
-    if original_message.author.id != payload.user_id:
-        return
-
-    view = InventoryHelperView(message=message, user_id=original_message.author.id)
+    view = InventoryHelperView(message=message, user_id=user_id)
     await message.channel.send(view=view)
 
 
