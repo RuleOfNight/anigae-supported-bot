@@ -199,11 +199,10 @@ async def on_message(message):
                     await bot.process_commands(message)
                 if keyword_raid_lobby_1 in embed_title:
                     if keyword_raid_lobby_4 in embed_footer:
-                        embed_title, embed_description, embed_footer, debug_embed = await user_commands_on_message.in_raid_lobby(embed_title, embed_description, embed_footer)
+                        embed_title, embed_description, embed_footer = await user_commands_on_message.in_raid_lobby(embed_title, embed_description, embed_footer)
                         new_embed = create_embed(embed_title, embed_description, embed_footer, embed_image_url, embed_thumbnail_url)
                         view = user_commands_on_message.DeleteButtonView()
                         await message.channel.send(embed=new_embed, view=view)
-                        await message.channel.send(embed=debug_embed)
                         try:
                             await message.delete()
                         except (discord.errors.NotFound, discord.errors.Forbidden):
