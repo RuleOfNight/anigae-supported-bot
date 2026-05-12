@@ -3,3 +3,8 @@
 __pycache__/
 *.pyc
 *.pyo
+gif_converter/*
+gif_converter/*
+gif_converter/*.mp4
+gif_converter/*.gif
+CLAUDE.md

@@ -89,7 +89,8 @@ async def get_settings_from_player_by_discord_id(discord_id):
                            "cinfo_stat_display": user_entry.get("cinfo_stat_display", "original"),
                            "cinfo_picture": user_entry.get("cinfo_picture", "original"),
                            "cselect_delete": user_entry.get("cselect_delete", "no"),
-                           "info_replace": user_entry.get("info_replace", "no")}
+                           "info_replace": user_entry.get("info_replace", "no"),
+                           "raid_afk_ping": user_entry.get("raid_afk_ping", "no")}
         return player_settings
     else:
         return "No Player found."
@@ -159,12 +160,15 @@ async def update_raid_history_for_players_by_player_data(player_data, raid_boss_
         if found_player:
             found_raid = next((raid for raid in found_player.get("raid_history", []) if raid_code_min <= raid["raid_unique_code"] <= raid_code_max), None)
             if found_raid:
-                await players_collection.update_one({"discord_id": rh_player_id, "raid_history.raid_unique_code": found_raid["raid_unique_code"]}, {"$set": {"raid_history.$": player_data_dict}})
+                await players_collection.update_one({"discord_id": rh_player_id, "raid_history.raid_unique_code": found_raid["raid_unique_code"]},
+                                                    {"$set": {"raid_history.$": player_data_dict, "last_raid_attack_time": int(time.time())}})
             else:
-                await players_collection.update_one({"discord_id": rh_player_id}, {"$push": {"raid_history": player_data_dict}})
+                await players_collection.update_one({"discord_id": rh_player_id},
+                                                    {"$push": {"raid_history": player_data_dict}, "$set": {"last_raid_attack_time": int(time.time())}})
         else:
             await create_player_in_collection(rh_player_id, player_info[1])
-            await players_collection.update_one({"discord_id": rh_player_id}, {"$push": {"raid_history": player_data_dict}})
+            await players_collection.update_one({"discord_id": rh_player_id},
+                                                {"$push": {"raid_history": player_data_dict}, "$set": {"last_raid_attack_time": int(time.time())}})
 
 
 async def update_player_gold_by_player_name(player_name, player_gold):
@@ -288,6 +292,27 @@ async def update_player_settings_info_replace_by_discord_id(discord_id):
         await players_collection.update_one({"discord_id": discord_id}, {"$set": {"info_replace": "yes"}})
     else:
         await players_collection.update_one({"discord_id": discord_id}, {"$set": {"info_replace": "no"}})
+
+
+async def update_player_settings_raid_afk_ping_by_discord_id(discord_id):
+    players_collection = get_players_collection()
+    user_entry = await players_collection.find_one({"discord_id": discord_id})
+    raid_afk_ping = user_entry.get("raid_afk_ping", "no") if user_entry else "no"
+    new_val = "yes" if raid_afk_ping == "no" else "no"
+    await players_collection.update_one({"discord_id": discord_id}, {"$set": {"raid_afk_ping": new_val}}, upsert=True)
+
+
+async def get_players_for_raid_afk_ping(last_attack_before: float) -> list:
+    """Trả về discord_id của các player có raid_afk_ping=yes và chưa đánh trong 30 phút."""
+    players_collection = get_players_collection()
+    cursor = players_collection.find({
+        "raid_afk_ping": "yes",
+        "$or": [
+            {"last_raid_attack_time": {"$lt": last_attack_before}},
+            {"last_raid_attack_time": {"$exists": False}}
+        ]
+    }, {"discord_id": 1})
+    return [doc["discord_id"] async for doc in cursor]
 
 
 async def update_player_premium_days_left_by_discord_id(discord_id, premium_days_left):

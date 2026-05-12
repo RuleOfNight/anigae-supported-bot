@@ -344,12 +344,19 @@ class UserCommandsPrefix_v2(commands.Cog):
             else:
                 button_style_info_replace = discord.ButtonStyle.danger
                 status_info_replace = "off"
+            if player_settings["raid_afk_ping"] == "yes":
+                button_style_raid_afk = discord.ButtonStyle.green
+                status_raid_afk = "on"
+            else:
+                button_style_raid_afk = discord.ButtonStyle.danger
+                status_raid_afk = "off"
 
             class SettingsContainer(discord.ui.Container):
                 settings_text = discord.ui.Section(accessory=discord.ui.Thumbnail(media=discord.UnfurledMediaItem(url=f"{picture_caeser}"))).add_item(discord.ui.TextDisplay(f"## Caeser's settings\n**Player Name / ID:**\n{discord_name} / {discord_id}"))
                 button_rows_1 = discord.ui.ActionRow(discord.ui.Button(label=f"raid lobby {status_rl}", style=button_style_rl, custom_id="Raid Lobby"),
                                                      discord.ui.Button(label=f"raid search history delete", style=button_style_rsh, custom_id="Raid Search History Delete"),
-                                                     discord.ui.Button(label=f"card select delete {status_cselectdel}", style=button_style_cselect_del, custom_id="Cselect Delete"))
+                                                     discord.ui.Button(label=f"card select delete {status_cselectdel}", style=button_style_cselect_del, custom_id="Cselect Delete"),
+                                                     discord.ui.Button(label=f"raid afk ping {status_raid_afk}", style=button_style_raid_afk, custom_id="Raid Afk Ping"))
                 sep = discord.ui.Separator()
                 button_row_cinfo = discord.ui.ActionRow(discord.ui.Button(label=f"cinfo delete {status_cinfodel}", style=button_style_cinfo_del, custom_id="Cinfo Delete"),
                                                         discord.ui.Button(label=f"cinfo picture {status_cinfopic}", style=button_style_cinfo_pic, custom_id="Cinfo Picture"),
@@ -378,6 +385,8 @@ class UserCommandsPrefix_v2(commands.Cog):
                         await players.update_player_settings_cinfo_stat_by_discord_id(discord_id)
                     elif button_id == "Info Replace":
                         await players.update_player_settings_info_replace_by_discord_id(discord_id)
+                    elif button_id == "Raid Afk Ping":
+                        await players.update_player_settings_raid_afk_ping_by_discord_id(discord_id)
                     nonlocal player_settings
                     new_settings = await players.get_settings_from_player_by_discord_id(discord_id)
                     player_settings = new_settings

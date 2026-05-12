@@ -1,4 +1,6 @@
 bot = None
+db_ready = False
+active_raid_guilds: dict = {}  # {guild_id: timestamp} — set khi detect "Raid Challenge Timer"
 
 async def retrieve_data(variant):
     if variant == "prefixes":

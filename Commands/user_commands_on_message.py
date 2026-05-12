@@ -10,16 +10,16 @@ raid_tracker = {}
 
 gold_emote = "<a:GOLD:1503359399438319716>"
 element_null_emote = "<:NULL:1338512039156645992>"
-rubies_emote = "<:RUBIES:1339686347715252275>"
-ultra_rare_1 = "<:ultra:1339690444216467557>"
-ultra_rare_2 = "<:u_rare:1339690459466960986>"
-super_rare_1 = "<:super:1339690471873577071>"
-super_rare_2 = "<:s_rare:1339690481692704928>"
+rubies_emote = "<:ruby:1503731817629618267> "
+ultra_rare_1 = "<a:ultra:1503300387917004850>"
+ultra_rare_2 = "<a:rare3:1503300751496057017>"
+super_rare_1 = "<:super:1503299742753361974>"
+super_rare_2 = "<:rare:1503300937396129852>"
 rare_emote = "<:r_rare:1378150486573580308>"
 uncommon_emote_1 = "<:u_uncommon:1378150471126225077>"
 uncommon_emote_2 = "<:c_uncommon:1378150446543142934>"
 common_emote_1 = "<:c_common:1378150629545082941>"
-ascension_emote = "<:red_star:1336062483730796685>"
+ascension_emote = "<:RedStar:1503299407720747119>"
 
 
 async def in_raid_lobby(embed_title, embed_description, embed_footer): #TODO check it

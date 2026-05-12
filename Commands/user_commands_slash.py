@@ -784,14 +784,14 @@ class UserCommandsSlash(commands.Cog):
     @app_commands.describe(
         card_id="The Card ID shown in the .info footer (e.g. 2480776512)",
         card_name="The exact card name (e.g. Shizuku Murasaki)",
-        picture_url="Direct image URL to use as the custom picture")
+        picture_url="Direct image URL to use as the custom picture",
+        ascend="Number of ascensions (0-6, default 0)")
     @app_commands.checks.has_permissions(administrator=True)
-    async def set_card_picture(self, interaction: discord.Interaction, card_id: str, card_name: str, picture_url: str):
-        await cards.set_custom_card_instance_picture(card_id, card_name, picture_url)
-        verify = await cards.get_custom_card_instance_picture(card_id, card_name)
-        print(f"[SET_CARD_PICTURE] card_id={card_id!r} card_name={card_name!r} url={picture_url!r} → verify={verify!r}")
+    async def set_card_picture(self, interaction: discord.Interaction, card_id: str, card_name: str, picture_url: str, ascend: int = 0):
+        await cards.set_custom_card_instance_picture(card_id, card_name, picture_url, ascend)
+        verify_url, verify_ascend = await cards.get_custom_card_instance_picture(card_id, card_name)
         await interaction.response.send_message(
-            f"Custom picture set for **{card_name}** (ID: `{card_id}`).\nDB verify: `{verify}`", ephemeral=True)
+            f"Custom picture set for **{card_name}** (ID: `{card_id}`) | Ascend: `{verify_ascend}`\nDB verify: `{verify_url}`", ephemeral=True)
 
     @app_commands.command(name="remove_card_picture", description="Remove the custom picture for a specific card instance.")
     @app_commands.describe(
@@ -802,6 +802,14 @@ class UserCommandsSlash(commands.Cog):
         await cards.remove_custom_card_instance_picture(card_id, card_name)
         await interaction.response.send_message(
             f"Custom picture removed for **{card_name}** (ID: `{card_id}`).", ephemeral=True)
+
+    @app_commands.command(name="set_raid_afk_channel", description="Set the channel where raid AFK ping reminders will be sent.")
+    @app_commands.describe(channel="The text channel to send raid AFK reminders in")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def set_raid_afk_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
+        await guilds.set_raid_afk_ping_channel(interaction.guild.id, channel.id)
+        await interaction.response.send_message(
+            f"Raid AFK ping channel set to {channel.mention}.", ephemeral=True)
 
     @threshold.command(name="limit", description="Set the SECOND threshold limit for the guild.")
     @app_commands.checks.has_permissions(administrator=True)

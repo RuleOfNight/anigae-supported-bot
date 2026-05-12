@@ -478,3 +478,19 @@ async def remove_member_from_threshold_list(guild_id, guild_member):
     if result.modified_count > 0:
         return "removed"
     return "not in threshold"
+
+
+async def get_raid_afk_ping_channel(guild_id) -> int | None:
+    guilds_collection = get_guilds_collection()
+    doc = await guilds_collection.find_one({"guild_id": guild_id}, {"raid_afk_ping_channel": 1})
+    if doc:
+        return doc.get("raid_afk_ping_channel")
+    return None
+
+
+async def set_raid_afk_ping_channel(guild_id, channel_id: int):
+    guilds_collection = get_guilds_collection()
+    await guilds_collection.update_one(
+        {"guild_id": guild_id},
+        {"$set": {"raid_afk_ping_channel": channel_id}},
+        upsert=True)

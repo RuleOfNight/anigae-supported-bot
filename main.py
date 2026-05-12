@@ -4,6 +4,7 @@ import asyncio
 import json
 import io
 import os
+import random
 import runtime
 from aiohttp import web
 
@@ -94,12 +95,62 @@ async def weekly_guild():
 async def daily_update():
     await players.decrement_all_premium_days()
 
+_RAID_AFK_MESSAGES = [
+    "30 phút rồi chưa đánh raid, lề mề như này bao giờ có người yêu?",
+    "Chết rồi hay gì mà không đánh raid?",
+    "Không đánh tí drop được đúng cái nịt thì chịu",
+    "Đánh raid when",
+    "Boss nắc cho ngất rồi hay gì mà không đánh",
+    "Raid chứ có phải người yêu đâu mà không đánh?",
+    "Friendly remind: không đánh raid thì ăn kick",
+    "Có quên cái gì không nhỉ",
+    "Ăn ngủ có quên không mà quên không đánh raid?",
+    "Hội đồng xét xử tuyên án bị cáo không chịu đánh raid với tội danh chậm tiến độ, đề nghị phạt bắt donate 100k",
+    "Thanh kiếm chỉ sắc khi được rèn, còn bạn thì chỉ giá trị khi chịu đánh raid",
+    "Không đánh raid thì để slot đấy cho người khác vào train, rảnh quá à?",
+    "?",
+    "Lại có mặt trong này rồi",
+    "Fun fact: mấy người afk thường được cái nịt",
+    "Đánh raid đi, không ai thương hại cho đâu",
+    "Có biết thời gian là vàng bạc không?",
+    "Thấy tôi rảnh lắm à? Đánh raid ngay",
+    "Lại thấy tên này rồi",
+]
+
+
+async def check_raid_afk():
+    import time as _time
+    now = _time.time()
+    threshold = 30 * 60
+    raid_timeout = 90 * 60
+    expired = [gid for gid, t in list(runtime.active_raid_guilds.items()) if now - t > raid_timeout]
+    for gid in expired:
+        del runtime.active_raid_guilds[gid]
+    for guild_id in list(runtime.active_raid_guilds.keys()):
+        channel_id = await guilds.get_raid_afk_ping_channel(guild_id)
+        if not channel_id:
+            continue
+        channel = bot.get_channel(channel_id)
+        if not channel:
+            continue
+        player_ids = await players.get_players_for_raid_afk_ping(now - threshold)
+        if not player_ids:
+            continue
+        guild_obj = bot.get_guild(guild_id)
+        if not guild_obj:
+            continue
+        mentions = [m.mention for pid in player_ids if (m := guild_obj.get_member(pid))]
+        if mentions:
+            msg = random.choice(_RAID_AFK_MESSAGES)
+            await channel.send(f"⚔️ {' '.join(mentions)}\n{msg}")
+
 
 @bot.event
 async def on_ready():
     print(f"✅ Startup complete. Bot running on {len(bot.guilds)} server with {bot.shard_count} shards.")
     print("on_ready")
     await general.connect_to_db()
+    runtime.db_ready = True
     await bot.add_cog(UserCommandsPrefix(bot))
     await bot.add_cog(UserCommandsPrefix_v2(bot))
     await bot.load_extension("Commands.user_commands_slash")
@@ -110,6 +161,7 @@ async def on_ready():
         scheduler.add_job(monthly_guild, CronTrigger(day=1, hour=1, minute=0, timezone=utc), id="monthly_guild")
         scheduler.add_job(weekly_guild, CronTrigger(day_of_week=0, hour=1, minute=0, timezone=utc), id="weekly_guild")
         scheduler.add_job(daily_update, CronTrigger(hour=1, minute=0, timezone=utc), id="daily_update")
+        scheduler.add_job(check_raid_afk, "interval", minutes=10, id="check_raid_afk")
         scheduler.start()
         print("[GUILD SCHEDULER] Guild scheduler has been started successfully.")
         print(f"[GUILD SCHEDULER] Jobs: {scheduler.get_jobs()}")
@@ -181,6 +233,8 @@ async def update_activity():
 
 @bot.event
 async def on_message(message):
+    if not runtime.db_ready:
+        return
     if message.author.bot:
         if message.author.id == target_bot_id:
             if message.components:
@@ -199,6 +253,8 @@ async def on_message(message):
                     await bot.process_commands(message)
                 if keyword_raid_lobby_1 in embed_title:
                     if keyword_raid_lobby_4 in embed_footer:
+                        import time as _time
+                        runtime.active_raid_guilds[message.guild.id] = _time.time()
                         embed_title, embed_description, embed_footer = await user_commands_on_message.in_raid_lobby(embed_title, embed_description, embed_footer)
                         new_embed = create_embed(embed_title, embed_description, embed_footer, embed_image_url, embed_thumbnail_url)
                         view = user_commands_on_message.DeleteButtonView()
