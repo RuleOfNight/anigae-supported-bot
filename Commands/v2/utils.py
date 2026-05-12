@@ -24,3 +24,20 @@ def find_text_in_components(message, pattern: str) -> bool:
                         if hasattr(subchild, "content") and pattern in subchild.content:
                             return True
     return False
+
+
+def _collect_text_recursive(obj, results: list[str]):
+    """Đệ quy thu thập tất cả text content từ component tree."""
+    if hasattr(obj, "content") and isinstance(obj.content, str):
+        results.append(obj.content)
+    for attr in ("children", "items"):
+        for child in getattr(obj, attr, []) or []:
+            _collect_text_recursive(child, results)
+
+
+def get_all_component_text(message) -> str:
+    """Trả về toàn bộ text trong component tree của message, ghép bằng newline."""
+    results: list[str] = []
+    for component in message.components:
+        _collect_text_recursive(component, results)
+    return "\n".join(results)

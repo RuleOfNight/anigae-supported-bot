@@ -15,7 +15,6 @@ from discord.ext import commands, tasks
 from discord import app_commands, Container
 from db_methods import cards, general, players, guilds
 from Commands import help_def_v2, user_commands_on_message, user_commands_on_message_v2
-from Commands.v2.card_info_instance import v2_card_info_instance
 from Commands.admin_commands import AdminCommands
 from Commands.user_commands_prefix import UserCommandsPrefix
 from Commands.user_commands_prefix_v2 import UserCommandsPrefix_v2
@@ -195,9 +194,6 @@ async def on_message(message):
                 embed_fields = embed.fields
                 embed_image_url = embed.image.url if embed.image else None
                 embed_thumbnail_url = embed.thumbnail.url if embed.thumbnail else None
-                if "Card ID:" in embed_footer and "Pity:" in embed_footer:
-                    print(f"[MAIN] .info detected, footer={embed_footer!r}")
-                    await v2_card_info_instance(message)
                 if keyword_13 in embed_footer:
                     await user_commands_on_message.profile_tracker(embed_fields, embed_footer)
                     await bot.process_commands(message)
@@ -336,7 +332,7 @@ async def main():
     await bot.start(os.getenv("DISCORD_TOKEN"))
 
 
-asyncio.run(main())
+#asyncio.run(main())
 
-# bot.run(os.getenv("DISCORD_TOKEN"))          
+bot.run(os.getenv("DISCORD_TOKEN"))          
 
