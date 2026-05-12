@@ -88,7 +88,8 @@ async def get_settings_from_player_by_discord_id(discord_id):
                            "cinfo_delete": user_entry.get("cinfo_delete", "no"),
                            "cinfo_stat_display": user_entry.get("cinfo_stat_display", "original"),
                            "cinfo_picture": user_entry.get("cinfo_picture", "original"),
-                           "cselect_delete": user_entry.get("cselect_delete", "no")}
+                           "cselect_delete": user_entry.get("cselect_delete", "no"),
+                           "info_replace": user_entry.get("info_replace", "no")}
         return player_settings
     else:
         return "No Player found."
@@ -277,6 +278,16 @@ async def update_player_settings_cselect_delete_by_discord_id(discord_id):
         await players_collection.update_one({"discord_id": discord_id}, {"$set": {"cselect_delete": "yes"}})
     else:
         await players_collection.update_one({"discord_id": discord_id}, {"$set": {"cselect_delete": "no"}})
+
+
+async def update_player_settings_info_replace_by_discord_id(discord_id):
+    players_collection = get_players_collection()
+    user_entry = await players_collection.find_one({"discord_id": discord_id})
+    info_replace = user_entry.get("info_replace", "no")
+    if info_replace == "no":
+        await players_collection.update_one({"discord_id": discord_id}, {"$set": {"info_replace": "yes"}})
+    else:
+        await players_collection.update_one({"discord_id": discord_id}, {"$set": {"info_replace": "no"}})
 
 
 async def update_player_premium_days_left_by_discord_id(discord_id, premium_days_left):

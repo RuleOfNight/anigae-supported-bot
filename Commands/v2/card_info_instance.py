@@ -1,11 +1,14 @@
 import re
 import discord
+import runtime
+from Commands import definitions
 from Commands.v2.utils import get_all_component_text
 from db_methods import cards as cards_db
+from db_methods import players as players_db
 
 
 # ---------------------------------------------------------------------------
-# Parser helpers
+# Text parsers
 # ---------------------------------------------------------------------------
 
 def _extract_card_id(text: str) -> str | None:
@@ -20,20 +23,33 @@ def _extract_card_name(text: str) -> str | None:
     return re.sub(r"^\*+", "", m.group(1)).strip()
 
 
+def _strip_custom_emotes(text: str) -> str:
+    """Xóa custom emote <:name:id> của AniGame mà bot mình không dùng được."""
+    return re.sub(r"<:[^:>]+:\d+>", "", text)
+
+
 def _split_text_sections(full_text: str) -> tuple[str, str]:
-    """Tách full_text thành (card_info, talent_footer).
-    Talent section bắt đầu ở dòng chứa 'Talent'.
-    """
-    # ****Talent**** hoặc **Talent** hoặc Talent đứng một mình trên dòng
+    """Tách card_info (trước Talent) và talent_footer (từ Talent trở đi)."""
     m = re.search(r"(\*{2,4}Talent\*{2,4}.*)", full_text, re.DOTALL)
     if m:
-        talent_start = m.start()
-        card_info = full_text[:talent_start].rstrip()
-        talent_footer = full_text[talent_start:]
+        card_info = full_text[:m.start()].rstrip()
+        talent_footer = full_text[m.start():]
     else:
         card_info = full_text
         talent_footer = ""
     return card_info, talent_footer
+
+
+async def _swap_talent_emote(talent_text: str) -> str:
+    """Thay emote AniGame trong talent bằng emote của bot mình."""
+    # Tên talent nằm giữa ** sau emote: "**<:NAME:id> **Talent Name** [PSV]:"
+    m = re.search(r"<:[^>]+>\s*\*\*([^\*\[]+?)\*\*", talent_text)
+    if m:
+        talent_name = m.group(1).strip()
+        our_emote = await definitions.skill_converter_from_database(talent_name)
+        # Thay emote AniGame đầu tiên bằng emote của bot
+        talent_text = re.sub(r"<:[^>]+>", our_emote, talent_text, count=1)
+    return talent_text
 
 
 # ---------------------------------------------------------------------------
@@ -44,7 +60,6 @@ class _InfoInstanceView(discord.ui.LayoutView):
     async def on_timeout(self):
         try:
             if hasattr(self, "message"):
-                # Disable delete button on timeout
                 for child in self.children:
                     if hasattr(child, "children"):
                         for sub in child.children:
@@ -59,22 +74,15 @@ class _InfoInstanceView(discord.ui.LayoutView):
 
 def _build_container(card_info_text: str, talent_footer_text: str, picture_url: str) -> discord.ui.Container:
     container = discord.ui.Container(accent_colour=0x71368A)
-
-    # Phần 1: thông tin card
     container.add_item(discord.ui.TextDisplay(card_info_text))
     container.add_item(discord.ui.Separator())
-
-    # Phần 2: ảnh custom
     container.add_item(discord.ui.MediaGallery(
         discord.MediaGalleryItem(media=picture_url, spoiler=False)
     ))
-
-    # Phần 3: talent + footer (nếu có)
     if talent_footer_text:
         container.add_item(discord.ui.Separator())
         container.add_item(discord.ui.TextDisplay(talent_footer_text))
 
-    # Delete button
     del_button = discord.ui.Button(label="🗑️", style=discord.ButtonStyle.danger, custom_id="info_instance_delete")
 
     async def _del_callback(interaction: discord.Interaction):
@@ -82,7 +90,6 @@ def _build_container(card_info_text: str, talent_footer_text: str, picture_url: 
 
     del_button.callback = _del_callback
     container.add_item(discord.ui.ActionRow(del_button))
-
     return container
 
 
@@ -91,24 +98,48 @@ def _build_container(card_info_text: str, talent_footer_text: str, picture_url: 
 # ---------------------------------------------------------------------------
 
 async def v2_card_info_instance(message: discord.Message):
-    """Khi .info message được detect, thay ảnh bằng custom picture nếu đã set."""
+    """Khi .info message được detect, thay ảnh bằng custom picture nếu player đã bật info_replace."""
     full_text = get_all_component_text(message)
-    print(f"[CINFO_INSTANCE] full_text={full_text!r}")
 
     card_id = _extract_card_id(full_text)
     card_name = _extract_card_name(full_text)
-    print(f"[CINFO_INSTANCE] card_id={card_id!r} card_name={card_name!r}")
-
     if not card_id or not card_name:
         return
 
+    # Xác định player từ message.reference
+    player = None
+    player_settings = None
+    if message.reference:
+        cached = discord.utils.get(runtime.bot.cached_messages, id=message.reference.message_id)
+        if cached:
+            player = cached.author
+        else:
+            try:
+                original = await message.channel.fetch_message(message.reference.message_id)
+                player = original.author
+            except Exception:
+                pass
+    if player:
+        player_settings = await players_db.get_settings_from_player_by_discord_id(player.id)
+
+    # Chỉ chạy nếu player đã bật info_replace
+    if not player_settings or player_settings.get("info_replace") != "yes":
+        return
+
     custom_picture = await cards_db.get_custom_card_instance_picture(card_id, card_name)
-    print(f"[CINFO_INSTANCE] custom_picture={custom_picture!r}")
     if not custom_picture:
         return
 
-    card_info_text, talent_footer_text = _split_text_sections(full_text)
-    container = _build_container(card_info_text, talent_footer_text, custom_picture)
+    # Tách text sections
+    card_info_raw, talent_footer_raw = _split_text_sections(full_text)
+
+    # Clean emote card info (strip AniGame emotes khỏi rarity etc.)
+    card_info_clean = _strip_custom_emotes(card_info_raw)
+
+    # Swap talent emote
+    talent_footer_clean = await _swap_talent_emote(talent_footer_raw)
+
+    container = _build_container(card_info_clean, talent_footer_clean, custom_picture)
 
     view = _InfoInstanceView(timeout=120)
     view.add_item(container)

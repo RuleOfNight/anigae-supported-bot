@@ -338,7 +338,12 @@ class UserCommandsPrefix_v2(commands.Cog):
             else:
                 button_style_cselect_del = discord.ButtonStyle.danger
                 status_cselectdel = "off"
-
+            if player_settings["info_replace"] == "yes":
+                button_style_info_replace = discord.ButtonStyle.green
+                status_info_replace = "on"
+            else:
+                button_style_info_replace = discord.ButtonStyle.danger
+                status_info_replace = "off"
 
             class SettingsContainer(discord.ui.Container):
                 settings_text = discord.ui.Section(accessory=discord.ui.Thumbnail(media=discord.UnfurledMediaItem(url=f"{picture_caeser}"))).add_item(discord.ui.TextDisplay(f"## Caeser's settings\n**Player Name / ID:**\n{discord_name} / {discord_id}"))
@@ -348,7 +353,8 @@ class UserCommandsPrefix_v2(commands.Cog):
                 sep = discord.ui.Separator()
                 button_row_cinfo = discord.ui.ActionRow(discord.ui.Button(label=f"cinfo delete {status_cinfodel}", style=button_style_cinfo_del, custom_id="Cinfo Delete"),
                                                         discord.ui.Button(label=f"cinfo picture {status_cinfopic}", style=button_style_cinfo_pic, custom_id="Cinfo Picture"),
-                                                        discord.ui.Button(label=f"cinfo stats {status_cinfostat}", style=button_style_cinfo_stat, custom_id="Cinfo Stats"))
+                                                        discord.ui.Button(label=f"cinfo stats {status_cinfostat}", style=button_style_cinfo_stat, custom_id="Cinfo Stats"),
+                                                        discord.ui.Button(label=f"info replace {status_info_replace}", style=button_style_info_replace, custom_id="Info Replace"))
 
             class SettingsView(discord.ui.LayoutView):
                 container = SettingsContainer(id=1, accent_colour=0x71368A)
@@ -369,7 +375,9 @@ class UserCommandsPrefix_v2(commands.Cog):
                     elif button_id == "Cinfo Picture":
                         await  players.update_player_settings_cinfo_pic_by_discord_id(discord_id)
                     elif button_id == "Cinfo Stats":
-                        await  players.update_player_settings_cinfo_stat_by_discord_id(discord_id)
+                        await players.update_player_settings_cinfo_stat_by_discord_id(discord_id)
+                    elif button_id == "Info Replace":
+                        await players.update_player_settings_info_replace_by_discord_id(discord_id)
                     nonlocal player_settings
                     new_settings = await players.get_settings_from_player_by_discord_id(discord_id)
                     player_settings = new_settings
