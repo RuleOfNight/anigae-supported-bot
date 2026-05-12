@@ -788,8 +788,10 @@ class UserCommandsSlash(commands.Cog):
     @app_commands.checks.has_permissions(administrator=True)
     async def set_card_picture(self, interaction: discord.Interaction, card_id: str, card_name: str, picture_url: str):
         await cards.set_custom_card_instance_picture(card_id, card_name, picture_url)
+        verify = await cards.get_custom_card_instance_picture(card_id, card_name)
+        print(f"[SET_CARD_PICTURE] card_id={card_id!r} card_name={card_name!r} url={picture_url!r} → verify={verify!r}")
         await interaction.response.send_message(
-            f"Custom picture set for **{card_name}** (ID: `{card_id}`).", ephemeral=True)
+            f"Custom picture set for **{card_name}** (ID: `{card_id}`).\nDB verify: `{verify}`", ephemeral=True)
 
     @app_commands.command(name="remove_card_picture", description="Remove the custom picture for a specific card instance.")
     @app_commands.describe(

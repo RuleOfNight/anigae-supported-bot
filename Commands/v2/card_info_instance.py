@@ -89,15 +89,22 @@ async def v2_card_info_instance(message: discord.Message):
     embed = message.embeds[0]
     footer_text = embed.footer.text if embed.footer else ""
 
+    print(f"[CINFO_INSTANCE] footer={footer_text!r}")
+    print(f"[CINFO_INSTANCE] title={embed.title!r}")
+    print(f"[CINFO_INSTANCE] description={embed.description!r}")
+
     card_id = _extract_card_id(footer_text)
+    print(f"[CINFO_INSTANCE] card_id={card_id!r}")
     if not card_id:
         return
 
     card_name = _extract_card_name(embed)
+    print(f"[CINFO_INSTANCE] card_name={card_name!r}")
     if not card_name:
         return
 
     custom_picture = await cards_db.get_custom_card_instance_picture(card_id, card_name)
+    print(f"[CINFO_INSTANCE] custom_picture={custom_picture!r}")
     if not custom_picture:
         return
 

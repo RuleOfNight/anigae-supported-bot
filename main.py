@@ -196,6 +196,7 @@ async def on_message(message):
                 embed_image_url = embed.image.url if embed.image else None
                 embed_thumbnail_url = embed.thumbnail.url if embed.thumbnail else None
                 if "Card ID:" in embed_footer and "Pity:" in embed_footer:
+                    print(f"[MAIN] .info detected, footer={embed_footer!r}")
                     await v2_card_info_instance(message)
                 if keyword_13 in embed_footer:
                     await user_commands_on_message.profile_tracker(embed_fields, embed_footer)
