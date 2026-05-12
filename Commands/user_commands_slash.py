@@ -776,6 +776,31 @@ class UserCommandsSlash(commands.Cog):
             threshold_members = " ; ".join(threshold_members)
         await interaction.response.send_message(f"Currently these members are in the threshold list: **{threshold_members}**")
 
+    # ---------------------------------------------------------------------------
+    # Card instance custom picture commands (admin only)
+    # ---------------------------------------------------------------------------
+
+    @app_commands.command(name="set_card_picture", description="Set a custom picture for a specific card instance by card ID and name.")
+    @app_commands.describe(
+        card_id="The Card ID shown in the .info footer (e.g. 2480776512)",
+        card_name="The exact card name (e.g. Shizuku Murasaki)",
+        picture_url="Direct image URL to use as the custom picture")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def set_card_picture(self, interaction: discord.Interaction, card_id: str, card_name: str, picture_url: str):
+        await cards.set_custom_card_instance_picture(card_id, card_name, picture_url)
+        await interaction.response.send_message(
+            f"Custom picture set for **{card_name}** (ID: `{card_id}`).", ephemeral=True)
+
+    @app_commands.command(name="remove_card_picture", description="Remove the custom picture for a specific card instance.")
+    @app_commands.describe(
+        card_id="The Card ID shown in the .info footer",
+        card_name="The exact card name")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def remove_card_picture(self, interaction: discord.Interaction, card_id: str, card_name: str):
+        await cards.remove_custom_card_instance_picture(card_id, card_name)
+        await interaction.response.send_message(
+            f"Custom picture removed for **{card_name}** (ID: `{card_id}`).", ephemeral=True)
+
     @threshold.command(name="limit", description="Set the SECOND threshold limit for the guild.")
     @app_commands.checks.has_permissions(administrator=True)
     async def threshold_limit(self, interaction: discord.Interaction, donation_amount: int):

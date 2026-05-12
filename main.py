@@ -13,8 +13,9 @@ from dotenv import load_dotenv
 load_dotenv()
 from discord.ext import commands, tasks
 from discord import app_commands, Container
-from db_methods import cards, general, players, guilds, weekly_donations
+from db_methods import cards, general, players, guilds
 from Commands import help_def_v2, user_commands_on_message, user_commands_on_message_v2
+from Commands.v2.card_info_instance import v2_card_info_instance
 from Commands.admin_commands import AdminCommands
 from Commands.user_commands_prefix import UserCommandsPrefix
 from Commands.user_commands_prefix_v2 import UserCommandsPrefix_v2
@@ -42,7 +43,7 @@ runtime.bot = bot
 tree = bot.tree
 scheduler = AsyncIOScheduler(timezone=pytz.UTC)
 
-own_bot_id = 1012793992359972977
+own_bot_id = 1213054068197560331
 target_bot_id = 571027211407196161
 keyword_raid_lobby_1 = "Raid Challenge Timer"
 keyword_raid_lobby_2 = "Raid Lobby Timer"
@@ -94,23 +95,6 @@ async def weekly_guild():
 async def daily_update():
     await players.decrement_all_premium_days()
 
-async def check_weekly_donation_pings():
-    due = await weekly_donations.get_due_pings()
-    for record in due:
-        try:
-            channel = bot.get_channel(record["channel_id"])
-            if channel is None:
-                continue
-            discord_id = record.get("discord_id")
-            ping_text = f"<@{discord_id}>" if discord_id else f"**{record['player_name']}**"
-            await channel.send(
-                f"⏰ Nhắc nhở: {ping_text} đã đến tuần donate rồi nhé! "
-                f"(Đã prepay **{record['total_weeks_credited']} tuần**)"
-            )
-            await weekly_donations.mark_pinged(record["_id"])
-        except Exception as e:
-            print(f"[WEEKLY DONATION PING] Error pinging {record.get('player_name')}: {e}")
-
 
 @bot.event
 async def on_ready():
@@ -127,7 +111,6 @@ async def on_ready():
         scheduler.add_job(monthly_guild, CronTrigger(day=1, hour=1, minute=0, timezone=utc), id="monthly_guild")
         scheduler.add_job(weekly_guild, CronTrigger(day_of_week=0, hour=1, minute=0, timezone=utc), id="weekly_guild")
         scheduler.add_job(daily_update, CronTrigger(hour=1, minute=0, timezone=utc), id="daily_update")
-        scheduler.add_job(check_weekly_donation_pings, CronTrigger(minute=0, timezone=utc), id="weekly_donation_pings")
         scheduler.start()
         print("[GUILD SCHEDULER] Guild scheduler has been started successfully.")
         print(f"[GUILD SCHEDULER] Jobs: {scheduler.get_jobs()}")
@@ -161,10 +144,12 @@ async def on_ready():
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         return
+    elif isinstance(error.original, NotFound):
+        return
     elif isinstance(error, MissingPermissions):
         return
     else:
-        print(f"[CMD ERROR] {ctx.command}: {type(error).__name__}: {error}")
+        return
 
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
@@ -210,15 +195,18 @@ async def on_message(message):
                 embed_fields = embed.fields
                 embed_image_url = embed.image.url if embed.image else None
                 embed_thumbnail_url = embed.thumbnail.url if embed.thumbnail else None
+                if "Card ID:" in embed_footer and "Pity:" in embed_footer:
+                    await v2_card_info_instance(message)
                 if keyword_13 in embed_footer:
                     await user_commands_on_message.profile_tracker(embed_fields, embed_footer)
                     await bot.process_commands(message)
                 if keyword_raid_lobby_1 in embed_title:
                     if keyword_raid_lobby_4 in embed_footer:
-                        embed_title, embed_description, embed_footer = await user_commands_on_message.in_raid_lobby(embed_title, embed_description, embed_footer)
+                        embed_title, embed_description, embed_footer, debug_embed = await user_commands_on_message.in_raid_lobby(embed_title, embed_description, embed_footer)
                         new_embed = create_embed(embed_title, embed_description, embed_footer, embed_image_url, embed_thumbnail_url)
                         view = user_commands_on_message.DeleteButtonView()
                         await message.channel.send(embed=new_embed, view=view)
+                        await message.channel.send(embed=debug_embed)
                         try:
                             await message.delete()
                         except (discord.errors.NotFound, discord.errors.Forbidden):
@@ -346,6 +334,8 @@ async def main():
     await start_web_server()
     await bot.start(os.getenv("DISCORD_TOKEN"))
 
-# Caeser's
+
 asyncio.run(main())
+
+# bot.run(os.getenv("DISCORD_TOKEN"))          
 

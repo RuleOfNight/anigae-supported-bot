@@ -248,6 +248,29 @@ async def get_compare_data_from_cards(name_list=None, series_list=None, element_
     return results_name_list
 
 
+# ---------------
+# Card instance custom pictures
+# ---------------
+
+async def get_custom_card_instance_picture(card_id: str, card_name: str):
+    misc = get_misc_collection()
+    doc = await misc.find_one({"type": "card_instance_picture", "card_id": card_id, "card_name": card_name})
+    return doc["picture_url"] if doc else None
+
+
+async def set_custom_card_instance_picture(card_id: str, card_name: str, picture_url: str):
+    misc = get_misc_collection()
+    await misc.update_one(
+        {"type": "card_instance_picture", "card_id": card_id, "card_name": card_name},
+        {"$set": {"picture_url": picture_url}},
+        upsert=True)
+
+
+async def remove_custom_card_instance_picture(card_id: str, card_name: str):
+    misc = get_misc_collection()
+    await misc.delete_one({"type": "card_instance_picture", "card_id": card_id, "card_name": card_name})
+
+
 async def get_market_dex_data_from_cards(full_list=None, name_list=None, series_list=None, element_list=None, talent_list=None, rarity_list=None):
     cards_collection = get_cards_collection()
     filter_query = {}

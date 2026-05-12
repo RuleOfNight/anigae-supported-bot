@@ -135,17 +135,17 @@ async def element_converter_from_database(card_element_name):
 
 _SKILL_EMOJI_MAP = {
     "Lucky Coin":                  "<:Lucky_Coin:1503140731873919107>",               #done
-    "Amplifier":                   "<:AMPLIFIER:1335617081013440573>",
-    "Arcane Affinity":             "<:Arcane_Affinity:1503312702100209756>",         #done
+    "Amplifier":                   "<:AMPLIFIER:1503408066966585414> ",               #done
+    "Arcane Affinity":             "<:Arcane_Affinity:1503312702100209756>",          #done
     "Balancing Strike":            "<:Balancing_Strike:1503378775889412197>",         #done
     "Berserker":                   "<:Berserker:1503380628165365833>",                #done
     "Blaze":                       "<:Blaze:1503381143783870494>",                    #done
-    "Blood Surge":                 "<:Blood_Surge:1503313188261859359>",
+    "Blood Surge":                 "<:Blood_Surge:1503313188261859359>",              #done
     "Bloodthirster":               "<:Bloodthirster:1503314241372033035>",            #done
     "Breaker":                     "<:Breaker:1503381473657360464>",                  #done
     "Brutality":                   "<:Brutality:1503382068216991754>",                #done
     "Celestial Blessing":          "<:Celestial_Blessing:1503383124271304764>",       #done
-    "Celestial Influence":         "<:Celestial_Influence:1335616977707733084>",
+    "Celestial Influence":         "<:Celestial_Influence:1503408225339310111>",      #done
     "Cursed":                      "<:Cursed:1503383448499523784>",                   #done
     "Devour":                      "<:Devour:1503383579978108959>",                   #done
     "Dexterity Drive":             "<:Dexterity_Drive:1503383848652636190>",          #done
@@ -156,11 +156,11 @@ _SKILL_EMOJI_MAP = {
     "Elemental Manipulation":      "<:Elemental_Manipulation:1503384884134023289>",   #done
     "Elemental Strike":            "<:Elemental_Strike:1503313097199194192>",         #done
     "Endurance":                   "<:Endurance:1503390994979229847>",                #done
-    "Executioner":                 "<:Executioner:1503385327853764760>",               #done
+    "Executioner":                 "<:Executioner:1503385327853764760>",              #done
     "Foul Play":                   "<:Foul_Play:1503385750224502814>",                #done
     "Vengeance":                   "<:Vengeance:1503392342630072390>",                #done
     "Yin Yang":                    "<:Yin_Yang:1503313229751783596>",                 #done
-    "Offensive Stance":            "<:Offensive_Stance:1335616767300468846>",
+    "Offensive Stance":            "<:Offensive_Stance:1503397270991933440>",         #done
     "Overload":                    "<:Overload:1503397302537031893>",                 #done
     "Pain For Power":              "<:Pain_For_Power:1503397361874112674>",           #done
     "Paralysis":                   "<:Paralysis:1503389270809907332>",                #done
@@ -193,7 +193,7 @@ _SKILL_EMOJI_MAP = {
     "Underdog":                    "<:Underdog:1503400563734351973>",                 #done
     "Freeze":                      "<:Freeze:1503385910983655618>",                   #done
     "Evasion":                     "<:Evasion:1503385050815660142>",                  #done
-    "Atmospheric Acceleration":    "<:ATMOSPHERIC_ACCELERATION:1503151946251636787>", #done
+    "Atmospheric Acceleration":    "<:ATMOSPHERIC_ACCELERATION:1503396632102965268>", #done
     "Aegis":                       "<:Aegis:1503379066600816710>",                    #done
     "Divine Fortune":              "<:DivineFortune:1503314557597257808>",            #done
     "Final Verdict":               "<:Final_Verdict:1503405518105088010>",            #done
