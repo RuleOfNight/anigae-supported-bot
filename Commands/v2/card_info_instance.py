@@ -14,8 +14,11 @@ def _extract_card_id(text: str) -> str | None:
 
 
 def _extract_card_name(text: str) -> str | None:
-    m = re.search(r"Card Name:\s*(.+)", text)
-    return m.group(1).strip() if m else None
+    m = re.search(r"Card Name:\*{0,2}\s*(.+)", text)
+    if not m:
+        return None
+    # Strip markdown bold/italic markers thừa
+    return re.sub(r"^\*+", "", m.group(1)).strip()
 
 
 # ---------------------------------------------------------------------------
