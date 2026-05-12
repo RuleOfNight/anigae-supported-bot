@@ -1,4 +1,4 @@
-﻿import re
+import re
 import time
 import asyncio
 import discord
@@ -12,16 +12,17 @@ from datetime import datetime, timezone
 from db_methods import general, players
 from discord.ext import commands
 from Commands import user_commands_prefix_definition
-LOG_FILE = "data/command_log.txt" # Logging the guide commands to prevent malicious editing - just in case...
-admins = (703335523925753903,) # List for all admins
-raid_guide_editors = () # List for all users to be able to access the commands
+
+LOG_FILE = "data/command_log.txt"  # Log các lệnh guide để phát hiện chỉnh sửa độc hại
+admins = (703335523925753903,)      # Danh sách admin
+raid_guide_editors = ()             # Danh sách người có quyền sửa guide
 
 
 class AdminCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.energy_tick_interval = 120         # 2min
-        self.daily_watch_tick_interval = 43200  # 12h
+        self.energy_tick_interval = 120         # 2 phút
+        self.daily_watch_tick_interval = 43200  # 12 tiếng
         self.daily_watch_channel_id_shop_view = 1376249740748128256
         self.daily_watch_message_id_shop_view = 1376530332676784288
         self.daily_watch_channel_id_shop_ping = 1376249501400043620
@@ -29,17 +30,27 @@ class AdminCommands(commands.Cog):
         self.sheet_name_raid = ""
         self.sheet_name_floor = ""
 
+    # -------------------------------------------------------------------------
+    # SYSTEM - Kiểm tra tài nguyên hệ thống
+    # -------------------------------------------------------------------------
+
     @commands.command()
     async def ram(self, ctx):
+        """Hiển thị mức RAM bot đang dùng."""
         if ctx.author.id in admins:
             process = psutil.Process(os.getpid())
-            mem = process.memory_info().rss / 1024 ** 2  # in MB
+            mem = process.memory_info().rss / 1024 ** 2
             await ctx.send(f"Ram usage: {mem:.2f} MB")
         else:
             await ctx.channel.send("You don't have that permission peasant.")
 
+    # -------------------------------------------------------------------------
+    # CLAN SHOP - Quản lý timer clan shop
+    # -------------------------------------------------------------------------
+
     @commands.command()
     async def cl_shop_start(self, ctx):
+        """Reset timer và counter clan shop về thời điểm hiện tại."""
         if ctx.author.id in admins:
             current_timestamp = int(time.time())
             misc_information = general.get_misc_collection()
@@ -49,13 +60,19 @@ class AdminCommands(commands.Cog):
         else:
             await ctx.channel.send("You don't have that permission peasant.")
 
+    # -------------------------------------------------------------------------
+    # ENERGY TIMER - Đặt timer hồi năng lượng raid
+    # -------------------------------------------------------------------------
+
     @commands.command()
     async def set_energy_timer(self, ctx):
+        """Lấy timestamp từ embed của bot rồi tính và lưu global energy timer."""
         if ctx.author.id in admins:
             await ctx.channel.send("Waiting for message...")
 
             def check(msg):
                 return msg.author.id == 703335523925753903
+
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=20)
             except asyncio.TimeoutError:
@@ -66,14 +83,21 @@ class AdminCommands(commands.Cog):
                 raid_energy_timer = int(match.group(1))
                 energy_global_timer = raid_energy_timer + 12 - 21600
                 general.set_global_energy_timer(energy_global_timer)
-                await ctx.channel.send(f"Timer set to: <t:{energy_global_timer}:T>\n"
-                                       f"from raid timer: <t:{raid_energy_timer}:T>\n"
-                                       f"unix timer: 1) {energy_global_timer} 2) {raid_energy_timer}")
+                await ctx.channel.send(
+                    f"Timer set to: <t:{energy_global_timer}:T>\n"
+                    f"from raid timer: <t:{raid_energy_timer}:T>\n"
+                    f"unix timer: 1) {energy_global_timer} 2) {raid_energy_timer}"
+                )
         else:
             await ctx.channel.send("You don't have that permission peasant.")
 
+    # -------------------------------------------------------------------------
+    # DAILY WATCH - Lịch xoay vòng location shop hàng ngày
+    # -------------------------------------------------------------------------
+
     @commands.command()
     async def set_daily_watch(self, ctx, timer: int, counter: int):
+        """Cập nhật base timer và vị trí hiện tại của daily watch rotation."""
         await ctx.channel.send(f"[DEBUG] Received: timer={timer} counter={counter} author={ctx.author.id}")
         if ctx.author.id not in admins:
             await ctx.channel.send("You don't have that permission peasant.")
@@ -94,12 +118,14 @@ class AdminCommands(commands.Cog):
             await ctx.channel.send(f"Error: `{type(e).__name__}: {e}`")
 
     def get_next_tick_from_base_daily_watch(self, base_tick):
+        """Tính thời điểm tick tiếp theo từ base_tick, bỏ qua các tick đã qua."""
         now = int(time.time())
         while base_tick <= now:
             base_tick += self.daily_watch_tick_interval
         return base_tick
 
     async def sync_and_start_rotation_task(self, base_tick, bot):
+        """Đồng bộ với tick gần nhất rồi bắt đầu vòng lặp rotation mỗi 12 tiếng."""
         if base_tick is None:
             return
         next_tick = self.get_next_tick_from_base_daily_watch(base_tick)
@@ -111,6 +137,7 @@ class AdminCommands(commands.Cog):
             await asyncio.sleep(self.daily_watch_tick_interval)
 
     async def daily_watch_rotation(self, bot, base_tick):
+        """Tăng counter, ping user đăng ký, và cập nhật embed lịch location."""
         await general.increase_daily_watch_counter()
         channel_id_shop_view = self.bot.get_channel(self.daily_watch_channel_id_shop_view)
         if not channel_id_shop_view:
@@ -124,8 +151,6 @@ class AdminCommands(commands.Cog):
             user_mention_list = " ".join(f"<@{user_id}>" for user_id in users_to_ping)
             await channel_id_shop_ping.send(f"It's now Location {current_counter} daily!\n{user_mention_list}")
             await user_commands_prefix_definition.send_daily_watch_embed(channel_id_shop_ping)
-        else:
-            pass
         next_tick = self.get_next_tick_from_base_daily_watch(base_tick)
         embeds = await self.create_daily_watch_embeds(next_tick, current_counter)
         try:
@@ -139,6 +164,7 @@ class AdminCommands(commands.Cog):
             print(f"[DAILY WATCH ROTATION] Error: {e}")
 
     async def create_daily_watch_embeds(self, base_tick: int, current_counter: int) -> list:
+        """Tạo danh sách embed hiển thị lịch xoay vòng tất cả location."""
         locations = await runtime.retrieve_data("locations")
         total_locations = len(locations)
         embeds = []
@@ -162,11 +188,17 @@ class AdminCommands(commands.Cog):
             embeds.append(embed)
         return embeds
 
+    # -------------------------------------------------------------------------
+    # LOGGING - Ghi log lệnh admin vào file
+    # -------------------------------------------------------------------------
+
     async def log_command(self, ctx):
+        """Ghi log lệnh theo dạng async để không block event loop."""
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, self._write_log, ctx)
 
     def _write_log(self, ctx):
+        """Ghi một dòng log gồm timestamp, lệnh, user, server, channel."""
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
         user = f"{ctx.author} ({ctx.author.id})"
         server = f"{ctx.guild.name} ({ctx.guild.id})"
@@ -175,7 +207,12 @@ class AdminCommands(commands.Cog):
         with open(LOG_FILE, "a", encoding="utf-8") as f:
             f.write(line)
 
+    # -------------------------------------------------------------------------
+    # GOOGLE SHEETS - Kết nối và cập nhật dữ liệu guide từ Google Sheets
+    # -------------------------------------------------------------------------
+
     async def _get_gc(self):
+        """Trả về Google Sheets client, tạo mới nếu chưa kết nối."""
         if self.gc is None:
             try:
                 project_root = os.path.dirname(os.path.dirname(__file__))
@@ -188,6 +225,7 @@ class AdminCommands(commands.Cog):
 
     @commands.command()
     async def update_raidguide(self, ctx):
+        """Kéo dữ liệu raid comps từ Google Sheets và lưu vào data/raid_comps.json."""
         if ctx.author.id not in raid_guide_editors:
             await ctx.send("You don't have that permission peasant.")
             return
@@ -241,13 +279,9 @@ class AdminCommands(commands.Cog):
         await loop.run_in_executor(None, self._save_json, save_path, bosses)
         await ctx.send(f"Raid comps saved: `{save_path}`")
 
-    def _save_json(self, path, data):
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
-
     @commands.command()
     async def update_floorguide(self, ctx):
+        """Kéo dữ liệu floor comps từ Google Sheets và lưu vào data/floor_comps.json."""
         if ctx.author.id not in raid_guide_editors:
             await ctx.send("You don't have that permission peasant.")
             return
@@ -288,3 +322,9 @@ class AdminCommands(commands.Cog):
         save_path = os.path.join(project_root, "data", "floor_comps.json")
         await loop.run_in_executor(None, self._save_json, save_path, data)
         await ctx.send(f"Floor teams saved: `{save_path}`")
+
+    def _save_json(self, path, data):
+        """Lưu dict ra file JSON, tạo thư mục nếu chưa tồn tại."""
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
