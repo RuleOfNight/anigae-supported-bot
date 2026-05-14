@@ -245,20 +245,10 @@ async def in_raid_lobby(embed_title, embed_description, embed_footer): #TODO che
                     observed_rate = prev["observed_rate"]
         debug_observed_rate = observed_rate
 
-        # Primary: observed rate (requires ≥3 attacks for reliable data)
-        # Fallback: regen-based estimate
-        if observed_rate and total_attacks >= 3 and attacks_needed > 0:
-            remaining_minutes = attacks_needed / observed_rate
-            end_time_str = await definitions.convert_to_hours_minutes(int(remaining_minutes))
-            unix_end_code = f"[<t:{int(now + remaining_minutes * 60)}:T>]"
-            estimate_source = ""
-        else:
-            end_time_str, unix_end_code = await definitions.calculate_end_time(attacks_needed, total_energy,
-                                                                               current_player_match.group(1),
-                                                                               count_afk_player)
-            estimate_source = " (early est.)"
-        debug_end_time_str = end_time_str
-        debug_unix_end_code = unix_end_code
+        # Regen estimate: always computed from energy regen formula
+        debug_end_time_str, debug_unix_end_code = await definitions.calculate_end_time(
+            attacks_needed, total_energy, current_player_match.group(1), count_afk_player)
+
 
         excluding_afk = ""
         if count_afk_player > 0:

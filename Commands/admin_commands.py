@@ -15,7 +15,7 @@ from Commands import user_commands_prefix_definition
 
 LOG_FILE = "data/command_log.txt"  # Log các lệnh guide để phát hiện chỉnh sửa độc hại
 admins = (703335523925753903,)      # Danh sách admin
-raid_guide_editors = ()             # Danh sách người có quyền sửa guide
+raid_guide_editors = (703335523925753903,)             # Danh sách người có quyền sửa guide
 
 
 class AdminCommands(commands.Cog):
