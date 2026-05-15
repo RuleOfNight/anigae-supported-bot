@@ -155,11 +155,37 @@ _RAID_AFK_MESSAGES = [
 async def check_raid_afk():
     import time as _time
     now = _time.time()
-    threshold = 30 * 60
-    raid_timeout = 90 * 60
-    expired = [gid for gid, t in list(runtime.active_raid_guilds.items()) if now - t > raid_timeout]
-    for gid in expired:
+    afk_threshold  = 35 * 60   # ping sau 35 phút không dùng .rd bt
+    tracker_ttl    = 3 * 60 * 60  # xóa khỏi tracker sau 3 giờ (raid đã xong)
+    ping_cooldown  = 35 * 60   # không ping lại cùng 1 người trong vòng 35 phút
+    raid_timeout   = 90 * 60   # xóa guild khỏi active_raid sau 90 phút không thấy embed
+
+    # Dọn guild raid hết hạn
+    for gid in [g for g, t in list(runtime.active_raid_guilds.items()) if now - t > raid_timeout]:
         del runtime.active_raid_guilds[gid]
+
+    # Dọn user tracker hết hạn
+    for uid in [u for u, t in list(runtime.raid_battle_tracker.items()) if now - t > tracker_ttl]:
+        del runtime.raid_battle_tracker[uid]
+        runtime.raid_afk_pinged.pop(uid, None)
+
+    if not runtime.active_raid_guilds:
+        return
+
+    # Tìm user đã dùng .rd bt nhưng không đánh lại trong 35 phút và chưa bị ping gần đây
+    candidates = [
+        uid for uid, t in runtime.raid_battle_tracker.items()
+        if now - t > afk_threshold
+        and now - runtime.raid_afk_pinged.get(uid, 0) > ping_cooldown
+    ]
+    if not candidates:
+        return
+
+    # Lọc những user đã opt-in
+    opted_in = await players.get_opted_in_discord_ids(candidates)
+    if not opted_in:
+        return
+
     for guild_id in list(runtime.active_raid_guilds.keys()):
         channel_id = await guilds.get_raid_afk_ping_channel(guild_id)
         if not channel_id:
@@ -167,13 +193,15 @@ async def check_raid_afk():
         channel = bot.get_channel(channel_id)
         if not channel:
             continue
-        player_ids = await players.get_players_for_raid_afk_ping(now - threshold)
-        if not player_ids:
-            continue
         guild_obj = bot.get_guild(guild_id)
         if not guild_obj:
             continue
-        mentions = [m.mention for pid in player_ids if (m := guild_obj.get_member(pid))]
+        mentions = []
+        for uid in opted_in:
+            member = guild_obj.get_member(uid)
+            if member:
+                mentions.append(member.mention)
+                runtime.raid_afk_pinged[uid] = now  # ghi nhận đã ping
         if mentions:
             msg = random.choice(_RAID_AFK_MESSAGES)
             await channel.send(f"⚔️ {' '.join(mentions)}\n{msg}")
@@ -370,6 +398,12 @@ async def on_message(message):
                 await bot.process_commands(message)
         else:
             await bot.process_commands(message)
+    elif re.match(r'^\.rd\s+bt(\s+(all|max|\d+))?$', message.content.strip(), re.IGNORECASE):
+        # Ghi nhận lần đánh raid — dùng để check AFK sau 35 phút
+        import time as _time
+        runtime.raid_battle_tracker[message.author.id] = _time.time()
+        runtime.raid_afk_pinged.pop(message.author.id, None)  # reset trạng thái ping
+        await bot.process_commands(message)
     elif keyword_raid_lobby_9 in message.content:
         delete_value = await players.get_raid_search_history_delete_for_players_by_player_id(message.author.id, message.author.name)
         if delete_value == "yes":

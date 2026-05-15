@@ -315,6 +315,18 @@ async def get_players_for_raid_afk_ping(last_attack_before: float) -> list:
     return [doc["discord_id"] async for doc in cursor]
 
 
+async def get_opted_in_discord_ids(user_ids: list) -> list:
+    """Lọc danh sách user_id, chỉ trả về những id có raid_afk_ping=yes."""
+    if not user_ids:
+        return []
+    players_collection = get_players_collection()
+    cursor = players_collection.find(
+        {"discord_id": {"$in": user_ids}, "raid_afk_ping": "yes"},
+        {"discord_id": 1},
+    )
+    return [doc["discord_id"] async for doc in cursor]
+
+
 async def update_player_premium_days_left_by_discord_id(discord_id, premium_days_left):
     players_collection = get_players_collection()
     await players_collection.update_one({"discord_id": discord_id}, {"$set": {"premium_days_left": premium_days_left}})
