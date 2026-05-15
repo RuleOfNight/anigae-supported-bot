@@ -1,0 +1,8 @@
+.git
+.env
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+data/command_log.txt
+gif_converter
