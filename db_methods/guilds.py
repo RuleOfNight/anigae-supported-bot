@@ -159,6 +159,19 @@ async def get_donations_per_guild(member, min_timestamp):
     return results
 
 
+async def get_member_game_name_by_discord_id(discord_id) -> str | None:
+    """Trả về AniGame username của member có discord_id khớp, hoặc None."""
+    guilds_collection = get_guilds_collection()
+    pipeline = [
+        {"$unwind": "$guild_member"},
+        {"$match": {"guild_member.guild_member_id": discord_id}},
+        {"$project": {"_id": 0, "name": "$guild_member.guild_member_name"}},
+        {"$limit": 1},
+    ]
+    result = await guilds_collection.aggregate(pipeline).to_list(length=1)
+    return result[0]["name"] if result else None
+
+
 async def get_recent_donations_with_id_by_member_and_guild(guild_id, member):
     guilds_collection = get_guilds_collection()
     pipeline = [{"$match": {"guild_id": guild_id}},

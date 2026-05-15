@@ -386,23 +386,23 @@ async def on_message(message):
                     else:
                         await bot.process_commands(message)
                     await bot.process_commands(message)
+                elif keyword_16 in embed_description:
+                    # Xác nhận .rd bt: embed "Summoner USERNAME, you have dealt:"
+                    import time as _time
+                    username_match = re.search(r"Summoner (\S+),", embed_description)
+                    if username_match:
+                        username = username_match.group(1)
+                        for uid, data in list(runtime.raid_bt_pending.items()):
+                            if data.get("game_name") == username:
+                                del runtime.raid_bt_pending[uid]
+                                runtime.raid_battle_tracker[uid] = _time.time()
+                                runtime.raid_afk_pinged.pop(uid, None)
+                                break
+                    await bot.process_commands(message)
                 elif keyword_12 in embed_description:
                     await user_commands_on_message.clan_donation_tracker(embed_description, message)
                 else:
                     await bot.process_commands(message)
-            elif keyword_16 in message.content:
-                # Xác nhận .rd bt: "Summoner USERNAME, you have dealt:"
-                import time as _time
-                username_match = re.search(r"Summoner (\S+),", message.content)
-                if username_match:
-                    username = username_match.group(1)
-                    from db_methods import weekly_donations as _wd
-                    discord_id = await _wd.get_discord_id_by_player_name(username)
-                    if discord_id and discord_id in runtime.raid_bt_pending:
-                        del runtime.raid_bt_pending[discord_id]
-                        runtime.raid_battle_tracker[discord_id] = _time.time()
-                        runtime.raid_afk_pinged.pop(discord_id, None)
-                await bot.process_commands(message)
             elif keyword_10_1 in message.content:
                 if keyword_10_2 in message.content or keyword_10_3 in message.content:
                     player_name, embed_text = await user_commands_on_message.player_gold_and_rubies_command(message)
@@ -441,10 +441,12 @@ async def on_message(message):
         # Bắt đầu đếm 35 phút AFK ngay từ lúc gõ lệnh
         runtime.raid_battle_tracker[message.author.id] = _now
         runtime.raid_afk_pinged.pop(message.author.id, None)
-        # Đồng thời chờ xác nhận trong 6 phút
+        # Lưu game name để match với confirm embed (không cần DB lookup lúc confirm)
+        game_name = await guilds.get_member_game_name_by_discord_id(message.author.id)
         runtime.raid_bt_pending[message.author.id] = {
             "timestamp":  _now,
             "channel_id": message.channel.id,
+            "game_name":  game_name,
         }
         await bot.process_commands(message)
     elif keyword_raid_lobby_9 in message.content:
