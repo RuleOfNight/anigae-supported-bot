@@ -5,6 +5,7 @@ from Commands.v2.card_info_instance import v2_card_info_instance
 from Commands.v2.pack_opening import v2_pack_opening
 from Commands.v2.market import v2_global_market_update
 from Commands.v2.card_select import v2_card_select
+from Commands.v2.inventory import v2_inventory_mset
 
 
 async def discord_components_v2(message, trigger: str):
@@ -24,6 +25,7 @@ async def discord_components_v2(message, trigger: str):
                 await message.add_reaction("🛒")
             except Exception:
                 pass
+            await v2_inventory_mset(message)
         # .info — dùng get_all_component_text vì text có thể nằm ở nhiều level
         _full_text = get_all_component_text(message)
         if "Skin Equipped:" in _full_text and "Card ID:" in _full_text:
@@ -32,3 +34,5 @@ async def discord_components_v2(message, trigger: str):
     elif trigger == "on_edit":
         if find_text_in_components(message, "Pack Opened!"):
             await v2_pack_opening(message)
+        if find_text_in_components(message, "All the cards in your inventory are shown below!"):
+            await v2_inventory_mset(message)

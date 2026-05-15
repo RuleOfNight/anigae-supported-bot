@@ -176,6 +176,32 @@ def extract_inventory_id(option: discord.SelectOption) -> str:
     return m.group(1) if m else None
 
 
+def _get_card_ids_from_select(message) -> list[str]:
+    """Trích xuất danh sách inventory ID từ SelectOption của inventory message."""
+    for component in message.components:
+        for child in component.children:
+            if hasattr(child, "children"):
+                for sub in child.children:
+                    if sub.type == ComponentType.select:
+                        ids = []
+                        for o in sub.options:
+                            card_id = extract_inventory_id(o)
+                            if card_id:
+                                ids.append(card_id)
+                        if ids:
+                            return ids
+    return []
+
+
+async def v2_inventory_mset(message):
+    """Đọc inventory message từ AniGame bot, reply lệnh .mset với các card ID hiển thị."""
+    card_ids = _get_card_ids_from_select(message)
+    if not card_ids:
+        return
+    ids_str = ", ".join(card_ids)
+    await message.reply(f"`.mset {ids_str}`", mention_author=False)
+
+
 def build_evo_commands(card_ids: list[str]) -> list[str]:
     """Tạo chuỗi lệnh soulenh + evo tối ưu cho 2 hoặc 4 card."""
     ids = sorted(card_ids, key=int)
