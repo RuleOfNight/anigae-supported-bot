@@ -2,7 +2,7 @@
 from discord import MediaGalleryItem, ui
 from discord.ext import commands
 from discord.ui import View, Button, MediaGallery, Thumbnail, Select
-from db_methods import players, guilds
+from db_methods import players, guilds, channel_donations
 import json
 import os
 import asyncio
@@ -643,4 +643,81 @@ class NoIDCheckLayoutView(discord.ui.LayoutView):
             members_text = " ; ".join(f"`{member}`" for member in self.guild_members)
             container.add_item(ui.TextDisplay(members_text))
         return container
+
+
+class ChannelDonationStatsView(discord.ui.LayoutView):
+    """
+    Embed thống kê donate kênh 50k với 2 chế độ: tháng này và all-time.
+    Người dùng toggle giữa 2 chế độ qua button.
+    """
+
+    def __init__(self, channel_id: int, stats: list[dict], mode: str = "monthly", *, timeout=300):
+        """
+        Parameters
+        ----------
+        channel_id : ID của kênh donate 50k
+        stats      : List các record từ channel_donations.get_channel_stats()
+        mode       : "monthly" hoặc "alltime"
+        """
+        super().__init__(timeout=timeout)
+        self.channel_id = channel_id
+        self.stats = stats
+        self.mode = mode
+        self.container = self._build_container()
+        self.add_item(self.container)
+
+    def _build_container(self) -> ui.Container:
+        container = ui.Container()
+
+        if self.mode == "monthly":
+            title = "## 📅 Donate tháng này"
+            sorted_stats = sorted(self.stats, key=lambda d: d["monthly_count"], reverse=True)
+            total = sum(d["monthly_count"] for d in sorted_stats)
+            count_key = "monthly_count"
+        else:
+            title = "## 🏆 Donate all-time"
+            sorted_stats = sorted(self.stats, key=lambda d: d["alltime_count"], reverse=True)
+            total = sum(d["alltime_count"] for d in sorted_stats)
+            count_key = "alltime_count"
+
+        container.add_item(ui.TextDisplay(title))
+        container.add_item(ui.Separator())
+
+        if not sorted_stats:
+            container.add_item(ui.TextDisplay("*Chưa có dữ liệu.*"))
+        else:
+            lines = []
+            for i, doc in enumerate(sorted_stats, start=1):
+                ping = f"<@{doc['discord_id']}>" if doc.get("discord_id") else f"`{doc['player_name']}`"
+                lines.append(f"`#{i:>2}` {ping} — **{doc[count_key]} lần**")
+            container.add_item(ui.TextDisplay("\n".join(lines)))
+
+        container.add_item(ui.Separator())
+        container.add_item(ui.TextDisplay(f"**Tổng kênh: {total} lần**"))
+
+        # Toggle buttons
+        btn_monthly = ui.Button(
+            label="📅 Tháng này",
+            style=discord.ButtonStyle.primary if self.mode == "monthly" else discord.ButtonStyle.secondary,
+        )
+        btn_monthly.callback = self._switch_monthly
+
+        btn_alltime = ui.Button(
+            label="🏆 All-time",
+            style=discord.ButtonStyle.primary if self.mode == "alltime" else discord.ButtonStyle.secondary,
+        )
+        btn_alltime.callback = self._switch_alltime
+
+        container.add_item(ui.ActionRow(btn_monthly, btn_alltime))
+        return container
+
+    async def _switch_monthly(self, interaction: discord.Interaction):
+        """Chuyển sang chế độ xem tháng này."""
+        new_view = ChannelDonationStatsView(self.channel_id, self.stats, mode="monthly")
+        await interaction.response.edit_message(view=new_view)
+
+    async def _switch_alltime(self, interaction: discord.Interaction):
+        """Chuyển sang chế độ xem all-time."""
+        new_view = ChannelDonationStatsView(self.channel_id, self.stats, mode="alltime")
+        await interaction.response.edit_message(view=new_view)
 

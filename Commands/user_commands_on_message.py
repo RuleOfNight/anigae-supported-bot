@@ -11,7 +11,7 @@ import time
 import discord
 from discord.ui import View, Button
 from Commands import definitions, user_commands_slash_definition_v2
-from db_methods import cards, players, guilds, weekly_donations
+from db_methods import cards, players, guilds, weekly_donations, channel_donations
 
 # In-memory tracker: raid_code → {last_time, last_attacks, observed_rate}
 raid_tracker: dict = {}
@@ -31,8 +31,9 @@ common_emote_1     = "<:c_common:1378150629545082941>"
 ascension_emote    = "<:RedStar:1503299407720747119>"
 
 # ─── Constants ────────────────────────────────────────────────────────────────
-WEEKLY_DONATION_CHANNEL_ID = 925618781777199114
-WEEKLY_DONATION_AMOUNT     = 100_000
+WEEKLY_DONATION_CHANNEL_ID  = 925618781777199114
+WEEKLY_DONATION_AMOUNT      = 100_000
+MONTHLY_DONATION_CHANNEL_ID = 0  # TODO: điền channel ID kênh donate 50k
 
 _RARITY_SCALING: dict[str, float] = {
     "Common":     1.2,
@@ -604,27 +605,48 @@ async def clan_donation_tracker(embed_description: str, message) -> None:
             view=error_view,
         )
 
-    # Weekly donation tracking — only in the designated channel
-    if message.channel.id != WEEKLY_DONATION_CHANNEL_ID:
-        return
-    if donate_amount == 50_000 or donate_amount % WEEKLY_DONATION_AMOUNT != 0:
-        return
+    # ── Weekly donation tracking (kênh 1) ────────────────────────────────────
+    if message.channel.id == WEEKLY_DONATION_CHANNEL_ID:
+        if donate_amount != 50_000 and donate_amount % WEEKLY_DONATION_AMOUNT == 0:
+            weeks = donate_amount // WEEKLY_DONATION_AMOUNT
+            try:
+                discord_id  = await weekly_donations.get_discord_id_by_player_name(player_name)
+                total_weeks = await weekly_donations.create_or_update_tracking(
+                    player_name, discord_id, message.channel.id, weeks
+                )
+                await message.add_reaction("✅")
+                ping_text = f"<@{discord_id}>" if discord_id else f"**{player_name}**"
+                await message.reply(
+                    f"✅ Ghi nhận **{donate_amount:,}** gold ({weeks} tuần) cho {ping_text}. "
+                    f"Tổng: **{total_weeks} tuần** — sẽ được nhắc sau {total_weeks} tuần.",
+                    mention_author=False,
+                )
+            except Exception as e:
+                print(f"[WEEKLY DONATION] Error tracking {player_name}: {e}")
 
-    weeks = donate_amount // WEEKLY_DONATION_AMOUNT
-    try:
-        discord_id  = await weekly_donations.get_discord_id_by_player_name(player_name)
-        total_weeks = await weekly_donations.create_or_update_tracking(
-            player_name, discord_id, message.channel.id, weeks
-        )
-        await message.add_reaction("✅")
-        ping_text = f"<@{discord_id}>" if discord_id else f"**{player_name}**"
-        await message.reply(
-            f"✅ Ghi nhận **{donate_amount:,}** gold ({weeks} tuần) cho {ping_text}. "
-            f"Tổng: **{total_weeks} tuần** — sẽ được nhắc sau {total_weeks} tuần.",
-            mention_author=False,
-        )
-    except Exception as e:
-        print(f"[WEEKLY DONATION] Error tracking {player_name}: {e}")
+    # ── Monthly 50k donation tracking (kênh 2) ───────────────────────────────
+    # Chấp nhận bội số của 50k: 50k=1 lần, 100k=2 lần, v.v.
+    if message.channel.id == MONTHLY_DONATION_CHANNEL_ID and donate_amount % 50_000 == 0:
+        times = donate_amount // 50_000
+        try:
+            discord_id = await weekly_donations.get_discord_id_by_player_name(player_name)
+            monthly, alltime = await channel_donations.record_donation(
+                MONTHLY_DONATION_CHANNEL_ID, player_name, discord_id, count=times
+            )
+            monthly_total, alltime_total = await channel_donations.get_channel_totals(
+                MONTHLY_DONATION_CHANNEL_ID
+            )
+            ping_text = f"<@{discord_id}>" if discord_id else f"**{player_name}**"
+            times_label = f"{times} lần ({donate_amount:,} gold)" if times > 1 else f"1 lần"
+            await message.add_reaction("✅")
+            await message.reply(
+                f"✅ Ghi nhận {times_label} cho {ping_text}\n"
+                f"Tháng này: **{monthly} lần** | All-time: **{alltime} lần**\n"
+                f"Tổng kênh tháng này: **{monthly_total}** | All-time: **{alltime_total}**",
+                mention_author=False,
+            )
+        except Exception as e:
+            print(f"[CHANNEL DONATION] Error tracking {player_name}: {e}")
 
 
 async def profile_tracker(embed_fields, embed_footer: str) -> None:

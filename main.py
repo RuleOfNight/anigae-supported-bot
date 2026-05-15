@@ -89,6 +89,12 @@ async def reaction_add_listener(payload):
 async def monthly_guild():
     await guilds.update_donations_monthly_automated()
 
+async def monthly_channel_donations():
+    from db_methods import channel_donations
+    from Commands.user_commands_on_message import MONTHLY_DONATION_CHANNEL_ID
+    if MONTHLY_DONATION_CHANNEL_ID != 0:
+        await channel_donations.reset_monthly(MONTHLY_DONATION_CHANNEL_ID)
+
 async def weekly_guild():
     await guilds.update_donations_weekly_automated()
 
@@ -159,6 +165,7 @@ async def on_ready():
     bot.add_listener(reaction_add_listener, "on_raw_reaction_add")
     if not scheduler.running:
         scheduler.add_job(monthly_guild, CronTrigger(day=1, hour=1, minute=0, timezone=utc), id="monthly_guild")
+        scheduler.add_job(monthly_channel_donations, CronTrigger(day=1, hour=1, minute=0, timezone=utc), id="monthly_channel_donations")
         scheduler.add_job(weekly_guild, CronTrigger(day_of_week=0, hour=1, minute=0, timezone=utc), id="weekly_guild")
         scheduler.add_job(daily_update, CronTrigger(hour=1, minute=0, timezone=utc), id="daily_update")
         scheduler.add_job(check_raid_afk, "interval", minutes=10, id="check_raid_afk")

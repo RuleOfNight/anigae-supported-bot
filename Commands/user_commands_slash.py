@@ -6,7 +6,8 @@ import os
 import runtime
 from discord import app_commands
 from discord.ext import commands
-from db_methods import cards, guilds, players
+from db_methods import cards, guilds, players, channel_donations
+from Commands.user_commands_on_message import MONTHLY_DONATION_CHANNEL_ID
 from Commands import definitions, user_commands_prefix_definition, user_commands_slash_definition_v2, help_def_v2, user_commands_slash_definiton_embed
 from misc import time_calculations
 from Commands.user_commands_prefix import ViewDeleteButtonPrefix
@@ -733,6 +734,19 @@ class UserCommandsSlash(commands.Cog):
             await interaction.response.send_message(f"No changes to the advanced donation were made.")
         else:
             await interaction.response.send_message(f"An error occurred while trying to change the advanced donation.")
+
+    @donation.command(name="channel_stats", description="Xem thống kê donate kênh 50k (tháng này / all-time)")
+    async def donation_channel_stats(self, interaction: discord.Interaction):
+        if MONTHLY_DONATION_CHANNEL_ID == 0:
+            await interaction.response.send_message("Kênh donate 50k chưa được cấu hình.", ephemeral=True)
+            return
+        stats = await channel_donations.get_channel_stats(MONTHLY_DONATION_CHANNEL_ID)
+        view = user_commands_slash_definition_v2.ChannelDonationStatsView(
+            channel_id=MONTHLY_DONATION_CHANNEL_ID,
+            stats=stats,
+            mode="monthly",
+        )
+        await interaction.response.send_message(view=view)
 
     @threshold.command(name="add", description="add a member to the threshold list")
     @app_commands.checks.has_permissions(administrator=True)
