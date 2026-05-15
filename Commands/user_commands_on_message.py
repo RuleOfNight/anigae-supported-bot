@@ -33,7 +33,7 @@ ascension_emote    = "<:RedStar:1503299407720747119>"
 # ─── Constants ────────────────────────────────────────────────────────────────
 WEEKLY_DONATION_CHANNEL_ID  = 925618781777199114
 WEEKLY_DONATION_AMOUNT      = 100_000
-MONTHLY_DONATION_CHANNEL_ID = 0  # TODO: điền channel ID kênh donate 50k
+MONTHLY_DONATION_CHANNEL_ID = 1504949108664700998
 
 _RARITY_SCALING: dict[str, float] = {
     "Common":     1.2,
@@ -637,7 +637,7 @@ async def clan_donation_tracker(embed_description: str, message) -> None:
                 MONTHLY_DONATION_CHANNEL_ID
             )
             ping_text = f"<@{discord_id}>" if discord_id else f"**{player_name}**"
-            times_label = f"{times} lần ({donate_amount:,} gold)" if times > 1 else f"1 lần"
+            times_label = f"{times} lần ({donate_amount:,} gold)" if times > 1 else "1 lần"
             await message.add_reaction("✅")
             await message.reply(
                 f"✅ Ghi nhận {times_label} cho {ping_text}\n"
