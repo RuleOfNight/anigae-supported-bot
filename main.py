@@ -61,6 +61,7 @@ keyword_12 = "to your clan, and received"
 keyword_13 = "Summoner ID:"
 keyword_14 = "Raid Pass(es)"
 keyword_15 = "EXP"
+keyword_16 = "you have dealt:"  # xác nhận .rd bt hoàn thành
 
 
 @bot.command()
@@ -152,6 +153,29 @@ _RAID_AFK_MESSAGES = [
 ]
 
 
+async def check_raid_bt_pending():
+    """Ping user nếu dùng .rd bt nhưng không confirm trong 6 phút."""
+    import time as _time
+    now = _time.time()
+    confirm_timeout = 6 * 60
+
+    expired = {
+        uid: data for uid, data in list(runtime.raid_bt_pending.items())
+        if now - data["timestamp"] > confirm_timeout
+    }
+    for uid, data in expired.items():
+        del runtime.raid_bt_pending[uid]
+        channel = bot.get_channel(data["channel_id"])
+        if not channel:
+            continue
+        member = channel.guild.get_member(uid) if channel.guild else None
+        mention = member.mention if member else f"<@{uid}>"
+        await channel.send(
+            f"⚔️ {mention} Bạn chưa confirm .rd bt! Ấn nút xác nhận để đánh raid nhé.",
+            delete_after=120,
+        )
+
+
 async def check_raid_afk():
     import time as _time
     now = _time.time()
@@ -225,6 +249,7 @@ async def on_ready():
         scheduler.add_job(weekly_guild, CronTrigger(day_of_week=0, hour=1, minute=0, timezone=utc), id="weekly_guild")
         scheduler.add_job(daily_update, CronTrigger(hour=1, minute=0, timezone=utc), id="daily_update")
         scheduler.add_job(check_raid_afk, "interval", minutes=10, id="check_raid_afk")
+        scheduler.add_job(check_raid_bt_pending, "interval", minutes=3, id="check_raid_bt_pending")
         scheduler.start()
         print("[GUILD SCHEDULER] Guild scheduler has been started successfully.")
         print(f"[GUILD SCHEDULER] Jobs: {scheduler.get_jobs()}")
@@ -366,6 +391,19 @@ async def on_message(message):
                     await user_commands_on_message.clan_donation_tracker(embed_description, message)
                 else:
                     await bot.process_commands(message)
+            elif keyword_16 in message.content:
+                # Xác nhận .rd bt: "Summoner USERNAME, you have dealt:"
+                import time as _time
+                username_match = re.search(r"Summoner (\S+),", message.content)
+                if username_match:
+                    username = username_match.group(1)
+                    from db_methods import weekly_donations as _wd
+                    discord_id = await _wd.get_discord_id_by_player_name(username)
+                    if discord_id and discord_id in runtime.raid_bt_pending:
+                        del runtime.raid_bt_pending[discord_id]
+                        runtime.raid_battle_tracker[discord_id] = _time.time()
+                        runtime.raid_afk_pinged.pop(discord_id, None)
+                await bot.process_commands(message)
             elif keyword_10_1 in message.content:
                 if keyword_10_2 in message.content or keyword_10_3 in message.content:
                     player_name, embed_text = await user_commands_on_message.player_gold_and_rubies_command(message)
@@ -399,10 +437,12 @@ async def on_message(message):
         else:
             await bot.process_commands(message)
     elif re.match(r'^\.rd\s+bt(\s+(all|max|\d+))?$', message.content.strip(), re.IGNORECASE):
-        # Ghi nhận lần đánh raid — dùng để check AFK sau 35 phút
+        # Ghi nhận lệnh .rd bt — chờ xác nhận từ AniGame bot trong 6 phút
         import time as _time
-        runtime.raid_battle_tracker[message.author.id] = _time.time()
-        runtime.raid_afk_pinged.pop(message.author.id, None)  # reset trạng thái ping
+        runtime.raid_bt_pending[message.author.id] = {
+            "timestamp":  _time.time(),
+            "channel_id": message.channel.id,
+        }
         await bot.process_commands(message)
     elif keyword_raid_lobby_9 in message.content:
         delete_value = await players.get_raid_search_history_delete_for_players_by_player_id(message.author.id, message.author.name)

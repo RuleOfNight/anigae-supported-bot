@@ -3,6 +3,7 @@ db_ready = False
 active_raid_guilds: dict = {}   # {guild_id: timestamp} — set khi detect "Raid Challenge Timer"
 raid_battle_tracker: dict = {}  # {user_id: timestamp} — set khi user dùng .rd bt
 raid_afk_pinged: dict = {}      # {user_id: timestamp} — lần cuối user bị ping AFK
+raid_bt_pending: dict = {}      # {user_id: {"timestamp": float, "channel_id": int}} — chờ confirm sau .rd bt
 
 async def retrieve_data(variant):
     if variant == "prefixes":
