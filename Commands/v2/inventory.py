@@ -199,7 +199,7 @@ async def v2_inventory_mset(message):
     if not card_ids:
         return
     ids_str = ", ".join(card_ids)
-    await message.reply(f"`.mset {ids_str}`", mention_author=False)
+    await message.reply(f".mset {ids_str}", mention_author=False)
 
 
 def build_evo_commands(card_ids: list[str]) -> list[str]:
