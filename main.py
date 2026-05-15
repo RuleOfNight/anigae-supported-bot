@@ -437,10 +437,14 @@ async def on_message(message):
         else:
             await bot.process_commands(message)
     elif re.match(r'^\.rd\s+bt(\s+(all|max|\d+))?$', message.content.strip(), re.IGNORECASE):
-        # Ghi nhận lệnh .rd bt — chờ xác nhận từ AniGame bot trong 6 phút
         import time as _time
+        _now = _time.time()
+        # Bắt đầu đếm 35 phút AFK ngay từ lúc gõ lệnh
+        runtime.raid_battle_tracker[message.author.id] = _now
+        runtime.raid_afk_pinged.pop(message.author.id, None)
+        # Đồng thời chờ xác nhận trong 6 phút
         runtime.raid_bt_pending[message.author.id] = {
-            "timestamp":  _time.time(),
+            "timestamp":  _now,
             "channel_id": message.channel.id,
         }
         await bot.process_commands(message)
