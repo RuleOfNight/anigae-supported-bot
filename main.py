@@ -92,8 +92,36 @@ async def monthly_guild():
 async def monthly_channel_donations():
     from db_methods import channel_donations
     from Commands.user_commands_on_message import MONTHLY_DONATION_CHANNEL_ID
-    if MONTHLY_DONATION_CHANNEL_ID != 0:
-        await channel_donations.reset_monthly(MONTHLY_DONATION_CHANNEL_ID)
+    from datetime import datetime, timezone
+    if MONTHLY_DONATION_CHANNEL_ID == 0:
+        return
+
+    # Gửi leaderboard tháng này trước khi reset
+    channel = bot.get_channel(MONTHLY_DONATION_CHANNEL_ID)
+    if channel:
+        stats = await channel_donations.get_channel_stats(MONTHLY_DONATION_CHANNEL_ID)
+        sorted_stats = sorted(stats, key=lambda d: d["monthly_count"], reverse=True)
+        month_label = datetime.now(timezone.utc).strftime("%m/%Y")
+
+        if sorted_stats:
+            lines = []
+            for i, doc in enumerate(sorted_stats, start=1):
+                ping = f"<@{doc['discord_id']}>" if doc.get("discord_id") else f"`{doc['player_name']}`"
+                lines.append(f"`#{i:>2}` {ping} — **{doc['monthly_count']} lần**")
+            total = sum(d["monthly_count"] for d in sorted_stats)
+            description = "\n".join(lines) + f"\n\n**Tổng kênh: {total} lần**"
+        else:
+            description = "*Không có dữ liệu trong tháng này.*"
+
+        embed = discord.Embed(
+            title=f"📅 Leaderboard Donate 50k — Tháng {month_label}",
+            description=description,
+            color=0x71368A,
+        )
+        embed.set_footer(text="Reset tháng mới bắt đầu.")
+        await channel.send(embed=embed)
+
+    await channel_donations.reset_monthly(MONTHLY_DONATION_CHANNEL_ID)
 
 async def weekly_guild():
     await guilds.update_donations_weekly_automated()
