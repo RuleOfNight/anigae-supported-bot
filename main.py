@@ -171,8 +171,7 @@ async def check_raid_bt_pending():
         member = channel.guild.get_member(uid) if channel.guild else None
         mention = member.mention if member else f"<@{uid}>"
         await channel.send(
-            f"⚔️ {mention} Bạn chưa confirm .rd bt! Ấn nút xác nhận để đánh raid nhé.",
-            delete_after=120,
+            f"⚔️ {mention} Mắt mũi để đâu mà không ấn confirm raid?",
         )
 
 
