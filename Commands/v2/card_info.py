@@ -261,16 +261,13 @@ async def v2_improved_card_info(message):
     # --- Lấy / tạo dữ liệu card trong database ---
     db_card = await cards.get_cinfo_card_data_by_name(card_name)
     if not db_card:
-        if message.channel.id == 1334918305819136171:
-            floor_db = "None" if card_loc == "None" else [floor_1, floor_2, floor_3]
-            await cards.create_card_in_collection(
-                card_id, card_name, card_element, card_loc, floor_db,
-                card_hp, card_atk, card_def, card_speed,
-                card_talent_name.group(1), card_talent_description.group(1),
-                card_series, "N/A", "N/A", card_info_picture)
-            db_card = await cards.get_cinfo_card_data_by_name(card_name)
-        else:
-            return
+        floor_db = "None" if card_loc == "None" else [floor_1, floor_2, floor_3]
+        await cards.create_card_in_collection(
+            card_id, card_name, card_element, card_loc, floor_db,
+            card_hp, card_atk, card_def, card_speed,
+            card_talent_name.group(1), card_talent_description.group(1),
+            card_series, "N/A", "N/A", card_info_picture)
+        db_card = await cards.get_cinfo_card_data_by_name(card_name)
 
     if db_card[0].get("card_picture"):
         card_info_picture = db_card[0]["card_picture"]

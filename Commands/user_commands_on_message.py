@@ -30,6 +30,9 @@ async def in_raid_lobby(embed_title, embed_description, embed_footer): #TODO che
     current_player = []
     afk_player = []
     embed_description = await definitions.mask_single_underscores(embed_description)
+    embed_description = re.sub(
+        r"(Est\. Completion Time:|Current Status:|Party Avg Damage:|Avg Required Damage[^:]*:|Min\. Players Required:)[^\n]*\n?",
+        "", embed_description)
     embed_description_cleaned = embed_description.replace(",", "")
     total_energy_match = re.findall(r"Energy:\s*(\d+)/", embed_description_cleaned)
     total_damage_match = re.findall(r"Total Damage:\s*(\d+)", embed_description_cleaned)
@@ -328,6 +331,9 @@ async def in_raid_lobby(embed_title, embed_description, embed_footer): #TODO che
 async def raid_lobby_waiting_room(embed_title, embed_description, embed_footer): #TODO check it
     boss_hp = []
     embed_description = await definitions.mask_single_underscores(embed_description)
+    embed_description = re.sub(
+        r"(Est\. Completion Time:|Current Status:|Party Avg Damage:|Avg Required Damage[^:]*:|Min\. Players Required:)[^\n]*\n?",
+        "", embed_description)
     embed_description_cleaned = embed_description.replace(",", "")
     hp_pattern = r"\*\*(\d+)\s*/\s*(\d+)\*\*"
     match = re.search(hp_pattern, embed_description_cleaned)
