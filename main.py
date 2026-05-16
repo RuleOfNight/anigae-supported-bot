@@ -386,14 +386,18 @@ async def on_message(message):
                     else:
                         await bot.process_commands(message)
                     await bot.process_commands(message)
-                elif keyword_16 in embed_description:
+                elif keyword_16 in embed_description or any(keyword_16 in (f.value or "") for f in embed_fields):
                     # Xác nhận .rd bt: embed "Summoner USERNAME, you have dealt:"
                     import time as _time
-                    username_match = re.search(r"Summoner (\S+),", embed_description)
+                    full_text = embed_description + " ".join(f.value or "" for f in embed_fields)
+                    username_match = re.search(r"Summoner (\S+),", full_text)
                     if username_match:
-                        username = username_match.group(1)
+                        username = username_match.group(1).lower()
                         for uid, data in list(runtime.raid_bt_pending.items()):
-                            if data.get("game_name") == username:
+                            game_name = data.get("game_name")
+                            ch_id = data.get("channel_id")
+                            if (game_name and game_name.lower() == username) or \
+                               (not game_name and ch_id == message.channel.id):
                                 del runtime.raid_bt_pending[uid]
                                 runtime.raid_battle_tracker[uid] = _time.time()
                                 runtime.raid_afk_pinged.pop(uid, None)

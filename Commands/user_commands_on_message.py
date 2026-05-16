@@ -137,7 +137,7 @@ async def in_raid_lobby(
     # ── Strip boilerplate estimate lines from original bot ────────────────────
     embed_description = await definitions.mask_single_underscores(embed_description)
     embed_description = re.sub(
-        r"(Est\. Completion Time:|Current Status:|Party Avg\.? Damage:|Avg Required Damage[^:]*:|Min\. Players Required:|Live Raid Metrics:|Your Avg\.? Damage:)[^\n]*\n?",
+        r"[^\n]*(Est\. Completion Time:|Current Status:|Party Avg\.? Damage:|Avg Required Damage[^:]*:|Min\. Players Required:|Live Raid Metrics:|Your Avg\.? Damage:)[^\n]*\n?",
         "",
         embed_description,
     )
@@ -394,7 +394,7 @@ async def raid_lobby_waiting_room(
     # ── Clean description ─────────────────────────────────────────────────────
     embed_description = await definitions.mask_single_underscores(embed_description)
     embed_description = re.sub(
-        r"(Est\. Completion Time:|Current Status:|Party Avg\.? Damage:|Avg Required Damage[^:]*:|Min\. Players Required:|Live Raid Metrics:|Your Avg\.? Damage:)[^\n]*\n?",
+        r"[^\n]*(Est\. Completion Time:|Current Status:|Party Avg\.? Damage:|Avg Required Damage[^:]*:|Min\. Players Required:|Live Raid Metrics:|Your Avg\.? Damage:)[^\n]*\n?",
         "",
         embed_description,
     )
