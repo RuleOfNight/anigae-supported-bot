@@ -334,14 +334,14 @@ async def v2_improved_card_info(message):
     L, V = 4, 7  # label width, value width — total ~30 chars/line (mobile-safe)
     base_total = int(card_hp) + int(card_atk) + int(card_def) + int(card_speed)
     container.card_stats.content = (
-        f"```\n"
+        f"\n"
         f"{'':>{L}} {'Base':>{V}}  {'SR A4':>{V}}  {'UR A5':>{V}}\n"
         f"{'HP':<{L}} {int(card_hp):>{V},}  {sr_hp:>{V},}  {ur_hp:>{V},}\n"
         f"{'ATK':<{L}} {int(card_atk):>{V},}  {sr_atk:>{V},}  {ur_atk:>{V},}\n"
         f"{'DEF':<{L}} {int(card_def):>{V},}  {sr_def:>{V},}  {ur_def:>{V},}\n"
         f"{'SPD':<{L}} {int(card_speed):>{V},}  {sr_spd:>{V},}  {ur_spd:>{V},}\n"
         f"{'TOT':<{L}} {base_total:>{V},}  {sr_hp+sr_atk+sr_def+sr_spd:>{V},}  {ur_hp+ur_atk+ur_def+ur_spd:>{V},}\n"
-        f"```"
+        f""
     )
     container.card_talent.content = (
         f"**__SR Talent__**\n{card_talent_emote} **{card_talent_name.group(1)}:** {card_talent_text_sr}\n\n"
