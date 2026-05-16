@@ -263,8 +263,9 @@ async def in_raid_lobby(
     # ── Raid history DB update ────────────────────────────────────────────────
     history_desc = embed_description.replace("\\", "").replace(",", "")
     timer_match  = re.findall(r"<t:(\d+):R>", embed_title)
-    code_match   = re.findall(r"\|\s(\d+)\s\|", embed_footer)
+    code_match   = re.findall(r"\|\s*(\d+)\s*\|", embed_footer)
     raid_code    = code_match[0] if code_match else None
+    print(f"[RAID TRACKER] footer={embed_footer!r} | raid_code={raid_code}")
 
     boss_data_pattern = (
         r"__(?:(Uncommon|Rare|Super Rare|Ultra Rare))__\sLevel"
@@ -310,9 +311,11 @@ async def in_raid_lobby(
         # Observed attack rate from previous snapshot in raid_tracker
         if raid_code:
             prev = raid_tracker.get(raid_code)
+            print(f"[RAID TRACKER] total_attacks={total_attacks} | prev={prev}")
             if prev:
                 delta_attacks = total_attacks - prev["last_attacks"]
                 delta_minutes = (now - prev["last_time"]) / 60
+                print(f"[RAID TRACKER] delta_attacks={delta_attacks} | delta_minutes={delta_minutes:.2f}")
                 if delta_attacks > 0 and delta_minutes > 0:
                     observed_rate = delta_attacks / delta_minutes
                 elif prev.get("observed_rate"):
