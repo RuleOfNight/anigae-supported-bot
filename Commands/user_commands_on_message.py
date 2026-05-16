@@ -116,7 +116,6 @@ def _replace_hp_bar_emojis(description: str, new_hp_bar: str) -> str:
 
 async def in_raid_lobby(
     embed_title: str, embed_description: str, embed_footer: str,
-    guild_id: int | None = None,
 ) -> tuple[str, str, str]:
     """
     Augment a Raid Challenge Timer embed with enhanced stats and time estimates.
@@ -265,8 +264,7 @@ async def in_raid_lobby(
     history_desc = embed_description.replace("\\", "").replace(",", "")
     timer_match  = re.findall(r"<t:(\d+):R>", embed_title)
     code_match   = re.findall(r"\|\s(\d+)\s\|", embed_footer)
-    # guild_id is the stable key; footer code kept for DB unique_code only
-    raid_code    = guild_id if guild_id else (code_match[0] if code_match else None)
+    raid_code    = code_match[0] if code_match else None
 
     boss_data_pattern = (
         r"__(?:(Uncommon|Rare|Super Rare|Ultra Rare))__\sLevel"

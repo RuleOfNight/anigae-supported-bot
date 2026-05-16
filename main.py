@@ -342,7 +342,7 @@ async def on_message(message):
                     if keyword_raid_lobby_4 in embed_footer:
                         import time as _time
                         runtime.active_raid_guilds[message.guild.id] = _time.time()
-                        embed_title, embed_description, embed_footer = await user_commands_on_message.in_raid_lobby(embed_title, embed_description, embed_footer, message.guild.id)
+                        embed_title, embed_description, embed_footer = await user_commands_on_message.in_raid_lobby(embed_title, embed_description, embed_footer)
                         new_embed = create_embed(embed_title, embed_description, embed_footer, embed_image_url, embed_thumbnail_url)
                         view = user_commands_on_message.DeleteButtonView()
                         await message.channel.send(embed=new_embed, view=view)
