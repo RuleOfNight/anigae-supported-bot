@@ -334,6 +334,7 @@ async def v2_improved_card_info(message):
     W = 16
     base_total = int(card_hp) + int(card_atk) + int(card_def) + int(card_speed)
     container.card_stats.content = (
+        f"```\n"
         f"{'Base Stats':<{W}}{'SR A4':<{W}}UR A5\n"
         f"{'HP: '+card_hp:<{W}}{'HP: '+str(sr_hp):<{W}}HP: {ur_hp}\n"
         f"{'ATK: '+card_atk:<{W}}{'ATK: '+str(sr_atk):<{W}}ATK: {ur_atk}\n"
@@ -341,7 +342,7 @@ async def v2_improved_card_info(message):
         f"{'SPEED: '+card_speed:<{W}}{'SPEED: '+str(sr_spd):<{W}}SPEED: {ur_spd}\n"
         f"{'TOTAL: '+str(base_total):<{W}}"
         f"{'TOTAL: '+f'{sr_hp+sr_atk+sr_def+sr_spd:,}':<{W}}"
-        f"TOTAL: {ur_hp+ur_atk+ur_def+ur_spd:,}"
+        f"TOTAL: {ur_hp+ur_atk+ur_def+ur_spd:,}\n```"
     )
     container.card_talent.content = (
         f"**__SR Talent__**\n{card_talent_emote} **{card_talent_name.group(1)}:** {card_talent_text_sr}\n\n"
