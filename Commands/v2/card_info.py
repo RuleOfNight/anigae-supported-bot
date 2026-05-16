@@ -323,7 +323,6 @@ async def v2_improved_card_info(message):
     container.thumbnail.children[0].content = thumbnail_text
 
     # --- Base stats table ---
-    W = 16
     sr_hp  = ceil(int(card_hp)    * 3.5)
     sr_atk = ceil(int(card_atk)   * 3.5)
     sr_def = ceil(int(card_def)   * 3.5)
@@ -332,16 +331,17 @@ async def v2_improved_card_info(message):
     ur_atk = ceil(int(card_atk)   * 4.2)
     ur_def = ceil(int(card_def)   * 4.2)
     ur_spd = ceil(int(card_speed) * 4.2)
+    L, V = 4, 7  # label width, value width — total ~30 chars/line (mobile-safe)
+    base_total = int(card_hp) + int(card_atk) + int(card_def) + int(card_speed)
     container.card_stats.content = (
         f"```\n"
-        f"{'Base Stats':<{W}}{'SR A4':<{W}}UR A5\n"
-        f"{'HP: '+card_hp:<{W}}{'HP: '+str(sr_hp):<{W}}HP: {ur_hp}\n"
-        f"{'ATK: '+card_atk:<{W}}{'ATK: '+str(sr_atk):<{W}}ATK: {ur_atk}\n"
-        f"{'DEF: '+card_def:<{W}}{'DEF: '+str(sr_def):<{W}}DEF: {ur_def}\n"
-        f"{'SPEED: '+card_speed:<{W}}{'SPEED: '+str(sr_spd):<{W}}SPEED: {ur_spd}\n"
-        f"{'TOTAL: '+str(int(card_hp)+int(card_atk)+int(card_def)+int(card_speed)):<{W}}"
-        f"{'TOTAL: '+f'{sr_hp+sr_atk+sr_def+sr_spd:,}':<{W}}"
-        f"TOTAL: {ur_hp+ur_atk+ur_def+ur_spd:,}\n```"
+        f"{'':>{L}} {'Base':>{V}}  {'SR A4':>{V}}  {'UR A5':>{V}}\n"
+        f"{'HP':<{L}} {int(card_hp):>{V},}  {sr_hp:>{V},}  {ur_hp:>{V},}\n"
+        f"{'ATK':<{L}} {int(card_atk):>{V},}  {sr_atk:>{V},}  {ur_atk:>{V},}\n"
+        f"{'DEF':<{L}} {int(card_def):>{V},}  {sr_def:>{V},}  {ur_def:>{V},}\n"
+        f"{'SPD':<{L}} {int(card_speed):>{V},}  {sr_spd:>{V},}  {ur_spd:>{V},}\n"
+        f"{'TOT':<{L}} {base_total:>{V},}  {sr_hp+sr_atk+sr_def+sr_spd:>{V},}  {ur_hp+ur_atk+ur_def+ur_spd:>{V},}\n"
+        f"```"
     )
     container.card_talent.content = (
         f"**__SR Talent__**\n{card_talent_emote} **{card_talent_name.group(1)}:** {card_talent_text_sr}\n\n"
