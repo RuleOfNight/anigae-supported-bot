@@ -1,5 +1,4 @@
-from db_methods.general import get_players_collection, get_misc_collection
-from bson import ObjectId
+from db_methods.general import get_players_collection
 import time
 
 # ---------------

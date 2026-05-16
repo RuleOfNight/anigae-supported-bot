@@ -2,42 +2,46 @@ import time
 from zoneinfo import ZoneInfo
 from db_methods import cards
 from datetime import datetime, timedelta, timezone
-from bson import ObjectId
-from db_methods.general import get_misc_collection
+from db_methods.general import get_config_collection
+
+_CONFIG_ID = "global"
 
 
 async def load_counter():
-    misc_information = get_misc_collection()
-    document = await misc_information.find_one({"_id": ObjectId("67ae69c3cf53d633cb1cd358")})
-    current_cl_shop_counter = int(document["clan_shop_counter"])
-    return current_cl_shop_counter
+    config = get_config_collection()
+    doc = await config.find_one({"_id": _CONFIG_ID})
+    return int(doc["clan_shop_counter"]) if doc else 0
 
 
 async def save_counter(counter):
-    misc_information = get_misc_collection()
-    update_values = {"$set": {"clan_shop_counter": f"{counter}"}}
-    await misc_information.update_one({"_id": ObjectId("67ae69c3cf53d633cb1cd358")}, update_values)
+    config = get_config_collection()
+    await config.update_one(
+        {"_id": _CONFIG_ID},
+        {"$set": {"clan_shop_counter": str(counter)}},
+        upsert=True,
+    )
 
 
 async def get_last_update_time():
-    misc_information = get_misc_collection()
-    document = await misc_information.find_one({"_id": ObjectId("67ae69c3cf53d633cb1cd358")})
-    cl_shop_last_update_timer = int(document["clan_shop_last_update_timer"])
-    return cl_shop_last_update_timer
+    config = get_config_collection()
+    doc = await config.find_one({"_id": _CONFIG_ID})
+    return int(doc["clan_shop_last_update_timer"]) if doc else None
 
 
 async def save_last_update_time():
-    misc_information = get_misc_collection()
+    config = get_config_collection()
     current_timer = int(time.time())
-    update_values = {"$set": {"clan_shop_last_update_timer": f"{current_timer}"}}
-    await misc_information.update_one({"_id": ObjectId("67ae69c3cf53d633cb1cd358")}, update_values)
+    await config.update_one(
+        {"_id": _CONFIG_ID},
+        {"$set": {"clan_shop_last_update_timer": str(current_timer)}},
+        upsert=True,
+    )
 
 
 async def get_clan_shop_start_time():
-    misc_information = get_misc_collection()
-    document = await misc_information.find_one({"_id": ObjectId("67ae69c3cf53d633cb1cd358")})
-    clan_shop_start_time = int(document["clan_shop_start_timer"])
-    return clan_shop_start_time
+    config = get_config_collection()
+    doc = await config.find_one({"_id": _CONFIG_ID})
+    return int(doc["clan_shop_start_timer"]) if doc else 0
 
 
 async def get_next_cl_shop_character():

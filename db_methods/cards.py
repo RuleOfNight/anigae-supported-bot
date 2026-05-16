@@ -1,4 +1,4 @@
-from db_methods.general import get_cards_collection, misc_collection, get_misc_collection
+from db_methods.general import get_cards_collection, get_config_collection, get_card_pictures_collection
 import time
 import re
 import json
@@ -107,11 +107,9 @@ async def get_card_market_price_sr_by_cards_name(card_name):
 
 async def get_card_data_by_series_name():
     cards_collection = get_cards_collection()
-    misc_collection = get_misc_collection()
-    _id = ObjectId("67ae69c3cf53d633cb1cd358")
-    found_misc_collection = await misc_collection.find_one({"_id": _id})
-    if found_misc_collection:
-        series_name = found_misc_collection.get("clan_shop_series", "")
+    config = get_config_collection()
+    doc = await config.find_one({"_id": "global"})
+    series_name = doc.get("clan_shop_series", "") if doc else ""
     normalized_series_name = remove_special_cases(series_name)
     regex = re.compile(re.escape(series_name), re.IGNORECASE)
     cursor = cards_collection.find({"card_series": {"$regex": regex}})
@@ -253,24 +251,25 @@ async def get_compare_data_from_cards(name_list=None, series_list=None, element_
 # ---------------
 
 async def get_custom_card_instance_picture(card_id: str, card_name: str):
-    misc = get_misc_collection()
-    doc = await misc.find_one({"type": "card_instance_picture", "card_id": card_id, "card_name": card_name})
+    col = get_card_pictures_collection()
+    doc = await col.find_one({"card_id": card_id, "card_name": card_name})
     if doc:
         return doc["picture_url"], doc.get("ascend", 0)
     return None, 0
 
 
 async def set_custom_card_instance_picture(card_id: str, card_name: str, picture_url: str, ascend: int = 0):
-    misc = get_misc_collection()
-    await misc.update_one(
-        {"type": "card_instance_picture", "card_id": card_id, "card_name": card_name},
+    col = get_card_pictures_collection()
+    await col.update_one(
+        {"card_id": card_id, "card_name": card_name},
         {"$set": {"picture_url": picture_url, "ascend": ascend}},
-        upsert=True)
+        upsert=True,
+    )
 
 
 async def remove_custom_card_instance_picture(card_id: str, card_name: str):
-    misc = get_misc_collection()
-    await misc.delete_one({"type": "card_instance_picture", "card_id": card_id, "card_name": card_name})
+    col = get_card_pictures_collection()
+    await col.delete_one({"card_id": card_id, "card_name": card_name})
 
 
 async def get_market_dex_data_from_cards(full_list=None, name_list=None, series_list=None, element_list=None, talent_list=None, rarity_list=None):

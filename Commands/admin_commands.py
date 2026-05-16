@@ -7,7 +7,6 @@ import pygsheets
 import os
 import psutil
 import runtime
-from bson import ObjectId
 from datetime import datetime, timezone
 from db_methods import general, players
 from discord.ext import commands
@@ -53,9 +52,12 @@ class AdminCommands(commands.Cog):
         """Reset timer và counter clan shop về thời điểm hiện tại."""
         if ctx.author.id in admins:
             current_timestamp = int(time.time())
-            misc_information = general.get_misc_collection()
-            update_values = {"$set": {"clan_shop_start_timer": f"{current_timestamp}", "clan_shop_counter": "0"}}
-            misc_information.update_one({"_id": ObjectId("67ae69c3cf53d633cb1cd358")}, update_values)
+            config = general.get_config_collection()
+            await config.update_one(
+                {"_id": "global"},
+                {"$set": {"clan_shop_start_timer": str(current_timestamp), "clan_shop_counter": "0"}},
+                upsert=True,
+            )
             await ctx.channel.send(f"cl shop successfully updated to: {current_timestamp}")
         else:
             await ctx.channel.send("You don't have that permission peasant.")
@@ -82,7 +84,7 @@ class AdminCommands(commands.Cog):
                 match = re.search(r"<t:(\d+):", embed_title)
                 raid_energy_timer = int(match.group(1))
                 energy_global_timer = raid_energy_timer + 12 - 21600
-                general.set_global_energy_timer(energy_global_timer)
+                await general.set_global_energy_timer(energy_global_timer)
                 await ctx.channel.send(
                     f"Timer set to: <t:{energy_global_timer}:T>\n"
                     f"from raid timer: <t:{raid_energy_timer}:T>\n"
@@ -103,11 +105,11 @@ class AdminCommands(commands.Cog):
             await ctx.channel.send("You don't have that permission peasant.")
             return
         try:
-            misc_col = general.get_misc_collection()
-            await misc_col.update_one(
-                {"_id": ObjectId("67ae69c3cf53d633cb1cd358")},
+            config = general.get_config_collection()
+            await config.update_one(
+                {"_id": "global"},
                 {"$set": {"daily_watch_timer": timer, "daily_watch_counter": counter}},
-                upsert=True
+                upsert=True,
             )
             await ctx.channel.send(
                 f"Daily watch set.\n"
