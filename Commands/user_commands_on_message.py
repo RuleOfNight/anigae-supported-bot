@@ -11,9 +11,10 @@ import time
 import discord
 from discord.ui import View, Button
 from Commands import definitions, user_commands_slash_definition_v2
-from db_methods import cards, players, guilds, weekly_donations, channel_donations
+from db_methods import cards, players, guilds, weekly_donations, channel_donations, general as general_db
 
-# In-memory tracker: raid_code → {last_time, last_attacks, observed_rate}
+# In-memory cache: raid_code → {last_time, last_attacks, observed_rate}
+# Backed by MongoDB so it survives bot restarts.
 raid_tracker: dict = {}
 
 # ─── Emotes ───────────────────────────────────────────────────────────────────
@@ -265,7 +266,6 @@ async def in_raid_lobby(
     timer_match  = re.findall(r"<t:(\d+):R>", embed_title)
     code_match   = re.findall(r"\|\s*(\d+)\s*\|", embed_footer)
     raid_code    = code_match[0] if code_match else None
-    print(f"[RAID TRACKER] footer={embed_footer!r} | raid_code={raid_code}")
 
     boss_data_pattern = (
         r"__(?:(Uncommon|Rare|Super Rare|Ultra Rare))__\sLevel"
@@ -308,14 +308,12 @@ async def in_raid_lobby(
         afk_player.extend(afk_count_match)
         count_afk = len(afk_player)
 
-        # Observed attack rate from previous snapshot in raid_tracker
+        # Observed attack rate from previous snapshot (in-memory cache → DB fallback)
         if raid_code:
-            prev = raid_tracker.get(raid_code)
-            print(f"[RAID TRACKER] total_attacks={total_attacks} | prev={prev}")
+            prev = raid_tracker.get(raid_code) or await general_db.get_raid_snapshot(raid_code)
             if prev:
                 delta_attacks = total_attacks - prev["last_attacks"]
                 delta_minutes = (now - prev["last_time"]) / 60
-                print(f"[RAID TRACKER] delta_attacks={delta_attacks} | delta_minutes={delta_minutes:.2f}")
                 if delta_attacks > 0 and delta_minutes > 0:
                     observed_rate = delta_attacks / delta_minutes
                 elif prev.get("observed_rate"):
@@ -342,11 +340,9 @@ async def in_raid_lobby(
 
     # Save current snapshot for next update's rate calculation
     if raid_code:
-        raid_tracker[raid_code] = {
-            "last_time":     now,
-            "last_attacks":  total_attacks,
-            "observed_rate": observed_rate,
-        }
+        snapshot = {"last_time": now, "last_attacks": total_attacks, "observed_rate": observed_rate}
+        raid_tracker[raid_code] = snapshot
+        await general_db.save_raid_snapshot(raid_code, snapshot)
 
     # Build estimates text block
     if total_attacks == 0:

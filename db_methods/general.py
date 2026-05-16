@@ -88,3 +88,18 @@ async def get_daily_watch_counter():
         return
     daily_watch_counter = found_misc_collection.get("daily_watch_counter", 0)
     return daily_watch_counter
+
+
+async def get_raid_snapshot(raid_code: str) -> dict | None:
+    doc = await misc_collection.find_one({"_id": f"raid_snap_{raid_code}"})
+    if not doc:
+        return None
+    return {"last_time": doc["last_time"], "last_attacks": doc["last_attacks"], "observed_rate": doc.get("observed_rate")}
+
+
+async def save_raid_snapshot(raid_code: str, data: dict):
+    await misc_collection.update_one(
+        {"_id": f"raid_snap_{raid_code}"},
+        {"$set": {**data}},
+        upsert=True,
+    )
