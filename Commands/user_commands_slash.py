@@ -825,6 +825,14 @@ class UserCommandsSlash(commands.Cog):
         await interaction.response.send_message(
             f"Raid AFK ping channel set to {channel.mention}.", ephemeral=True)
 
+    @app_commands.command(name="set_weekly_donation_channel", description="Đặt kênh nhận thông báo kiểm tra đóng tiền hàng tuần (gửi vào sáng Chủ Nhật).")
+    @app_commands.describe(channel="Kênh text để bot gửi bảng kiểm tra đóng tiền")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def set_weekly_donation_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
+        await guilds.set_weekly_donation_channel(interaction.guild.id, channel.id)
+        await interaction.response.send_message(
+            f"Kênh kiểm tra đóng tiền weekly đã được đặt thành {channel.mention}.", ephemeral=True)
+
     @threshold.command(name="limit", description="Set the SECOND threshold limit for the guild.")
     @app_commands.checks.has_permissions(administrator=True)
     async def threshold_limit(self, interaction: discord.Interaction, donation_amount: int):

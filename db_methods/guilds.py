@@ -507,3 +507,41 @@ async def set_raid_afk_ping_channel(guild_id, channel_id: int):
         {"guild_id": guild_id},
         {"$set": {"raid_afk_ping_channel": channel_id}},
         upsert=True)
+
+
+async def set_weekly_donation_channel(guild_id, channel_id: int):
+    guilds_collection = get_guilds_collection()
+    await guilds_collection.update_one(
+        {"guild_id": guild_id},
+        {"$set": {"weekly_donation_channel_id": channel_id}}
+    )
+
+
+async def get_guilds_with_weekly_channel() -> list:
+    """Trả về tất cả guild document có cấu hình weekly_donation_channel_id."""
+    guilds_collection = get_guilds_collection()
+    return await guilds_collection.find(
+        {"weekly_donation_channel_id": {"$exists": True, "$ne": None}}
+    ).to_list(length=None)
+
+
+async def get_active_members(guild_id) -> list:
+    """Trả về danh sách member chưa bị archive của guild."""
+    guilds_collection = get_guilds_collection()
+    pipeline = [
+        {"$match": {"guild_id": guild_id}},
+        {"$project": {
+            "guild_member": {"$filter": {
+                "input": "$guild_member",
+                "as": "m",
+                "cond": {"$and": [
+                    {"$not": {"$in": ["$$m.guild_member_id", {"$ifNull": ["$archived_members", []]}]}},
+                    {"$not": {"$in": ["$$m.guild_member_name", {"$ifNull": ["$archived_members", []]}]}}
+                ]}
+            }}
+        }}
+    ]
+    result = await guilds_collection.aggregate(pipeline).to_list(length=1)
+    if not result:
+        return []
+    return result[0].get("guild_member", [])

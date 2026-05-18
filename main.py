@@ -130,6 +130,50 @@ async def weekly_guild():
 async def daily_update():
     await players.decrement_all_premium_days()
 
+
+async def weekly_donation_check():
+    from db_methods import guilds as guilds_db, weekly_donations as wd
+    from misc.time_calculations import get_last_monday_berlin_time_from_current_time_in_unix
+    from datetime import datetime, timezone, timedelta
+
+    week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
+    guild_docs = await guilds_db.get_guilds_with_weekly_channel()
+
+    for guild_doc in guild_docs:
+        channel_id = guild_doc.get("weekly_donation_channel_id")
+        guild_id = guild_doc["guild_id"]
+        channel = bot.get_channel(channel_id)
+        if not channel:
+            continue
+
+        members = await guilds_db.get_active_members(guild_id)
+        if not members:
+            continue
+
+        paid_set = await wd.get_weekly_donors(channel_id, week_start)
+        paid   = [m for m in members if m["guild_member_name"] in paid_set]
+        unpaid = [m for m in members if m["guild_member_name"] not in paid_set]
+
+        lines = []
+        for m in paid:
+            ping = f"<@{m['guild_member_id']}>" if m.get("guild_member_id") else f"**{m['guild_member_name']}**"
+            lines.append(f"✅ {ping}")
+        for m in unpaid:
+            ping = f"<@{m['guild_member_id']}>" if m.get("guild_member_id") else f"**{m['guild_member_name']}**"
+            lines.append(f"❌ {ping}")
+
+        week_start_dt = datetime.fromtimestamp(week_start, tz=timezone.utc)
+        week_end_dt   = week_start_dt + timedelta(days=6)
+        week_label    = f"{week_start_dt.strftime('%d/%m')} – {week_end_dt.strftime('%d/%m')}"
+
+        msg = (
+            f"📋 **Kiểm tra đóng tiền tuần {week_label}**\n\n"
+            + "\n".join(lines)
+            + f"\n\nĐã đóng: **{len(paid)}/{len(members)}** | Chưa đóng: **{len(unpaid)}**"
+        )
+        await channel.send(msg)
+
+
 _RAID_AFK_MESSAGES = [
     "30 phút rồi chưa đánh raid, lề mề như này bao giờ có người yêu?",
     "Chết rồi hay gì mà không đánh raid?",
@@ -246,6 +290,7 @@ async def on_ready():
         scheduler.add_job(monthly_guild, CronTrigger(day=1, hour=1, minute=0, timezone=utc), id="monthly_guild")
         scheduler.add_job(monthly_channel_donations, CronTrigger(day=1, hour=1, minute=0, timezone=utc), id="monthly_channel_donations")
         scheduler.add_job(weekly_guild, CronTrigger(day_of_week=0, hour=1, minute=0, timezone=utc), id="weekly_guild")
+        scheduler.add_job(weekly_donation_check, CronTrigger(day_of_week=6, hour=0, minute=0, timezone=utc), id="weekly_donation_check")
         scheduler.add_job(daily_update, CronTrigger(hour=1, minute=0, timezone=utc), id="daily_update")
         scheduler.add_job(check_raid_afk, "interval", minutes=10, id="check_raid_afk")
         scheduler.add_job(check_raid_bt_pending, "interval", minutes=3, id="check_raid_bt_pending")
