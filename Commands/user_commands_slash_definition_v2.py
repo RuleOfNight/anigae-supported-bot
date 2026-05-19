@@ -386,7 +386,7 @@ class GuildMemberOverviewLayoutView(discord.ui.LayoutView):
             left = self._member_cell(self.members[i])
             if i + 1 < end:
                 right = self._member_cell(self.members[i + 1])
-                container.add_item(ui.TextDisplay(f"{left}\n{right}"))
+                container.add_item(ui.TextDisplay(f"{left}　　{right}"))
             else:
                 container.add_item(ui.TextDisplay(left))
             container.add_item(ui.Separator())
