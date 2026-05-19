@@ -134,7 +134,7 @@ async def element_converter_from_database(card_element_name):
 
 
 _SKILL_EMOJI_MAP = {
-    "Lucky Coin":                  "<:Lucky_Coin:1503140731873919107>",               #done
+    "Lucky Coin":                  "<:Lucky_Coin:1503397077575663877>",               #done
     "Amplifier":                   "<:AMPLIFIER:1503408066966585414> ",               #done
     "Arcane Affinity":             "<:Arcane_Affinity:1503312702100209756>",          #done
     "Balancing Strike":            "<:Balancing_Strike:1503378775889412197>",         #done
@@ -167,7 +167,7 @@ _SKILL_EMOJI_MAP = {
     "Poison":                      "<:Poison:1503396280305455144>",                   #done
     "Precision":                   "<:Precision:1503396747752374395>",                #done
     "Protector":                   "<:Protector:1503397455981576242>",                #done
-    "Recoil":                      "<:Recoil:1503151480365121730>",                   #done
+    "Recoil":                      "<:Recoil:1503397132231512106>",                   #done
     "Life Sap":                    "<:Life_Sap:1503312924410908774>",                 #done
     "Reflector":                   "<:Reflector:1503312970388869191>",                #done
     "Regeneration":                "<:Regeneration:1503140091969929446>",             #done

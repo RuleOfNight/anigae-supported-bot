@@ -6,9 +6,10 @@ from db_methods import players, guilds, channel_donations
 import json
 import os
 import asyncio
-gold_emote = "<:GOLD:1338511775448043541>"
+gold_emote = "<a:GOLD:1503359399438319716>"
 picture_caeser = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif"
-
+check = "<a:check:1504358283480137728>"
+cross = "<a:cross:1506210917250105497>"
 
 async def raid_guide_builder(boss_found, rare_string, sr_string, ur_string,
                              rarity_filter, card_element, card_talent, interaction):
@@ -215,7 +216,7 @@ async def update_builder(interaction):
     discord_name = interaction.user.name
 
     class RuleSetContainer(discord.ui.Container):
-        update_text = discord.ui.TextDisplay("<a:check:1380797984979030016> **Player has been updated.**\n"
+        update_text = discord.ui.TextDisplay(f"{check} **Player has been updated.**\n"
                                              f"Name: ``{discord_name}``\nID: ``{discord_id}``")
 
     class UpdateView(discord.ui.LayoutView):
@@ -319,11 +320,11 @@ class DeleteGuildLayoutView(discord.ui.LayoutView):
         result = await guilds.delete_guild_by_guild_id_from_guilds(self.guild_id)
         container = ui.Container()
         if result == "no guild found":
-            container.add_item(ui.TextDisplay("<a:cross:1380797973373521962> No guild found to delete."))
+            container.add_item(ui.TextDisplay(f"{cross} No guild found to delete."))
         elif result == "guild deleted":
-            container.add_item(ui.TextDisplay("<a:check:1380797984979030016> Guild deleted successfully."))
+            container.add_item(ui.TextDisplay(f"{check} Guild deleted successfully."))
         else:
-            container.add_item(ui.TextDisplay("<a:cross:1380797973373521962> An unknown error occurred."))
+            container.add_item(ui.TextDisplay(f"{cross} An unknown error occurred."))
         await interaction.response.edit_message(view=SimpleResultLayoutView(container))
 
     async def no_delete_callback(self, interaction: discord.Interaction):
@@ -331,7 +332,7 @@ class DeleteGuildLayoutView(discord.ui.LayoutView):
             await interaction.response.defer()
             return
         container = ui.Container()
-        container.add_item(ui.TextDisplay("<a:cross:1380797973373521962> Guild deletion cancelled."))
+        container.add_item(ui.TextDisplay(f"{cross} Guild deletion cancelled."))
         await interaction.response.edit_message( view=SimpleResultLayoutView(container))
 
     async def delete_button(self, interaction: discord.Interaction):
@@ -380,9 +381,9 @@ class GuildMemberOverviewLayoutView(discord.ui.LayoutView):
                 donation = member['current_period_donation']
             threshold = member.get("threshold_used", self.guild_data['guild_threshold'])
             if donation >= threshold:
-                status = "<a:check:1380797984979030016>"
+                status = f"{check}"
             else:
-                status = "<a:cross:1380797973373521962>"
+                status = f"{cross}"
             container.add_item(ui.TextDisplay(f"``{member['guild_member_name']}``"))
             container.add_item(ui.TextDisplay(f"{status} {donation:,} / {threshold:,} {gold_emote}"))
             container.add_item(ui.Separator())
@@ -507,9 +508,9 @@ class GuildDonoForUserLayoutView(discord.ui.LayoutView):
             else:
                 max_donation = guild["guild_threshold"]
             if guild['weekly_donations'] >= max_donation:
-                status = "<a:check:1380797984979030016>"
+                status = f"{check}"
             else:
-                status = "<a:cross:1380797973373521962>"
+                status = f"{cross}"
             container.add_item(ui.TextDisplay(f"__{guild['guild_name']}__"))
             container.add_item(ui.TextDisplay(f"Overall Donations: {guild['total_donations']:,} {gold_emote}"))
             container.add_item(ui.TextDisplay(f"This Week: {status} {guild['weekly_donations']:,} {gold_emote} / {max_donation:,} {gold_emote}"))
@@ -567,9 +568,9 @@ class DonationResultLayoutView(discord.ui.LayoutView):
         container.add_item(ui.Separator())
         if self.guild_names:
             guilds_text = ", ".join(f"``{g}``" for g in self.guild_names) or "None"
-            container.add_item(ui.TextDisplay(f"<a:check:1380797984979030016> updated donations for guilds:\n{guilds_text}"))
+            container.add_item(ui.TextDisplay(f"{check} updated donations for guilds:\n{guilds_text}"))
         else:
-            container.add_item(ui.TextDisplay("<a:cross:1380797973373521962> No guilds found for this player. Donation was not added."))
+            container.add_item(ui.TextDisplay(f"{cross} No guilds found for this player. Donation was not added."))
         return container
 
 
@@ -603,13 +604,13 @@ class RemoveGuildMemberLayoutView(discord.ui.LayoutView):
         result = await guilds.remove_guild_member(self.guild_id, self.guild_member)
         container = ui.Container()
         if result == "no guild found":
-            container.add_item(ui.TextDisplay("<a:cross:1380797973373521962> No guild found. Please create one first."))
+            container.add_item(ui.TextDisplay(f"{cross} No guild found. Please create one first."))
         elif result == "member not found":
-            container.add_item(ui.TextDisplay("<a:cross:1380797973373521962> Member not found. Please check the name."))
+            container.add_item(ui.TextDisplay(f"{cross} Member not found. Please check the name."))
         elif result == "removed":
-            container.add_item(ui.TextDisplay(f"<a:check:1380797984979030016> `{self.guild_member.name}` was removed successfully."))
+            container.add_item(ui.TextDisplay(f"{check} `{self.guild_member.name}` was removed successfully."))
         else:
-            container.add_item(ui.TextDisplay("<a:cross:1380797973373521962> An unknown error occurred."))
+            container.add_item(ui.TextDisplay(f"{cross} An unknown error occurred."))
         await interaction.response.edit_message(view=SimpleResultLayoutView(container))
 
     async def no_callback(self, interaction: discord.Interaction):
@@ -617,7 +618,7 @@ class RemoveGuildMemberLayoutView(discord.ui.LayoutView):
             await interaction.response.defer()
             return
         container = ui.Container()
-        container.add_item(ui.TextDisplay("<a:cross:1380797973373521962> Member removal cancelled."))
+        container.add_item(ui.TextDisplay(f"{cross} Member removal cancelled."))
         await interaction.response.edit_message(view=SimpleResultLayoutView(container))
 
     async def delete_button(self, interaction: discord.Interaction):
@@ -638,7 +639,7 @@ class NoIDCheckLayoutView(discord.ui.LayoutView):
         container = ui.Container()
         container.add_item(ui.TextDisplay("## 🔍 Members without Discord ID"))
         if not self.guild_members:
-            container.add_item(ui.TextDisplay("<a:check:1380797984979030016> All members are up to date."))
+            container.add_item(ui.TextDisplay(f"{check} All members are up to date."))
         else:
             members_text = " ; ".join(f"`{member}`" for member in self.guild_members)
             container.add_item(ui.TextDisplay(members_text))
