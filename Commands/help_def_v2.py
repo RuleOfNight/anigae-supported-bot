@@ -1586,12 +1586,7 @@ async def help_v2(ctx, slash=None):
                                            "- add reactions\n"
                                            "- manage messages\n"
                                            "- read message history")
-        sep2 = discord.ui.Separator()
-        qoi_text = discord.ui.TextDisplay("On questions or inquiries please join either the official server or dm the developer.")
-        button_rows2 = discord.ui.ActionRow(discord.ui.Button(url=f"{official_server}", label="Official Server", style=discord.ButtonStyle.primary),
-                                            discord.ui.Button(url=f"{bot_invite}", label=f"Invite Bot", style=discord.ButtonStyle.primary),
-                                            discord.ui.Button(url=f"{dev_profile}", label="Dev Profile", style=discord.ButtonStyle.primary),
-                                            discord.ui.Button(label="🗑️", style=discord.ButtonStyle.danger, custom_id="delete"))
+        button_rows2 = discord.ui.ActionRow(discord.ui.Button(label="🗑️", style=discord.ButtonStyle.danger, custom_id="delete"))
 
     class PrefixContainer(discord.ui.Container):
         header = discord.ui.TextDisplay("# All Prefix Commands\n"
