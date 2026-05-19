@@ -4,6 +4,7 @@ active_raid_guilds: dict = {}   # {guild_id: timestamp} — set khi detect "Raid
 raid_battle_tracker: dict = {}  # {user_id: timestamp} — set khi user dùng .rd bt
 raid_afk_pinged: dict = {}      # {user_id: timestamp} — lần cuối user bị ping AFK
 raid_bt_pending: dict = {}      # {user_id: {"timestamp": float, "channel_id": int}} — chờ confirm sau .rd bt
+inv_mset_sent: set = set()      # message_id đã được reply .team mset, tránh gửi lại khi đổi trang
 
 async def retrieve_data(variant):
     if variant == "prefixes":

@@ -195,9 +195,13 @@ def _get_card_ids_from_select(message) -> list[str]:
 
 async def v2_inventory_mset(message):
     """Đọc inventory message từ AniGame bot, reply lệnh .mset với các card ID hiển thị."""
+    import runtime
+    if message.id in runtime.inv_mset_sent:
+        return
     card_ids = _get_card_ids_from_select(message)
     if not card_ids:
         return
+    runtime.inv_mset_sent.add(message.id)
     ids_str = ", ".join(card_ids)
     await message.reply(f".team mset {ids_str}", mention_author=False)
 
