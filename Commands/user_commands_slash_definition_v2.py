@@ -357,35 +357,38 @@ class GuildMemberOverviewLayoutView(discord.ui.LayoutView):
         self.end_unix = end_unix
         self.old_interval = old_interval
         self.members = guild_data.get("guild_member", [])
-        self.per_page = 8
+        self.per_page = 16
         self.page = page
         self.max_pages = max(1, (len(self.members) - 1) // self.per_page + 1)
         self.guild_container = self.build_container()
         self.add_item(self.guild_container)
 
+    def _member_cell(self, member):
+        if self.guild_data["guild_debt"] and self.old_interval is None:
+            donation = member['guild_member_donation']
+        else:
+            donation = member['current_period_donation']
+        threshold = member.get("threshold_used", self.guild_data['guild_threshold'])
+        status = check if donation >= threshold else cross
+        return f"{status} `{member['guild_member_name']}` {donation:,}/{threshold:,} {gold_emote}"
+
     def build_container(self):
         container = ui.Container()
         container.add_item(ui.TextDisplay(f"## {self.guild_data['guild_name']}\n"
                                           f"__Current donation threshold:__ {self.guild_data['guild_reset']} {self.guild_data['guild_threshold']:,} {gold_emote}"))
-        container.add_item(ui.TextDisplay(f"**from:** <t:{self.start_unix}:F>"))
-        container.add_item(ui.TextDisplay(f"**till:** <t:{self.end_unix}:F>"))
-        container.add_item(ui.TextDisplay(f"__adv donations:__ {self.guild_data['guild_advanced_donation']}\n"
+        container.add_item(ui.TextDisplay(f"**from:** <t:{self.start_unix}:F>  **till:** <t:{self.end_unix}:F>"))
+        container.add_item(ui.TextDisplay(f"__adv donations:__ {self.guild_data['guild_advanced_donation']}  ·  "
                                           f"__guild debt:__ {self.guild_data['guild_debt']}"))
         container.add_item(ui.Separator())
         start = self.page * self.per_page
-        end = start + self.per_page
-        for member in self.members[start:end]:
-            if self.guild_data["guild_debt"] and self.old_interval is None:
-                donation = member['guild_member_donation']
+        end = min(start + self.per_page, len(self.members))
+        for i in range(start, end, 2):
+            left = self._member_cell(self.members[i])
+            if i + 1 < end:
+                right = self._member_cell(self.members[i + 1])
+                container.add_item(ui.TextDisplay(f"{left}\n{right}"))
             else:
-                donation = member['current_period_donation']
-            threshold = member.get("threshold_used", self.guild_data['guild_threshold'])
-            if donation >= threshold:
-                status = f"{check}"
-            else:
-                status = f"{cross}"
-            container.add_item(ui.TextDisplay(f"``{member['guild_member_name']}``"))
-            container.add_item(ui.TextDisplay(f"{status} {donation:,} / {threshold:,} {gold_emote}"))
+                container.add_item(ui.TextDisplay(left))
             container.add_item(ui.Separator())
         container.add_item(ui.TextDisplay(f"Page {self.page + 1} / {self.max_pages}"))
         button_prev = ui.Button(label="◀", style=discord.ButtonStyle.secondary)
