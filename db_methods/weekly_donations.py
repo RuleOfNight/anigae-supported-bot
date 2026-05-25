@@ -34,7 +34,8 @@ async def get_active_tracking(player_name: str):
 async def create_or_update_tracking(player_name: str, discord_id, channel_id: int, weeks_to_add: int):
     now = int(time.time())
     existing = await get_active_tracking(player_name)
-    if existing:
+    # Nếu record cũ đã hết hạn (ping_due đã qua), coi như chu kỳ mới
+    if existing and existing.get("ping_due_unix", 0) > now:
         new_total = existing["total_weeks_credited"] + weeks_to_add
         new_ping_due = existing["first_donation_unix"] + new_total * WEEK_SECONDS
         await _collection.update_one(
@@ -42,6 +43,9 @@ async def create_or_update_tracking(player_name: str, discord_id, channel_id: in
             {"$set": {"total_weeks_credited": new_total, "ping_due_unix": new_ping_due, "last_donation_unix": now}}
         )
         return new_total
+    # Tạo record mới (lần đầu, hoặc chu kỳ cũ đã hết hạn)
+    if existing:
+        await _collection.update_one({"_id": existing["_id"]}, {"$set": {"pinged": True}})
     await _collection.insert_one({
         "player_name": player_name,
         "discord_id": discord_id,
