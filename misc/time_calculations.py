@@ -77,9 +77,10 @@ async def get_last_monday_berlin_time_from_current_time_in_unix():
     now = datetime.now(timezone.utc)
     days_since_monday = now.weekday()
     last_monday = now - timedelta(days=days_since_monday)
-    if days_since_monday == 0:
-        last_monday -= timedelta(days=7)
     last_monday_1am = last_monday.replace(hour=1, minute=0, second=0, microsecond=0)
+    # Nếu reset chưa xảy ra (vd: thứ 2 trước 1am), lùi về thứ 2 tuần trước
+    if last_monday_1am > now:
+        last_monday_1am -= timedelta(days=7)
     return int(last_monday_1am.timestamp())
 
 
