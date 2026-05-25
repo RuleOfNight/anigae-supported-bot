@@ -1,5 +1,6 @@
 import time
 from db_methods.general import get_guilds_collection
+from misc.time_calculations import get_last_monday_berlin_time_from_current_time_in_unix
 
 _collection = None
 WEEK_SECONDS = 604800
@@ -33,9 +34,10 @@ async def get_active_tracking(player_name: str):
 
 async def create_or_update_tracking(player_name: str, discord_id, channel_id: int, weeks_to_add: int):
     now = int(time.time())
+    week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
     existing = await get_active_tracking(player_name)
-    # Nếu record cũ đã hết hạn (ping_due đã qua), coi như chu kỳ mới
-    if existing and existing.get("ping_due_unix", 0) > now:
+    # Cộng dồn chỉ khi donation trước nằm trong tuần hiện tại
+    if existing and existing.get("last_donation_unix", 0) >= week_start:
         new_total = existing["total_weeks_credited"] + weeks_to_add
         new_ping_due = existing["first_donation_unix"] + new_total * WEEK_SECONDS
         await _collection.update_one(
@@ -43,7 +45,7 @@ async def create_or_update_tracking(player_name: str, discord_id, channel_id: in
             {"$set": {"total_weeks_credited": new_total, "ping_due_unix": new_ping_due, "last_donation_unix": now}}
         )
         return new_total
-    # Tạo record mới (lần đầu, hoặc chu kỳ cũ đã hết hạn)
+    # Tuần mới hoặc lần đầu → record mới
     if existing:
         await _collection.update_one({"_id": existing["_id"]}, {"$set": {"pinged": True}})
     await _collection.insert_one({
