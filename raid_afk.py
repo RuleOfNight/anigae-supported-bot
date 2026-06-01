@@ -36,14 +36,14 @@ async def check_raid_bt_pending():
         uid: data for uid, data in list(runtime.raid_bt_pending.items())
         if now - data["timestamp"] > confirm_timeout
     }
-    for uid, data in expired.items():
-        del runtime.raid_bt_pending[uid]
-        channel = runtime.bot.get_channel(data["channel_id"])
-        if not channel:
-            continue
-        member = channel.guild.get_member(uid) if channel.guild else None
-        mention = member.mention if member else f"<@{uid}>"
-        await channel.send(f"⚔️ {mention} Mắt mũi để đâu mà không ấn confirm raid?")
+    # for uid, data in expired.items():
+    #     del runtime.raid_bt_pending[uid]
+    #     channel = runtime.bot.get_channel(data["channel_id"])
+    #     if not channel:
+    #         continue
+    #     member = channel.guild.get_member(uid) if channel.guild else None
+    #     mention = member.mention if member else f"<@{uid}>"
+    #     await channel.send(f"⚔️ {mention} Mắt mũi để đâu mà không ấn confirm raid?")
 
 
 async def check_raid_afk():
