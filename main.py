@@ -225,6 +225,18 @@ async def on_message(message):
             await bot.process_commands(message)
             return
 
+        # ── DEBUG: trace bot message routing ──
+        print(f"\n[ON_MSG DEBUG] Bot msg from {message.author} | has_embeds={bool(message.embeds)} | embeds_count={len(message.embeds)} | has_components={bool(message.components)} | content_preview={repr(message.content[:200])}")
+        if message.components:
+            is_container = isinstance(message.components[0], Container)
+            print(f"[ON_MSG DEBUG] components[0] type={type(message.components[0]).__name__} | is_Container={is_container}")
+            for i, comp in enumerate(message.components):
+                print(f"[ON_MSG DEBUG]   comp[{i}] = {type(comp).__name__}")
+        if message.embeds:
+            for i, emb in enumerate(message.embeds):
+                print(f"[ON_MSG DEBUG]   embed[{i}] type={emb.type} title={repr((emb.title or '')[:100])}")
+        # ── END DEBUG ──
+
         if message.components and isinstance(message.components[0], Container):
             await user_commands_on_message_v2.discord_components_v2(message, "on_message")
 
@@ -265,6 +277,25 @@ async def _handle_embed(message):
     embed_image_url   = embed.image.url if embed.image else None
     embed_thumb_url   = embed.thumbnail.url if embed.thumbnail else None
 
+    # ── DEBUG LOGS ────────────────────────────────────────────────────────────
+    print(f"\n{'='*60}")
+    print(f"[EMBED DEBUG] Author: {message.author} (ID: {message.author.id})")
+    print(f"[EMBED DEBUG] Title: {repr(embed_title)}")
+    print(f"[EMBED DEBUG] Footer: {repr(embed_footer)}")
+    print(f"[EMBED DEBUG] Description (first 500 chars): {repr(embed_description[:500])}")
+    print(f"[EMBED DEBUG] Description (last 300 chars): {repr(embed_description[-300:])}")
+    print(f"[EMBED DEBUG] Fields count: {len(embed_fields)}")
+    for i, field in enumerate(embed_fields):
+        print(f"[EMBED DEBUG]   Field[{i}] name={repr(field.name)} value={repr((field.value or '')[:200])}")
+    print(f"[EMBED DEBUG] Has components: {bool(message.components)}")
+    if message.components:
+        for i, comp in enumerate(message.components):
+            print(f"[EMBED DEBUG]   Component[{i}] type={type(comp).__name__} = {repr(str(comp)[:200])}")
+    print(f"[EMBED DEBUG] Embed type: {embed.type}")
+    print(f"[EMBED DEBUG] Embed dict keys: {list(embed.to_dict().keys())}")
+    print(f"{'='*60}")
+    # ── END DEBUG ─────────────────────────────────────────────────────────────
+
     # Combine all text for keyword searching (bot gốc moves keywords between fields)
     _all_text = f"{embed_title}\n{embed_description}\n{embed_footer}"
 
@@ -275,6 +306,8 @@ async def _handle_embed(message):
     # Detect raid embed: title or description contains raid keywords
     is_raid_embed = (keyword_raid_lobby_title_old in _all_text
                      or keyword_raid_lobby_title_new in _all_text)
+    print(f"[EMBED DEBUG] is_raid_embed={is_raid_embed} | title_old_in={keyword_raid_lobby_title_old in _all_text} | title_new_in={keyword_raid_lobby_title_new in _all_text}")
+    print(f"[EMBED DEBUG] has_battle_hint={keyword_raid_lobby_4 in _all_text} | has_participants={keyword_raid_lobby_2_part_2 in _all_text}")
 
     if is_raid_embed:
         has_battle_hint = keyword_raid_lobby_4 in _all_text  # "Type .rd battle when you have Energy!"
