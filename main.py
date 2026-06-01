@@ -217,32 +217,6 @@ async def update_activity():
 
 @bot.event
 async def on_message(message):
-    # ── DISCORD DEBUG — gửi tin debug lên channel ──
-    if message.author.bot and message.author.id == target_bot_id:
-        try:
-            debug_lines = [
-                f"**[DEBUG]** Bot gốc message detected",
-                f"author_id: `{message.author.id}` | db_ready: `{runtime.db_ready}`",
-                f"has_embeds: `{bool(message.embeds)}` ({len(message.embeds)}) | has_components: `{bool(message.components)}`",
-                f"content[:150]: ```{message.content[:150] or '(empty)'}```",
-            ]
-            if message.components:
-                comp_info = [f"{type(c).__name__}" for c in message.components]
-                debug_lines.append(f"components types: `{comp_info}`")
-                debug_lines.append(f"comp[0] is Container: `{isinstance(message.components[0], Container)}`")
-            if message.embeds:
-                emb = message.embeds[0]
-                debug_lines.append(f"embed.type: `{emb.type}`")
-                debug_lines.append(f"embed.title: ```{(emb.title or '(None)')[:200]}```")
-                debug_lines.append(f"embed.footer: ```{(emb.footer.text if emb.footer else '(None)')[:200]}```")
-                debug_lines.append(f"embed.description[:400]: ```{(emb.description or '(None)')[:400]}```")
-                debug_lines.append(f"embed.description[-200:]: ```{(emb.description or '')[-200:] or '(None)'}```")
-                debug_lines.append(f"embed dict keys: `{list(emb.to_dict().keys())}`")
-                debug_lines.append(f"fields: `{len(emb.fields)}`")
-            await message.channel.send("\n".join(debug_lines))
-        except Exception as e:
-            print(f"[DEBUG ERROR] {e}")
-
     if not runtime.db_ready:
         return
 

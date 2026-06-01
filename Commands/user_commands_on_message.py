@@ -103,11 +103,11 @@ def _assign_ranking_emote(
 
 def _replace_hp_bar_emojis(description: str, new_hp_bar: str) -> str:
     """
-    Replace the 10 consecutive AniGame HP-bar emojis (<:1:id>) with new_hp_bar.
+    Replace the 10 consecutive AniGame HP-bar emojis (<:1:id> or :1:) with new_hp_bar.
 
     Returns description unchanged if fewer than 10 matching emojis are found.
     """
-    old_emojis = re.findall(r"(<:1:\d+>)", description)
+    old_emojis = re.findall(r"(<:1:\d+>|:1:)", description)
     if len(old_emojis) < 10:
         return description
     return description.replace("".join(old_emojis[:10]), new_hp_bar)
