@@ -168,17 +168,34 @@ async def in_raid_lobby(
         )
 
     # ── Footer: replace generic hint with drop-range threshold ───────────────
-    if boss_hp and embed_footer:
+    # "Type .rd battle..." may now be in description instead of footer
+    _combined_footer_text = f"{embed_description}\n{embed_footer}"
+    if boss_hp:
         drop_threshold = int(boss_hp[-1][1]) // 10
-        embed_footer = embed_footer.replace(
-            "Type .rd battle when you have Energy!",
-            f"Deal {drop_threshold:,} Damage to reach Drop range!",
-        )
+        replacement_hint = f"Deal {drop_threshold:,} Damage to reach Drop range!"
+        if "Type .rd battle when you have Energy!" in embed_footer:
+            embed_footer = embed_footer.replace(
+                "Type .rd battle when you have Energy!", replacement_hint,
+            )
+        elif "Type .rd battle when you have Energy!" in embed_description:
+            desc = desc.replace(
+                "Type .rd battle when you have Energy!", replacement_hint,
+            )
+            # Build footer from description data if footer is empty/missing
+            if not embed_footer.strip():
+                footer_match = re.search(r"(\d+/\d+\s*Players in Raid Party\s*\|\s*\d+)", desc)
+                embed_footer = f"{footer_match.group(1)} | {replacement_hint}" if footer_match else replacement_hint
+        else:
+            # Fallback: just set footer to threshold info
+            embed_footer = replacement_hint
     else:
         drop_threshold = 0
 
     # ── Player count & lobby damage multiplier ────────────────────────────────
-    player_match = re.search(r"(\d)/(\d)", embed_footer)
+    # Player count pattern may be in footer or description
+    player_match = re.search(r"(\d)/(\d)\s*Players in Raid Party", _combined_footer_text)
+    if not player_match:
+        player_match = re.search(r"(\d)/(\d)", _combined_footer_text)
     # 2-player lobbies deal ~2.45× more damage per attack than solo
     lobby_multiplier = 2.45 if (player_match and player_match.group(2) == "2") else 1.0
 
@@ -264,7 +281,10 @@ async def in_raid_lobby(
     # ── Raid history DB update ────────────────────────────────────────────────
     history_desc = embed_description.replace("\\", "").replace(",", "")
     timer_match  = re.findall(r"<t:(\d+):R>", embed_title) or re.findall(r"<t:(\d+):R>", embed_description)
-    code_match   = re.findall(r"\|\s*(\d+)\s*\|", embed_footer)
+    # Raid code may be in footer or description
+    code_match   = re.findall(r"\|\s*(\d{4,})\s*\|", embed_footer)
+    if not code_match:
+        code_match = re.findall(r"\|\s*(\d{4,})\s*\|", embed_description)
     raid_code    = code_match[0] if code_match else None
 
     boss_data_pattern = (
@@ -413,9 +433,17 @@ async def raid_lobby_waiting_room(
         embed_description = desc
 
     # ── Footer: show join command ─────────────────────────────────────────────
-    numbers = re.findall(r"(\d+)", embed_footer)
-    # numbers[0]=current players, numbers[1]=max players, numbers[2]=raid code
-    embed_footer = f".rd join {numbers[2]} | {numbers[0]} / {numbers[1]} Players in Raid Party"
+    # Player count and raid code may be in footer or description
+    _combined = f"{embed_description}\n{embed_footer}"
+    party_match = re.search(r"(\d+)/(\d+)\s*Players in Raid Party\s*\|\s*(\d+)", _combined)
+    if party_match:
+        cur_players, max_players, raid_code_val = party_match.group(1), party_match.group(2), party_match.group(3)
+        embed_footer = f".rd join {raid_code_val} | {cur_players} / {max_players} Players in Raid Party"
+    else:
+        # Fallback: try old-style extraction from footer
+        numbers = re.findall(r"(\d+)", embed_footer)
+        if len(numbers) >= 3:
+            embed_footer = f".rd join {numbers[2]} | {numbers[0]} / {numbers[1]} Players in Raid Party"
 
     return embed_title, embed_description, embed_footer
 

@@ -54,10 +54,12 @@ own_bot_id = 1213054068197560331
 target_bot_id = 571027211407196161
 
 # Keywords for on_message routing
-keyword_raid_lobby_1   = "Raid Challenge Party"
-keyword_raid_lobby_2   = "Raid Challenge Timer"
-keyword_raid_lobby_2_part_2 = "Current Raid Participants"
+# Title changed: "Raid Challenge Timer" → "Raid Challenge Party" (bot gốc update)
+keyword_raid_lobby_title_old = "Raid Challenge Timer"
+keyword_raid_lobby_title_new = "Raid Challenge Party"
+keyword_raid_lobby_2_part_2  = "Current Raid Participants"
 keyword_raid_lobby_3   = "Raid Boss Battle"
+# These keywords may now appear in description instead of footer
 keyword_raid_lobby_4   = "Type .rd battle when you have Energy!"
 keyword_raid_lobby_5   = "confirm the battle!"
 keyword_raid_lobby_9   = ".rd lobbies -"
@@ -263,23 +265,39 @@ async def _handle_embed(message):
     embed_image_url   = embed.image.url if embed.image else None
     embed_thumb_url   = embed.thumbnail.url if embed.thumbnail else None
 
+    # Combine all text for keyword searching (bot gốc moves keywords between fields)
+    _all_text = f"{embed_title}\n{embed_description}\n{embed_footer}"
+
     if keyword_13 in embed_footer:
         await user_commands_on_message.profile_tracker(embed_fields, embed_footer)
         await bot.process_commands(message)
 
-    if keyword_raid_lobby_1 in embed_title:
-        if keyword_raid_lobby_4 in embed_footer:
+    # Detect raid embed: title or description contains raid keywords
+    is_raid_embed = (keyword_raid_lobby_title_old in _all_text
+                     or keyword_raid_lobby_title_new in _all_text)
+
+    if is_raid_embed:
+        has_battle_hint = keyword_raid_lobby_4 in _all_text  # "Type .rd battle when you have Energy!"
+        has_participants = keyword_raid_lobby_2_part_2 in _all_text  # "Current Raid Participants"
+
+        if has_battle_hint:
+            # Active raid lobby (players are attacking)
             import time as _time
             runtime.active_raid_guilds[message.guild.id] = _time.time()
-            t, d, f = await user_commands_on_message.in_raid_lobby(embed_title, embed_description, embed_footer)
+            t, d, f = await user_commands_on_message.in_raid_lobby(
+                embed_title, embed_description, embed_footer
+            )
             await _replace_embed(message, t, d, f, embed_image_url, embed_thumb_url)
-
-    elif keyword_raid_lobby_2 in embed_title:
-        if keyword_raid_lobby_2_part_2 in embed_footer:
-            t, d, f = await user_commands_on_message.raid_lobby_waiting_room(embed_title, embed_description, embed_footer)
+        elif has_participants:
+            # Waiting room (lobby not started yet)
+            t, d, f = await user_commands_on_message.raid_lobby_waiting_room(
+                embed_title, embed_description, embed_footer
+            )
             await _replace_embed(message, t, d, f, embed_image_url, embed_thumb_url)
+        else:
+            await bot.process_commands(message)
 
-    elif keyword_raid_lobby_5 in embed_footer and keyword_raid_lobby_3 in embed_title:
+    elif keyword_raid_lobby_5 in _all_text and keyword_raid_lobby_3 in _all_text:
         embed_field_2 = embed_fields[1] if len(embed_fields) > 1 else None
         player_status = await players.get_player_status_team_check(embed.author.name)
         if player_status == "Yes":
