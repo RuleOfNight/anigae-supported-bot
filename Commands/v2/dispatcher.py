@@ -31,6 +31,18 @@ async def discord_components_v2(message, trigger: str):
         if "Skin Equipped:" in _full_text and "Card ID:" in _full_text:
             await v2_card_info_instance(message)
 
+        # ── DEBUG: Raid detection in Components V2 ──
+        if ("Raid Challenge" in _full_text
+                or "Type .rd battle" in _full_text
+                or "Players in Raid Party" in _full_text):
+            # Gửi full text lên Discord để debug cấu trúc
+            debug_msg = f"**[RAID V2 DEBUG]** Detected raid keywords in Container!\n"
+            # Cắt thành chunks nhỏ để Discord không reject
+            text_chunks = [_full_text[i:i+1800] for i in range(0, len(_full_text), 1800)]
+            for idx, chunk in enumerate(text_chunks):
+                await message.channel.send(f"{debug_msg if idx == 0 else ''}```\n{chunk}\n```")
+        # ── END DEBUG ──
+
     elif trigger == "on_edit":
         if find_text_in_components(message, "Pack Opened!"):
             await v2_pack_opening(message)
