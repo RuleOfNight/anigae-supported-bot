@@ -263,7 +263,7 @@ async def in_raid_lobby(
 
     # ── Raid history DB update ────────────────────────────────────────────────
     history_desc = embed_description.replace("\\", "").replace(",", "")
-    timer_match  = re.findall(r"<t:(\d+):R>", embed_title)
+    timer_match  = re.findall(r"<t:(\d+):R>", embed_title) or re.findall(r"<t:(\d+):R>", embed_description)
     code_match   = re.findall(r"\|\s*(\d+)\s*\|", embed_footer)
     raid_code    = code_match[0] if code_match else None
 
