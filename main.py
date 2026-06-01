@@ -217,6 +217,10 @@ async def update_activity():
 
 @bot.event
 async def on_message(message):
+    # ── EARLIEST DEBUG — fires for EVERY message ──
+    if message.author.bot:
+        print(f"\n[EARLY DEBUG] BOT message received | author={message.author} | author_id={message.author.id} | target_bot_id={target_bot_id} | match={message.author.id == target_bot_id} | db_ready={runtime.db_ready} | has_embeds={bool(message.embeds)} | has_components={bool(message.components)} | content[:100]={repr(message.content[:100])}")
+
     if not runtime.db_ready:
         return
 
