@@ -55,10 +55,10 @@ target_bot_id = 571027211407196161
 
 # Keywords for on_message routing
 keyword_raid_lobby_1   = "Raid Challenge"
-keyword_raid_lobby_2   = "Raid Lobby Timer"
+keyword_raid_lobby_2   = "Raid Challenge Timer"
 keyword_raid_lobby_2_part_2 = "Raid Party"
 keyword_raid_lobby_3   = "Raid Boss Battle"
-keyword_raid_lobby_4   = "Energy"
+keyword_raid_lobby_4   = "Energy!"
 keyword_raid_lobby_5   = "confirm the battle!"
 keyword_raid_lobby_9   = ".rd lobbies -"
 keyword_10_1 = " currently has "
