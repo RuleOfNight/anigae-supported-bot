@@ -587,22 +587,24 @@ async def clan_donation_tracker(embed_description: str, message) -> None:
     player_name, amount_str = player_data[0]
     donate_amount = int(amount_str)
 
-    try:
-        updated_guilds = await guilds.update_donation_amount_by_player_name_in_guilds(
-            player_name, donate_amount, "auto"
-        )
-        view = user_commands_slash_definition_v2.DonationResultLayoutView(
-            player_name, donate_amount, updated_guilds
-        )
-        await message.reply(view=view)
-    except Exception as e:
-        error_view = user_commands_slash_definition_v2.DonationResultLayoutView(
-            player_name, donate_amount, []
-        )
-        await message.reply(
-            f"<a:cross:1380797973373521962> Error while processing donation: {e}",
-            view=error_view,
-        )
+    # Kênh UR (monthly) không tính vào guild donation tracker
+    if message.channel.id != MONTHLY_DONATION_CHANNEL_ID:
+        try:
+            updated_guilds = await guilds.update_donation_amount_by_player_name_in_guilds(
+                player_name, donate_amount, "auto"
+            )
+            view = user_commands_slash_definition_v2.DonationResultLayoutView(
+                player_name, donate_amount, updated_guilds
+            )
+            await message.reply(view=view)
+        except Exception as e:
+            error_view = user_commands_slash_definition_v2.DonationResultLayoutView(
+                player_name, donate_amount, []
+            )
+            await message.reply(
+                f"<a:cross:1380797973373521962> Error while processing donation: {e}",
+                view=error_view,
+            )
 
     # ── Weekly donation tracking (kênh 1) ────────────────────────────────────
     if message.channel.id == WEEKLY_DONATION_CHANNEL_ID:

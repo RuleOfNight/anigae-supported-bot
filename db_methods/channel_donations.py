@@ -93,6 +93,13 @@ async def get_channel_totals(channel_id: int) -> tuple[int, int]:
     return monthly_total, alltime_total
 
 
+async def get_month_stats(channel_id: int, month_str: str) -> list[dict]:
+    """Trả về docs của channel theo tháng cụ thể (dạng 'YYYY-MM'). Dùng cho bảng tổng kết."""
+    return await _collection.find(
+        {"channel_id": channel_id, "current_month": month_str}
+    ).to_list(length=None)
+
+
 async def reset_monthly(channel_id: int) -> None:
     """
     Reset toàn bộ monthly_count về 0 cho channel.

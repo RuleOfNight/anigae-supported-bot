@@ -17,9 +17,14 @@ async def monthly_channel_donations():
 
     channel = runtime.bot.get_channel(MONTHLY_DONATION_CHANNEL_ID)
     if channel:
-        stats = await channel_donations.get_channel_stats(MONTHLY_DONATION_CHANNEL_ID)
+        # Lấy tháng trước — scheduler chạy ngày 1 tháng mới nên cần tháng vừa kết thúc
+        now = datetime.now(timezone.utc)
+        last_month_dt = (now.replace(day=1) - timedelta(days=1))
+        last_month_str = last_month_dt.strftime("%Y-%m")
+        month_label = last_month_dt.strftime("%m/%Y")
+
+        stats = await channel_donations.get_month_stats(MONTHLY_DONATION_CHANNEL_ID, last_month_str)
         sorted_stats = sorted(stats, key=lambda d: d["monthly_count"], reverse=True)
-        month_label = datetime.now(timezone.utc).strftime("%m/%Y")
 
         if sorted_stats:
             lines = []
@@ -32,7 +37,7 @@ async def monthly_channel_donations():
             description = "*Không có dữ liệu trong tháng này.*"
 
         embed = discord.Embed(
-            title=f"📅 Leaderboard Donate 50k — Tháng {month_label}",
+            title=f"📅 Bảng vàng UR — Tháng {month_label}",
             description=description,
             color=0x71368A,
         )
@@ -51,6 +56,10 @@ async def daily_update():
 
 
 async def weekly_donation_check():
+    from db_methods import weekly_donations as wd
+    from misc.time_calculations import get_last_monday_berlin_time_from_current_time_in_unix
+
+    week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
     guild_docs = await guilds.get_guilds_with_weekly_channel()
 
     for guild_doc in guild_docs:
@@ -60,20 +69,13 @@ async def weekly_donation_check():
         if not channel:
             continue
 
-        guild_result, start_unix, end_unix = await guilds.get_guild_data(guild_id)
-        if not guild_result:
-            continue
-
-        members = guild_result.get("guild_member", [])
+        members = await guilds.get_active_members(guild_id)
         if not members:
             continue
 
-        threshold = guild_result.get("guild_threshold", 0)
-        if threshold == 0:
-            continue
-
-        paid   = [m for m in members if m.get("current_period_donation", 0) >= m.get("threshold_used", threshold)]
-        unpaid = [m for m in members if m.get("current_period_donation", 0) < m.get("threshold_used", threshold)]
+        paid_set = await wd.get_weekly_donors(channel_id, week_start)
+        paid   = [m for m in members if m["guild_member_name"] in paid_set]
+        unpaid = [m for m in members if m["guild_member_name"] not in paid_set]
 
         lines = []
         for m in paid:
@@ -83,8 +85,8 @@ async def weekly_donation_check():
             ping = f"<@{m['guild_member_id']}>" if m.get("guild_member_id") else f"**{m['guild_member_name']}**"
             lines.append(f"❌ {ping}")
 
-        week_start_dt = datetime.fromtimestamp(start_unix, tz=timezone.utc)
-        week_end_dt   = datetime.fromtimestamp(end_unix,   tz=timezone.utc)
+        week_start_dt = datetime.fromtimestamp(week_start, tz=timezone.utc)
+        week_end_dt   = week_start_dt + timedelta(days=6)
         week_label    = f"{week_start_dt.strftime('%d/%m')} – {week_end_dt.strftime('%d/%m')}"
 
         msg = (

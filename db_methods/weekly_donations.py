@@ -62,9 +62,9 @@ async def create_or_update_tracking(player_name: str, discord_id, channel_id: in
 
 
 async def get_weekly_donors(channel_id: int, week_start_unix: int) -> set:
-    """Trả về set player_name đã donate trong channel_id từ week_start_unix đến nay."""
+    """Trả về set player_name còn coverage từ week_start_unix (donate bội số vẫn tính)."""
     docs = await _collection.find(
-        {"channel_id": channel_id, "last_donation_unix": {"$gte": week_start_unix}}
+        {"channel_id": channel_id, "pinged": False, "ping_due_unix": {"$gt": week_start_unix}}
     ).to_list(length=None)
     return {doc["player_name"] for doc in docs}
 

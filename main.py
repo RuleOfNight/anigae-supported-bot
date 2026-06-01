@@ -228,6 +228,8 @@ async def on_message(message):
 
         if message.embeds:
             await _handle_embed(message)
+        elif "has already been defeated" in message.content:
+            await _handle_raid_already_defeated(message)
         elif keyword_10_1 in message.content:
             await _handle_gold_rubies_or_raid_pass(message)
         elif keyword_11_1 in message.content and keyword_11_2 in message.content:
@@ -360,6 +362,25 @@ async def _handle_rd_bt_confirm(message, embed_description, embed_fields):
     await bot.process_commands(message)
 
 
+async def _handle_raid_already_defeated(message):
+    """Raid đã kết thúc trước khi lượt của user hoàn tất — hủy ping .rd bt pending."""
+    uid = None
+    # Ưu tiên: bot reply vào message của user
+    if message.reference and message.reference.resolved:
+        ref = message.reference.resolved
+        if not ref.author.bot:
+            uid = ref.author.id
+    # Fallback: tìm theo channel
+    if uid is None:
+        for pending_uid, data in list(runtime.raid_bt_pending.items()):
+            if data.get("channel_id") == message.channel.id:
+                uid = pending_uid
+                break
+    if uid and uid in runtime.raid_bt_pending:
+        del runtime.raid_bt_pending[uid]
+    await bot.process_commands(message)
+
+
 async def _handle_rd_bt(message):
     import time as _time
     _now = _time.time()
@@ -394,3 +415,6 @@ async def main():
 
 
 asyncio.run(main())
+
+# local debugging
+#bot.run(os.getenv("DISCORD_TOKEN"))
