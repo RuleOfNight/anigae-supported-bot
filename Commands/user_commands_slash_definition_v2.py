@@ -671,7 +671,7 @@ class ChannelDonationStatsView(discord.ui.LayoutView):
         self.add_item(self.container)
 
     def _build_container(self) -> ui.Container:
-        container = ui.Container()
+        container = ui.Container(accent_colour=0x71368A)
 
         if self.mode == "monthly":
             title = "## 📅 Donate tháng này"
@@ -692,8 +692,8 @@ class ChannelDonationStatsView(discord.ui.LayoutView):
         else:
             lines = []
             for i, doc in enumerate(sorted_stats, start=1):
-                ping = f"<@{doc['discord_id']}>" if doc.get("discord_id") else f"`{doc['player_name']}`"
-                lines.append(f"`#{i:>2}` {ping} — **{doc[count_key]} lần**")
+                name = f"**{doc['player_name']}**"
+                lines.append(f"`#{i:>2}` {name} — **{doc[count_key]} lần**")
             container.add_item(ui.TextDisplay("\n".join(lines)))
 
         container.add_item(ui.Separator())
