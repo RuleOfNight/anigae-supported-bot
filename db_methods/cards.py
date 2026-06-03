@@ -126,6 +126,7 @@ async def get_card_data_by_series_name():
                       "market_price_ur_timer": card.get("market_price_ur_timestamp", ""),
                       "card_element": card.get("card_element", ""),
                       "card_talent": card.get("card_talent", "")} for card in found_series]
+        card_data.sort(key=lambda x: x["card_name"].lower())
         return card_data
     return []
 

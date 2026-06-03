@@ -116,8 +116,5 @@ async def get_next_saturday_and_monday_unix():
     if days_until_saturday == 0 and timestamp_utc.time() > datetime.min.time():
         days_until_saturday = 7
     next_saturday = (timestamp_utc + timedelta(days=days_until_saturday)).replace(hour=0, minute=0, second=0, microsecond=0)
-    days_until_monday = (7 - weekday) % 7
-    if days_until_monday == 0 and timestamp_utc.time() > datetime.min.time():
-        days_until_monday = 7
-    next_monday = (timestamp_utc + timedelta(days=days_until_monday)).replace(hour=0, minute=0, second=0, microsecond=0)
+    next_monday = next_saturday + timedelta(days=2)
     return int(next_saturday.timestamp()), int(next_monday.timestamp())
