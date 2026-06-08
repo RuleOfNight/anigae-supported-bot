@@ -1,4 +1,4 @@
-﻿import discord
+import discord
 from discord import MediaGalleryItem, ui
 from discord.ext import commands
 from discord.ui import View, Button, MediaGallery, Thumbnail, Select
@@ -364,8 +364,11 @@ class GuildMemberOverviewLayoutView(discord.ui.LayoutView):
         self.add_item(self.guild_container)
 
     def _member_cell(self, member):
-        if self.guild_data["guild_debt"] and self.old_interval is None:
-            donation = member['guild_member_donation']
+        if self.old_interval is None:
+            if self.guild_data["guild_debt"]:
+                donation = member['guild_member_donation']
+            else:
+                donation = max(member['guild_member_donation'], 0)
         else:
             donation = member['current_period_donation']
         threshold = member.get("threshold_used", self.guild_data['guild_threshold'])

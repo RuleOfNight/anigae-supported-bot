@@ -10,7 +10,7 @@ import time, discord
 
 async def create_guild_in_collection(guild_id, guild_name):
     guilds_collection = get_guilds_collection()
-    new_guild = {"guild_id": guild_id, "guild_name": guild_name, "guild_reset": "weekly", "guild_threshold": 0, "guild_threshold_2": 0, "threshold_members": [], "archived_members": [], "guild_member": [], "guild_advanced_donation": False}
+    new_guild = {"guild_id": guild_id, "guild_name": guild_name, "guild_reset": "weekly", "guild_threshold": 0, "guild_threshold_2": 0, "threshold_members": [], "archived_members": [], "guild_member": [], "guild_advanced_donation": True}
     await guilds_collection.insert_one(new_guild)
 
 
@@ -370,10 +370,10 @@ async def update_donations_weekly_automated():
                                                                              "as": "member",
                                                                              "in": {"$let": {"vars": {"is_threshold_2": {"$in": ["$$member.guild_member_id", {"$ifNull": ["$threshold_members", []]}]},
                                                                                                       "threshold_value": {"$cond": [{"$in": ["$$member.guild_member_id", {"$ifNull": ["$threshold_members", []]}]}, "$guild_threshold_2", "$guild_threshold"]}},
-                                                                                             "in": {"$mergeObjects": ["$$member", {"donations": {"$cond": [{"$eq": [{"$ifNull": ["$guild_advanced_donation", False]}, True]},
+                                                                                             "in": {"$mergeObjects": ["$$member", {"donations": {"$cond": [{"$eq": [{"$ifNull": ["$guild_advanced_donation", True]}, True]},
                                                                                                                                                            {"$subtract": [{"$ifNull": ["$$member.donations", 0]},"$$threshold_value"]},
                                                                                                                                                            {"$cond": [{"$gte": [{"$ifNull": ["$$member.donations", 0]}, "$$threshold_value"]}, 0,
-                                                                                                                                                                      {"$subtract": [{"$ifNull": ["$$member.donations", 0]}, "$$threshold_value"]}]}]}}]}}}}}}}])
+                                                                                                                                                                       {"$subtract": [{"$ifNull": ["$$member.donations", 0]}, "$$threshold_value"]}]}]}}]}}}}}}}])
 
 
 async def update_donations_monthly_automated():
@@ -383,10 +383,10 @@ async def update_donations_monthly_automated():
                                                                              "as": "member",
                                                                              "in": {"$let": {"vars": {"is_threshold_2": {"$in": ["$$member.guild_member_id", {"$ifNull": ["$threshold_members", []]}]},
                                                                                                       "threshold_value": {"$cond": [{"$in": ["$$member.guild_member_id", {"$ifNull": ["$threshold_members", []]}]}, "$guild_threshold_2", "$guild_threshold"]}},
-                                                                                             "in": {"$mergeObjects": ["$$member", {"donations": {"$cond": [{"$eq": [{"$ifNull": ["$guild_advanced_donation", False]}, True]},
+                                                                                             "in": {"$mergeObjects": ["$$member", {"donations": {"$cond": [{"$eq": [{"$ifNull": ["$guild_advanced_donation", True]}, True]},
                                                                                                                                                            {"$subtract": [{"$ifNull": ["$$member.donations", 0]},"$$threshold_value"]},
                                                                                                                                                            {"$cond": [{"$gte": [{"$ifNull": ["$$member.donations", 0]}, "$$threshold_value"]}, 0,
-                                                                                                                                                                      {"$subtract": [{"$ifNull": ["$$member.donations", 0]}, "$$threshold_value"]}]}]}}]}}}}}}}])
+                                                                                                                                                                       {"$subtract": [{"$ifNull": ["$$member.donations", 0]}, "$$threshold_value"]}]}]}}]}}}}}}}])
 
 
 async def cleanse_donations_for_user(guild_id, member):
