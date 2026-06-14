@@ -7,6 +7,7 @@ Xử lý embed message từ AniGame bot:
 """
 
 import re
+from collections import deque
 import time
 import discord
 from discord.ui import View, Button
@@ -35,6 +36,9 @@ ascension_emote    = "<:RedStar:1503299407720747119>"
 WEEKLY_DONATION_CHANNEL_ID  = 925618781777199114
 WEEKLY_DONATION_AMOUNT      = 100_000
 MONTHLY_DONATION_CHANNEL_ID = 1504949108664700998
+
+# Dedup: ngăn xử lý cùng 1 message donation 2 lần
+_recent_donation_msg_ids: deque = deque(maxlen=200)
 
 _RARITY_SCALING: dict[str, float] = {
     "Common":     1.2,
@@ -604,6 +608,11 @@ async def clan_donation_tracker(embed_description: str, message) -> None:
     weekly donation channel and the amount is a whole multiple of
     WEEKLY_DONATION_AMOUNT.
     """
+    # Dedup: ngăn xử lý cùng 1 message 2 lần (race condition từ Discord gateway)
+    if message.id in _recent_donation_msg_ids:
+        return
+    _recent_donation_msg_ids.append(message.id)
+
     clean_desc  = embed_description.replace(",", "")
     player_data = re.findall(
         r"Summoner \*\*(.*)\*\* you have donated \*\*(\d+)\*\* Gold", clean_desc
@@ -615,41 +624,43 @@ async def clan_donation_tracker(embed_description: str, message) -> None:
     player_name, amount_str = player_data[0]
     donate_amount = int(amount_str)
 
-    # Kênh UR (monthly) không tính vào guild donation tracker
-    if message.channel.id != MONTHLY_DONATION_CHANNEL_ID:
+    # ── Weekly donation tracking (kênh 1) ────────────────────────────────────
+    if message.channel.id == WEEKLY_DONATION_CHANNEL_ID:
+        old_balance = await guilds.get_guild_member_balance(player_name)
+        debt = max(0, -old_balance)
+        
         try:
             updated_guilds = await guilds.update_donation_amount_by_player_name_in_guilds(
                 player_name, donate_amount, "auto"
             )
-            view = user_commands_slash_definition_v2.DonationResultLayoutView(
-                player_name, donate_amount, updated_guilds
-            )
-            await message.reply(view=view)
         except Exception as e:
-            error_view = user_commands_slash_definition_v2.DonationResultLayoutView(
-                player_name, donate_amount, []
-            )
-            await message.reply(
-                f"<a:cross:1380797973373521962> Error while processing donation: {e}",
-                view=error_view,
-            )
+            await message.reply(f"<a:cross:1380797973373521962> Error while processing donation: {e}")
+            return
 
-    # ── Weekly donation tracking (kênh 1) ────────────────────────────────────
-    if message.channel.id == WEEKLY_DONATION_CHANNEL_ID:
         if donate_amount != 50_000 and donate_amount % WEEKLY_DONATION_AMOUNT == 0:
-            weeks = donate_amount // WEEKLY_DONATION_AMOUNT
+            net_donate_amount = max(0, donate_amount - debt)
+            weeks = net_donate_amount // WEEKLY_DONATION_AMOUNT
+            
             try:
                 discord_id  = await weekly_donations.get_discord_id_by_player_name(player_name)
-                total_weeks = await weekly_donations.create_or_update_tracking(
-                    player_name, discord_id, message.channel.id, weeks
-                )
-                await message.add_reaction("✅")
                 ping_text = f"<@{discord_id}>" if discord_id else f"**{player_name}**"
-                await message.reply(
-                    f"✅ Ghi nhận **{donate_amount:,}** gold ({weeks} tuần) cho {ping_text}. "
-                    f"Tổng: **{total_weeks} tuần** — sẽ được nhắc sau {total_weeks} tuần.",
-                    mention_author=False,
-                )
+                
+                if weeks > 0:
+                    total_weeks = await weekly_donations.create_or_update_tracking(
+                        player_name, discord_id, message.channel.id, weeks
+                    )
+                    await message.add_reaction("✅")
+                    msg = f"✅ Ghi nhận **{donate_amount:,}** gold cho {ping_text}."
+                    if debt > 0:
+                        msg += f" (Đã bù **{debt:,}** nợ clan)"
+                    msg += f"\nĐã cộng **{weeks} tuần**. Tổng: **{total_weeks} tuần** — sẽ được nhắc sau {total_weeks} tuần."
+                    await message.reply(msg, mention_author=False)
+                elif debt > 0:
+                    await message.add_reaction("✅")
+                    await message.reply(
+                        f"✅ Ghi nhận **{donate_amount:,}** gold cho {ping_text} để bù nợ clan (chưa đủ để cộng thêm tuần).",
+                        mention_author=False
+                    )
             except Exception as e:
                 print(f"[WEEKLY DONATION] Error tracking {player_name}: {e}")
 

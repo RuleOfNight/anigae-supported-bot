@@ -39,26 +39,33 @@ async def create_or_update_tracking(player_name: str, discord_id, channel_id: in
     # Cộng dồn chỉ khi donation trước nằm trong tuần hiện tại
     if existing and existing.get("last_donation_unix", 0) >= week_start:
         new_total = existing["total_weeks_credited"] + weeks_to_add
-        new_ping_due = existing["first_donation_unix"] + new_total * WEEK_SECONDS
+        new_ping_due = week_start + new_total * WEEK_SECONDS
         await _collection.update_one(
             {"_id": existing["_id"]},
             {"$set": {"total_weeks_credited": new_total, "ping_due_unix": new_ping_due, "last_donation_unix": now}}
         )
         return new_total
-    # Tuần mới hoặc lần đầu → record mới
+    # Tuần mới hoặc lần đầu → record mới, giữ lại coverage còn dư từ record cũ
+    carry_over = 0
     if existing:
+        old_ping_due = existing.get("ping_due_unix", 0)
+        # Tính số tuần coverage còn dư (ping_due vượt qua week_start bao nhiêu tuần)
+        remaining = old_ping_due - week_start
+        if remaining > 0:
+            carry_over = remaining // WEEK_SECONDS
         await _collection.update_one({"_id": existing["_id"]}, {"$set": {"pinged": True}})
+    total = weeks_to_add + carry_over
     await _collection.insert_one({
         "player_name": player_name,
         "discord_id": discord_id,
         "channel_id": channel_id,
         "first_donation_unix": now,
         "last_donation_unix": now,
-        "total_weeks_credited": weeks_to_add,
-        "ping_due_unix": now + weeks_to_add * WEEK_SECONDS,
+        "total_weeks_credited": total,
+        "ping_due_unix": week_start + total * WEEK_SECONDS,
         "pinged": False
     })
-    return weeks_to_add
+    return total
 
 
 async def get_weekly_donors(channel_id: int, week_start_unix: int) -> set:

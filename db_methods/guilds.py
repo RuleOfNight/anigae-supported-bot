@@ -276,6 +276,16 @@ async def update_guild_threshold_2_by_guild_id_in_guilds(guild_id, threshold_amo
         return "no guild found"
     return "no changes"
 
+async def get_guild_member_balance(player_name: str) -> int:
+    guilds_collection = get_guilds_collection()
+    matching_guild = await guilds_collection.find_one(
+        {"archived_members": {"$ne": player_name}, "guild_member.guild_member_name": player_name},
+        {"guild_member.$": 1}
+    )
+    if matching_guild and "guild_member" in matching_guild and len(matching_guild["guild_member"]) > 0:
+        return matching_guild["guild_member"][0].get("guild_member_donation", 0)
+    return 0
+
 
 async def update_donation_amount_by_player_name_in_guilds(player_name: str, donated_amount: int, donation_status: str):
     guilds_collection = get_guilds_collection()
