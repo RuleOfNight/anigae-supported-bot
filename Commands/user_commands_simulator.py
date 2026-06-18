@@ -1,50 +1,161 @@
 import discord
 from discord.ext import commands
 import io
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import numpy as np
+import urllib.parse
+import json
+from playwright.async_api import async_playwright
 
-def generate_chart(end_round=None):
-    plt.figure(figsize=(9, 5))
-    
-    rounds = np.arange(1, 21)
-    buffs = np.maximum(0, 0.50 - (rounds - 1) * 0.05)
+async def generate_chart(end_round=None):
+    # Prepare data
+    rounds = list(range(1, 21))
+    buffs = [max(0, 0.50 - (r - 1) * 0.05) for r in rounds]
     
     combos = [
-        ("Impossible Solo", 20, 1.000, 1.25, "red", "-"),
-        ("Impossible Duo", 15, 1.125, 1.25, "red", "--"),
-        ("Hard Solo", 20, 1.000, 1.10, "orange", "-"),
-        ("Hard Duo", 15, 1.125, 1.10, "orange", "--"),
-        ("Medium Solo", 20, 1.000, 1.00, "blue", "-"),
-        ("Medium Duo", 15, 1.125, 1.00, "blue", "--"),
-        ("Easy Solo", 20, 1.000, 0.85, "green", "-"),
-        ("Easy Duo", 15, 1.125, 0.85, "green", "--"),
+        ("Impossible Solo", 20, 1.000, 1.25, "#ef4444", False),
+        ("Impossible Duo", 15, 1.125, 1.25, "#ef4444", [5, 5]),
+        ("Hard Solo", 20, 1.000, 1.10, "#f97316", False),
+        ("Hard Duo", 15, 1.125, 1.10, "#f97316", [5, 5]),
+        ("Medium Solo", 20, 1.000, 1.00, "#3b82f6", False),
+        ("Medium Duo", 15, 1.125, 1.00, "#3b82f6", [5, 5]),
+        ("Easy Solo", 20, 1.000, 0.85, "#22c55e", False),
+        ("Easy Duo", 15, 1.125, 0.85, "#22c55e", [5, 5]),
     ]
     
-    for name, hits, play_mult, obj_mult, color, linestyle in combos:
-        dmg = hits * play_mult * obj_mult * (1 + buffs)
-        plt.plot(rounds, dmg, label=name, color=color, linestyle=linestyle)
-    
-    plt.axvspan(11, 20, color='gray', alpha=0.2, label='No Buff (R11+)')
-    
-    if end_round is not None:
-        plt.axvline(x=end_round, color='black', linestyle=':', label=f'End Round: {end_round}')
+    datasets = []
+    for name, hits, play_mult, obj_mult, color, dash in combos:
+        data = [hits * play_mult * obj_mult * (1 + b) for b in buffs]
+        datasets.append({
+            "label": name,
+            "data": data,
+            "borderColor": color,
+            "backgroundColor": color,
+            "borderDash": dash if dash else [],
+            "fill": False,
+            "tension": 0.1,
+            "borderWidth": 2,
+            "pointRadius": 0,
+            "pointHoverRadius": 0
+        })
+
+    datasets_json = json.dumps(datasets)
+
+    # Render HTML template
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            body {{
+                background-color: #1e1e2e;
+                margin: 0;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 900px;
+                height: 500px;
+                color: #cdd6f4;
+                font-family: sans-serif;
+            }}
+            canvas {{
+                background-color: #1e1e2e;
+            }}
+        </style>
+    </head>
+    <body>
+        <canvas id="myChart"></canvas>
+        <script>
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const end_round = {end_round if end_round is not None else 'null'};
+            const plugins = [];
+            
+            // Add custom plugin for shading R11+ and drawing end round vertical line
+            plugins.push({{
+                id: 'customCanvasBackground',
+                beforeDraw: (chart) => {{
+                    const ctx = chart.ctx;
+                    const xAxis = chart.scales.x;
+                    const yAxis = chart.scales.y;
+                    
+                    // Shade R11 to R20
+                    const startX = xAxis.getPixelForValue(10); // R11 is index 10 (0-indexed)
+                    const endX = xAxis.getPixelForValue(19);
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                    ctx.fillRect(startX, yAxis.top, endX - startX, yAxis.bottom - yAxis.top);
+                    
+                    // Draw End Round line
+                    if (end_round !== null) {{
+                        const lineX = xAxis.getPixelForValue(end_round - 1);
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#f38ba8';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([5, 5]);
+                        ctx.moveTo(lineX, yAxis.top);
+                        ctx.lineTo(lineX, yAxis.bottom);
+                        ctx.stroke();
+                        
+                        ctx.fillStyle = '#f38ba8';
+                        ctx.font = 'bold 12px sans-serif';
+                        ctx.fillText('R' + end_round, lineX + 5, yAxis.top + 15);
+                    }}
+                    ctx.restore();
+                }}
+            }});
+            
+            new Chart(ctx, {{
+                type: 'line',
+                data: {{
+                    labels: {json.dumps(["R" + str(r) for r in rounds])},
+                    datasets: {datasets_json}
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    interaction: {{ mode: 'index', intersect: false }},
+                    plugins: {{
+                        title: {{
+                            display: true,
+                            text: 'Boss DMG Simulator | Energy = 60',
+                            color: '#cdd6f4',
+                            font: {{ size: 18 }}
+                        }},
+                        legend: {{
+                            labels: {{ color: '#cdd6f4' }},
+                            position: 'bottom'
+                        }}
+                    }},
+                    scales: {{
+                        x: {{
+                            grid: {{ color: '#313244' }},
+                            ticks: {{ color: '#a6adc8' }}
+                        }},
+                        y: {{
+                            grid: {{ color: '#313244' }},
+                            ticks: {{ color: '#a6adc8' }},
+                            title: {{ display: true, text: 'DMG', color: '#cdd6f4' }}
+                        }}
+                    }}
+                }},
+                plugins: plugins
+            }});
+        </script>
+    </body>
+    </html>
+    """
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page(viewport={"width": 940, "height": 540})
+        await page.set_content(html_content, wait_until="networkidle")
         
-    plt.title("Boss DMG Simulator  |  Energy = 60")
-    plt.xlabel("Round")
-    plt.ylabel("DMG")
-    plt.xticks(np.arange(1, 21, 1))
-    plt.grid(True, linestyle='--', alpha=0.6)
-    
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.tight_layout()
-    
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png', dpi=100)
+        screenshot_bytes = await page.locator("body").screenshot()
+        await browser.close()
+
+    buf = io.BytesIO(screenshot_bytes)
     buf.seek(0)
-    plt.close()
     return buf
 
 def generate_ranking_text(end_round):
@@ -61,24 +172,23 @@ def generate_ranking_text(end_round):
         ("Easy Duo", 15, 1.125, 0.85),
     ]
     
-    results = []
-    for name, hits, play_mult, obj_mult in combos:
-        dmg = hits * play_mult * obj_mult * (1 + buff)
-        results.append((name, dmg, hits, play_mult, obj_mult))
-        
-    results.sort(key=lambda x: x[1], reverse=True)
-    
     lines = []
-    lines.append(f"Round kết thúc: R{end_round}  |  Buff: +{int(buff * 100)}%")
+    lines.append(f"**Round kết thúc:** R{end_round}  |  **Buff:** +{int(buff * 100)}%")
     lines.append("")
-    lines.append(f"{'Rank':<5} {'Combo':<18} {'DMG':<7} {'Hits':<5} {'PlayMult':<9} {'ObjMult':<7}")
-    lines.append("─" * 58)
     
-    for i, (name, dmg, hits, play_mult, obj_mult) in enumerate(results, 1):
-        star = "  ◆◆◆" if i <= 3 else ""
-        lines.append(f" #{i:<3} {name:<18} {dmg:<7.2f} {hits:<5} ×{play_mult:<8.3f} ×{obj_mult:<7.2f}{star}")
+    # Fixed rank mapping
+    for i, (name, hits, play_mult, obj_mult) in enumerate(combos, 1):
+        dmg = hits * play_mult * obj_mult * (1 + buff)
         
-    return "```\n" + "\n".join(lines) + "\n```"
+        # Highlight top 3 (Impossible Solo, Impossible Duo, Hard Solo based on base DMG)
+        # Assuming the fixed order is inherently sorted by max DMG potential.
+        rank_label = f"**#{i}**" if i <= 3 else f"#{i}"
+        name_label = f"**{name}**" if i <= 3 else name
+        star = " 🔥" if i <= 3 else ""
+        
+        lines.append(f"{rank_label} {name_label}: **{dmg:.2f}** DMG (Hits: {hits}, M.Play: ×{play_mult:.3f}, M.Obj: ×{obj_mult:.2f}){star}")
+        
+    return "\n".join(lines)
 
 class SimulatorInputModal(discord.ui.Modal, title="Nhập round end"):
     round_input = discord.ui.TextInput(
@@ -98,7 +208,7 @@ class SimulatorInputModal(discord.ui.Modal, title="Nhập round end"):
             await interaction.response.send_message("Vui lòng nhập số nguyên từ 1–20", ephemeral=True)
             return
 
-        buf = generate_chart(val)
+        buf = await generate_chart(val)
         file = discord.File(fp=buf, filename="chart.png")
         
         new_view = build_simulator_view(end_round=val)
@@ -135,7 +245,7 @@ class SimulatorCommand(commands.Cog):
 
     @commands.command()
     async def simulator(self, ctx):
-        buf = generate_chart()
+        buf = await generate_chart()
         file = discord.File(fp=buf, filename="chart.png")
         view = build_simulator_view()
         await ctx.send(file=file, view=view)

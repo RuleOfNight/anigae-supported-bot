@@ -9,4 +9,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+RUN playwright install chromium --with-deps
+
 CMD ["python", "main.py"]
