@@ -9,8 +9,8 @@ DATA_DIR = os.path.join(os.path.dirname(BASE_DIR), "data")
 class SimulatorContainer(discord.ui.Container):
     header = discord.ui.TextDisplay("## Boss DMG Simulator\nThống kê DMG 8 combo (Energy = 60)")
     gallery = discord.ui.MediaGallery(
-        MediaGalleryItem(url="attachment://chart.png"),
-        MediaGalleryItem(url="attachment://table.png")
+        MediaGalleryItem(media="attachment://chart.png"),
+        MediaGalleryItem(media="attachment://table.png")
     )
 
 class SimulatorView(discord.ui.LayoutView):
