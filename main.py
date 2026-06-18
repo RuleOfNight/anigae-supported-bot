@@ -17,6 +17,7 @@ from Commands import help_def_v2, user_commands_on_message, user_commands_on_mes
 from Commands.admin_commands import AdminCommands
 from Commands.user_commands_prefix import UserCommandsPrefix
 from Commands.user_commands_prefix_v2 import UserCommandsPrefix_v2
+from Commands.user_commands_simulator import SimulatorCommand
 import pytz
 from pytz import utc
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -115,6 +116,7 @@ async def on_ready():
     runtime.db_ready = True
     await bot.add_cog(UserCommandsPrefix(bot))
     await bot.add_cog(UserCommandsPrefix_v2(bot))
+    await bot.add_cog(SimulatorCommand(bot))
     await bot.load_extension("Commands.user_commands_slash")
     admin_cog = AdminCommands(bot)
     await bot.add_cog(admin_cog)
