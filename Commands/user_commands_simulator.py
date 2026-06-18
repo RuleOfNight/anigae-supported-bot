@@ -100,41 +100,34 @@ class SimulatorInputModal(discord.ui.Modal, title="Nhập round end"):
 
         buf = generate_chart(val)
         file = discord.File(fp=buf, filename="chart.png")
-        rank_text = generate_ranking_text(val)
         
-        # update the original message
-        # we can't edit the file of a message easily with V2, so we can send a new message and delete the old one or just edit the embed text. 
-        # But wait, discord allows editing attachments.
-        
-        # In the original spec: "Bot edit message gốc (không gửi message mới), thêm vào bên dưới ảnh chart: Bảng xếp hạng"
-        # Since we use discord.ui.Container, we can add the ranking text into the Container's text display!
-        
-        view = interaction.message.components[0]
-        # But since we use Discord Components V2, let's just generate the new View structure
-        new_view = SimulatorView(end_round=val)
+        new_view = build_simulator_view(end_round=val)
         await interaction.response.edit_message(attachments=[file], view=new_view)
 
-class SimulatorContainer(discord.ui.Container):
-    def __init__(self, end_round=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if end_round is not None:
-            rank_text = generate_ranking_text(end_round)
-            self.add_item(discord.ui.TextDisplay(rank_text))
-            
-        self.button_rows = discord.ui.ActionRow(
-            discord.ui.Button(label="Nhập round end", style=discord.ButtonStyle.primary, custom_id="InputRound")
-        )
+def build_simulator_view(end_round=None):
+    if end_round is not None:
+        rank_text_str = generate_ranking_text(end_round)
+        class SimulatorContainer(discord.ui.Container):
+            rank_text = discord.ui.TextDisplay(rank_text_str)
+            button_rows = discord.ui.ActionRow(
+                discord.ui.Button(label="Nhập round end", style=discord.ButtonStyle.primary, custom_id="InputRound")
+            )
+    else:
+        class SimulatorContainer(discord.ui.Container):
+            button_rows = discord.ui.ActionRow(
+                discord.ui.Button(label="Nhập round end", style=discord.ButtonStyle.primary, custom_id="InputRound")
+            )
 
-class SimulatorView(discord.ui.LayoutView):
-    def __init__(self, end_round=None):
-        super().__init__()
-        self.container = SimulatorContainer(end_round=end_round, id=1, accent_colour=0x71368A)
+    class SimulatorView(discord.ui.LayoutView):
+        container = SimulatorContainer(id=1, accent_colour=0x71368A)
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        button_id = interaction.data.get("custom_id")
-        if button_id == "InputRound":
-            await interaction.response.send_modal(SimulatorInputModal())
-        return True
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            button_id = interaction.data.get("custom_id")
+            if button_id == "InputRound":
+                await interaction.response.send_modal(SimulatorInputModal())
+            return True
+
+    return SimulatorView()
 
 class SimulatorCommand(commands.Cog):
     def __init__(self, bot):
@@ -144,7 +137,7 @@ class SimulatorCommand(commands.Cog):
     async def simulator(self, ctx):
         buf = generate_chart()
         file = discord.File(fp=buf, filename="chart.png")
-        view = SimulatorView()
+        view = build_simulator_view()
         await ctx.send(file=file, view=view)
 
 async def setup(bot):
