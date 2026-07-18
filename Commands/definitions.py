@@ -170,7 +170,7 @@ _SKILL_EMOJI_MAP = {
     "Recoil":                      "<:Recoil:1503397132231512106>",                   #done
     "Life Sap":                    "<:Life_Sap:1503312924410908774>",                 #done
     "Reflector":                   "<:Reflector:1503312970388869191>",                #done
-    "Regeneration":                "<:Regeneration:1503140091969929446>",             #done
+    "Regeneration":                "<:Regeneration:1503397572159471707>",             #done
     "Rejuvenation":                "<:Rejuvenation:1503313451043520583>",             #done
     "Restricted Instinct":         "<:Restricted_Instinct:1503391863368056942>",      #done
     "Reversion":                   "<:Reversion:1503313135287668867>",                #done

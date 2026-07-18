@@ -42,7 +42,10 @@ async def create_or_update_tracking(player_name: str, discord_id, channel_id: in
         new_ping_due = week_start + new_total * WEEK_SECONDS
         await _collection.update_one(
             {"_id": existing["_id"]},
-            {"$set": {"total_weeks_credited": new_total, "ping_due_unix": new_ping_due, "last_donation_unix": now}}
+            {"$set": {"total_weeks_credited": new_total,
+                       "ping_due_unix": new_ping_due,
+                       "last_donation_unix": now,
+                       "coverage_start_unix": min(existing.get("coverage_start_unix", week_start), week_start)}}
         )
         return new_total
     # Tuần mới hoặc lần đầu → record mới, giữ lại coverage còn dư từ record cũ
@@ -61,6 +64,7 @@ async def create_or_update_tracking(player_name: str, discord_id, channel_id: in
         "channel_id": channel_id,
         "first_donation_unix": now,
         "last_donation_unix": now,
+        "coverage_start_unix": week_start,
         "total_weeks_credited": total,
         "ping_due_unix": week_start + total * WEEK_SECONDS,
         "pinged": False
@@ -68,10 +72,90 @@ async def create_or_update_tracking(player_name: str, discord_id, channel_id: in
     return total
 
 
+async def grant_next_week_waiver(
+    player_name: str,
+    discord_id,
+    channel_id: int,
+    waiver_key: str,
+    damage: int,
+    source: str = "breach",
+) -> bool:
+    """
+    Grant one weekly donation coverage for the next weekly interval.
+
+    This is tracked as a waiver/credit, not as a fake gold donation in guild
+    donation history. Returns True when a new waiver key was applied, False
+    when the same waiver was already recorded.
+    """
+    now = int(time.time())
+    current_week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
+    next_week_start = current_week_start + WEEK_SECONDS
+    waiver_until = next_week_start + WEEK_SECONDS
+
+    existing = await _collection.find_one({
+        "player_name": player_name,
+        "channel_id": channel_id,
+        "pinged": False,
+    })
+
+    waiver_entry = {
+        "key": waiver_key,
+        "source": source,
+        "damage": int(damage),
+        "timestamp": now,
+        "coverage_start_unix": next_week_start,
+        "coverage_until_unix": waiver_until,
+    }
+
+    if existing:
+        if waiver_key in existing.get("waiver_keys", []):
+            return False
+
+        current_ping_due = existing.get("ping_due_unix", 0)
+        new_ping_due = max(current_ping_due, waiver_until)
+        coverage_start = existing.get("coverage_start_unix", current_week_start)
+        total_weeks = max(1, (new_ping_due - current_week_start) // WEEK_SECONDS)
+
+        await _collection.update_one(
+            {"_id": existing["_id"]},
+            {"$set": {
+                "discord_id": discord_id,
+                "last_donation_unix": now,
+                "ping_due_unix": new_ping_due,
+                "coverage_start_unix": min(coverage_start, next_week_start),
+                "total_weeks_credited": total_weeks,
+            },
+             "$addToSet": {"waiver_keys": waiver_key},
+             "$push": {"waivers": waiver_entry}}
+        )
+        return True
+
+    await _collection.insert_one({
+        "player_name": player_name,
+        "discord_id": discord_id,
+        "channel_id": channel_id,
+        "first_donation_unix": now,
+        "last_donation_unix": now,
+        "coverage_start_unix": next_week_start,
+        "total_weeks_credited": 1,
+        "ping_due_unix": waiver_until,
+        "pinged": False,
+        "waiver_keys": [waiver_key],
+        "waivers": [waiver_entry],
+    })
+    return True
+
+
 async def get_weekly_donors(channel_id: int, week_start_unix: int) -> set:
     """Trả về set player_name còn coverage từ week_start_unix (donate bội số vẫn tính)."""
     docs = await _collection.find(
-        {"channel_id": channel_id, "pinged": False, "ping_due_unix": {"$gt": week_start_unix}}
+        {"channel_id": channel_id,
+         "pinged": False,
+         "ping_due_unix": {"$gt": week_start_unix},
+         "$or": [
+             {"coverage_start_unix": {"$exists": False}},
+             {"coverage_start_unix": {"$lte": week_start_unix}},
+         ]}
     ).to_list(length=None)
     return {doc["player_name"] for doc in docs}
 

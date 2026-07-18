@@ -527,6 +527,17 @@ async def set_weekly_donation_channel(guild_id, channel_id: int):
     )
 
 
+async def get_weekly_donation_channel(guild_id) -> int | None:
+    guilds_collection = get_guilds_collection()
+    doc = await guilds_collection.find_one(
+        {"guild_id": guild_id},
+        {"weekly_donation_channel_id": 1}
+    )
+    if doc:
+        return doc.get("weekly_donation_channel_id")
+    return None
+
+
 async def get_guilds_with_weekly_channel() -> list:
     """Trả về tất cả guild document có cấu hình weekly_donation_channel_id."""
     guilds_collection = get_guilds_collection()
