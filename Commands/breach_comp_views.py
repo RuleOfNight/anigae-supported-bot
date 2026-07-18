@@ -8,10 +8,10 @@ from db_methods import breach_comps
 PLAYBOOK_TITLE = "## \U0001f4d8 Breach Playbook \u2014 Gi\u00e1o \u00c1n Cu\u1ed1i Tu\u1ea7n"
 PLAYBOOK_DESCRIPTION = (
     "-# N\u01a1i clan gom team comp, RNG note, \u0111i\u1ec1u ki\u1ec7n setup v\u00e0 k\u1ebft qu\u1ea3 th\u1ef1c chi\u1ebfn cho Breach.\n"
-    "-# D\u00f9ng `/breach_comp_add` \u0111\u1ec3 chia s\u1ebb gi\u00e1o \u00e1n c\u1ee7a b\u1ea1n. Upvote nh\u1eefng gi\u00e1o \u00e1n \u0111\u00e1ng th\u1eed \u0111\u1ec3 \u0111\u1ea9y l\u00ean \u0111\u1ea7u b\u1ea3ng."
+    "-# D\u00f9ng `/breach_comp_add` \u0111\u1ec3 chia s\u1ebb gi\u00e1o \u00e1n. Upvote nh\u1eefng gi\u00e1o \u00e1n \u0111\u00e1ng th\u1eed \u0111\u1ec3 \u0111\u1ea9y l\u00ean \u0111\u1ea7u b\u1ea3ng."
 )
 EMPTY_AVATAR_URL = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif"
-PER_PAGE = 3
+PER_PAGE = 5
 
 
 def _clip(text: str, limit: int) -> str:
