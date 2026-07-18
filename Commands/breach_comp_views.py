@@ -5,7 +5,7 @@ from discord import ui
 
 from db_methods import breach_comps
 
-PLAYBOOK_TITLE = "## \U0001f4d8 Breach Playbook \u2014 Gi\u00e1o \u00c1n Cu\u1ed1i Tu\u1ea7n"
+PLAYBOOK_TITLE = "## \U0001f4d8 Breach Playbook"
 PLAYBOOK_DESCRIPTION = (
     "-# N\u01a1i clan gom team comp, RNG note, \u0111i\u1ec1u ki\u1ec7n setup v\u00e0 k\u1ebft qu\u1ea3 th\u1ef1c chi\u1ebfn cho Breach.\n"
     "-# D\u00f9ng `/breach_comp_add` \u0111\u1ec3 chia s\u1ebb gi\u00e1o \u00e1n. Upvote nh\u1eefng gi\u00e1o \u00e1n \u0111\u00e1ng th\u1eed \u0111\u1ec3 \u0111\u1ea9y l\u00ean \u0111\u1ea7u b\u1ea3ng."
@@ -31,7 +31,7 @@ def _entry_text(entry: dict, absolute_index: int) -> str:
     upvotes = entry.get("upvote_count", 0)
 
     lines = [
-        f"### #{absolute_index} \u00b7 Gi\u00e1o \u00e1n **{title}**",
+        f"### #{absolute_index} \u00b7 **{title}**",
         f"-# shared by **{author}** \u00b7 \u25b2 **{upvotes}**",
         f"**Team:** {comp or '*ch\u01b0a ghi team*'}",
     ]
