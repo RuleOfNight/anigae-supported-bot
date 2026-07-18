@@ -13,7 +13,7 @@ load_dotenv()
 from discord.ext import commands, tasks
 from discord import app_commands, Container
 from db_methods import general, players, guilds
-from Commands import help_def_v2, user_commands_on_message, user_commands_on_message_v2
+from Commands import changelog, help_def_v2, user_commands_on_message, user_commands_on_message_v2
 from Commands.admin_commands import AdminCommands
 from Commands.user_commands_prefix import UserCommandsPrefix
 from Commands.user_commands_prefix_v2 import UserCommandsPrefix_v2
@@ -49,6 +49,14 @@ bot.locations = {}
 bot.raid_comps = {}
 runtime.bot = bot
 tree = bot.tree
+
+
+async def _changelog_tree_interaction_check(interaction: discord.Interaction) -> bool:
+    await changelog.maybe_schedule_changelog_for_interaction(bot, interaction)
+    return True
+
+
+tree.interaction_check = _changelog_tree_interaction_check
 scheduler = AsyncIOScheduler(timezone=pytz.UTC)
 
 own_bot_id = 1213054068197560331
@@ -170,6 +178,11 @@ async def on_command_error(ctx, error):
     return
 
 
+@bot.after_invoke
+async def send_changelog_after_prefix_command(ctx):
+    await changelog.maybe_send_changelog_for_message(ctx.message)
+
+
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
     message = "An error occurred while executing the command."
@@ -248,12 +261,15 @@ async def on_message(message):
     # Non-bot messages
     if re.match(r'^\.rd\s+bt(\s+(all|max|\d+))?$', message.content.strip(), re.IGNORECASE):
         await _handle_rd_bt(message)
+        await changelog.maybe_send_changelog_for_message(message)
     elif keyword_raid_lobby_9 in message.content:
         await _handle_rd_lobbies(message)
+        await changelog.maybe_send_changelog_for_message(message)
     elif bot.user.mentioned_in(message) and "@everyone" not in message.content and "@here" not in message.content:
         if message.reference is None:
             view = await help_def_v2.help_v2(message)
             await message.channel.send(view=view)
+            await changelog.maybe_send_changelog_for_message(message)
     else:
         await bot.process_commands(message)
 
