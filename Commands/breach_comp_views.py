@@ -26,6 +26,7 @@ def _entry_text(entry: dict, absolute_index: int) -> str:
     title = entry.get("title") or "Untitled Breach plan"
     author = entry.get("author_name") or "unknown"
     comp = _clip(entry.get("comp", ""), 260)
+    phase = _clip(entry.get("phase", ""), 80)
     rng = _clip(entry.get("rng", ""), 180)
     description = _clip(entry.get("description", ""), 260)
     result = _clip(entry.get("result", ""), 180)
@@ -36,6 +37,8 @@ def _entry_text(entry: dict, absolute_index: int) -> str:
         f"-# shared by **{author}** \u00b7 \u25b2 **{upvotes}**",
         f"**Team:** {comp or '*ch\u01b0a ghi team*'}",
     ]
+    if phase:
+        lines.append(f"**Phase:** {phase}")
     if rng:
         lines.append(f"**RNG:** {rng}")
     if description:

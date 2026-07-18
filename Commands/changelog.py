@@ -6,7 +6,7 @@ import discord
 from db_methods.general import get_config_collection
 
 CURRENT_CHANGELOG_VERSION = "2026-07-18-breach-playbook"
-GUILD_CHANGELOG_COOLDOWN_SECONDS = 60 * 60
+GUILD_CHANGELOG_COOLDOWN_SECONDS = 5 * 60
 CHANGELOG_COLOR = 0x71368A
 CHANGELOG_THUMBNAIL_URL = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
 

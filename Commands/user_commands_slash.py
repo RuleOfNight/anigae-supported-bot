@@ -836,14 +836,25 @@ class UserCommandsSlash(commands.Cog):
     @app_commands.command(name="breach_comp_add", description="Share a Breach team comp/playbook with your clan.")
     @app_commands.describe(
         comp="Team comp, e.g. A4 Totoro, A2H Chisa Kotegawa, A5 Clara Valac",
+        phase="Breach phase this plan is for",
         title="Short name for this playbook, e.g. All in Chisa",
         rng="RNG notes, e.g. r1 crit loses the run",
         description="Setup/details, e.g. Chisa needs 1k gold before r8",
         result="Result achieved, e.g. 430k dmg / stable 400k+")
+    @app_commands.choices(phase=[
+        app_commands.Choice(name="Docile", value="Docile"),
+        app_commands.Choice(name="Chaos", value="Chaos"),
+        app_commands.Choice(name="Herald - Damnation", value="Herald - Damnation"),
+        app_commands.Choice(name="Herald - Salvation", value="Herald - Salvation"),
+        app_commands.Choice(name="Gambit", value="Gambit"),
+        app_commands.Choice(name="Enraged", value="Enraged"),
+        app_commands.Choice(name="Collapse", value="Collapse"),
+    ])
     async def breach_comp_add(
         self,
         interaction: discord.Interaction,
         comp: str,
+        phase: app_commands.Choice[str],
         title: str = None,
         rng: str = None,
         description: str = None,
@@ -862,6 +873,7 @@ class UserCommandsSlash(commands.Cog):
             author_avatar_url=avatar_url,
             title=title,
             comp=comp,
+            phase=phase.value,
             rng=rng,
             description=description,
             result=result,
