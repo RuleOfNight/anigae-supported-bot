@@ -5,7 +5,7 @@ import discord
 
 from db_methods.general import get_config_collection
 
-CURRENT_CHANGELOG_VERSION = "2026-07-18-breach-waiver"
+CURRENT_CHANGELOG_VERSION = "2026-07-18-breach-playbook"
 GUILD_CHANGELOG_COOLDOWN_SECONDS = 60 * 60
 CHANGELOG_COLOR = 0x71368A
 CHANGELOG_THUMBNAIL_URL = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
@@ -15,10 +15,15 @@ _runtime_cooldowns: dict[tuple[str, int], int] = {}
 _CHANGELOG_CONTENT = {
     "en": {
         "title": "Caeser Update Notes",
-        "subtitle": "A fresh little upgrade just landed.",
+        "subtitle": "Weekend Breach tools just got a real notebook.",
         "sections": [
+            ("Breach Playbook", [
+                "New `/breach_comp_add` command lets clan members share Breach plans with comp, RNG notes, setup details, and results.",
+                "New `/breach_comp_board` opens a Components V2 board with avatars, paginated plans, Refresh, and per-plan upvotes.",
+                "Plans are saved per server in MongoDB, so each clan gets its own little strategy library.",
+            ]),
             ("Breach weekly waiver", [
-                "Caeser now reads AniGame's `Breach Clan Standings` component pages.",
+                "Caeser reads AniGame's `Breach Clan Standings` component pages.",
                 "Clan members with **400,000+ damage** get next week's weekly donation waived automatically.",
                 "Waivers are tracked separately, so the bot does **not** fake a 100,000 gold donation in clan donation history.",
             ]),
@@ -31,10 +36,15 @@ _CHANGELOG_CONTENT = {
     },
     "vi": {
         "title": "Caeser v\u1eeba \u0111\u01b0\u1ee3c c\u1eadp nh\u1eadt",
-        "subtitle": "C\u00f3 v\u00e0i n\u00e2ng c\u1ea5p nh\u1ecf nh\u01b0ng kh\u00e1 ngon \u0111\u00e2y.",
+        "subtitle": "Breach cu\u1ed1i tu\u1ea7n gi\u1edd c\u00f3 s\u1ed5 tay chi\u1ebfn thu\u1eadt \u0111\u00e0ng ho\u00e0ng r\u1ed3i.",
         "sections": [
+            ("Breach Playbook \u2014 Gi\u00e1o \u00c1n Cu\u1ed1i Tu\u1ea7n", [
+                "Th\u00eam `/breach_comp_add` \u0111\u1ec3 member chia s\u1ebb gi\u00e1o \u00e1n Breach g\u1ed3m team comp, RNG note, setup chi ti\u1ebft v\u00e0 k\u1ebft qu\u1ea3.",
+                "Th\u00eam `/breach_comp_board` \u0111\u1ec3 m\u1edf b\u1ea3ng Components V2 c\u00f3 avatar ng\u01b0\u1eddi t\u1ea1o, chia trang, Refresh v\u00e0 upvote t\u1eebng gi\u00e1o \u00e1n.",
+                "Gi\u00e1o \u00e1n \u0111\u01b0\u1ee3c l\u01b0u ri\u00eang theo server trong MongoDB, n\u00ean m\u1ed7i clan c\u00f3 th\u01b0 vi\u1ec7n comp ri\u00eang.",
+            ]),
             ("Mi\u1ec5n donate weekly nh\u1edd Breach", [
-                "Caeser gi\u1edd c\u00f3 th\u1ec3 \u0111\u1ecdc b\u1ea3ng `Breach Clan Standings` d\u1ea1ng component c\u1ee7a AniGame.",
+                "Caeser c\u00f3 th\u1ec3 \u0111\u1ecdc b\u1ea3ng `Breach Clan Standings` d\u1ea1ng component c\u1ee7a AniGame.",
                 "Member \u0111\u1ea1t **400,000+ damage** s\u1ebd \u0111\u01b0\u1ee3c mi\u1ec5n donate weekly cho tu\u1ea7n sau t\u1ef1 \u0111\u1ed9ng.",
                 "Waiver \u0111\u01b0\u1ee3c l\u01b0u ri\u00eang, n\u00ean bot **kh\u00f4ng gi\u1ea3 l\u1eadp** donation 100,000 gold trong l\u1ecbch s\u1eed donate clan.",
             ]),

@@ -14,6 +14,7 @@ card_pictures_collection = None   # custom card instance pictures
 raid_snapshots_collection = None  # raid activity tracker snapshots
 weekly_donation_tracker_collection = None
 channel_donations_collection = None
+breach_comps_collection = None
 
 _CONFIG_ID = "global"
 
@@ -21,7 +22,7 @@ _CONFIG_ID = "global"
 async def connect_to_db():
     global client_db, cards_collection, players_collection, guilds_collection
     global config_collection, card_pictures_collection, raid_snapshots_collection
-    global weekly_donation_tracker_collection, channel_donations_collection
+    global weekly_donation_tracker_collection, channel_donations_collection, breach_comps_collection
     db_connection = os.getenv("MONGODB_URI")
     client_db = AsyncIOMotorClient(db_connection)
     bot_db = client_db["discordbot"]
@@ -33,9 +34,11 @@ async def connect_to_db():
     raid_snapshots_collection = bot_db["raid_snapshots"]
     weekly_donation_tracker_collection = bot_db["weekly_donation_tracker"]
     channel_donations_collection = bot_db["channel_donations"]
-    from db_methods import weekly_donations, channel_donations
+    breach_comps_collection = bot_db["breach_comps"]
+    from db_methods import weekly_donations, channel_donations, breach_comps
     weekly_donations.init_collection(weekly_donation_tracker_collection)
     channel_donations.init_collection(channel_donations_collection)
+    breach_comps.init_collection(breach_comps_collection)
     print("[DATABASE] Database successfully connected.")
 
 
@@ -53,6 +56,10 @@ def get_guilds_collection():
 
 def get_config_collection():
     return config_collection
+
+
+def get_breach_comps_collection():
+    return breach_comps_collection
 
 
 def get_card_pictures_collection():

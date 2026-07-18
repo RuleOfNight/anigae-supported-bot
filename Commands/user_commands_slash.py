@@ -6,9 +6,9 @@ import os
 import runtime
 from discord import app_commands
 from discord.ext import commands
-from db_methods import cards, guilds, players, channel_donations
+from db_methods import breach_comps, cards, guilds, players, channel_donations
 from Commands.user_commands_on_message import MONTHLY_DONATION_CHANNEL_ID
-from Commands import definitions, user_commands_prefix_definition, user_commands_slash_definition_v2, help_def_v2, user_commands_slash_definiton_embed
+from Commands import breach_comp_views, definitions, user_commands_prefix_definition, user_commands_slash_definition_v2, help_def_v2, user_commands_slash_definiton_embed
 from misc import time_calculations
 from Commands.user_commands_prefix import ViewDeleteButtonPrefix
 from Commands.user_commands_on_message import gold_emote, rare_emote, super_rare_1, super_rare_2, ultra_rare_1, ultra_rare_2
@@ -832,6 +832,56 @@ class UserCommandsSlash(commands.Cog):
         await guilds.set_weekly_donation_channel(interaction.guild.id, channel.id)
         await interaction.response.send_message(
             f"Kênh kiểm tra đóng tiền weekly đã được đặt thành {channel.mention}.", ephemeral=True)
+
+    @app_commands.command(name="breach_comp_add", description="Share a Breach team comp/playbook with your clan.")
+    @app_commands.describe(
+        comp="Team comp, e.g. A4 Totoro, A2H Chisa Kotegawa, A5 Clara Valac",
+        title="Short name for this playbook, e.g. All in Chisa",
+        rng="RNG notes, e.g. r1 crit loses the run",
+        description="Setup/details, e.g. Chisa needs 1k gold before r8",
+        result="Result achieved, e.g. 430k dmg / stable 400k+")
+    async def breach_comp_add(
+        self,
+        interaction: discord.Interaction,
+        comp: str,
+        title: str = None,
+        rng: str = None,
+        description: str = None,
+        result: str = None,
+    ):
+        if not interaction.guild:
+            await interaction.response.send_message("Command n\u00e0y ch\u1ec9 d\u00f9ng trong server.", ephemeral=True)
+            return
+
+        avatar_url = interaction.user.display_avatar.url if interaction.user.display_avatar else None
+        default_title = f"Gi\u00e1o \u00e1n c\u1ee7a {interaction.user.display_name}"
+        comp_id = await breach_comps.add_breach_comp(
+            guild_id=interaction.guild.id,
+            author_id=interaction.user.id,
+            author_name=interaction.user.display_name,
+            author_avatar_url=avatar_url,
+            title=title,
+            comp=comp,
+            rng=rng,
+            description=description,
+            result=result,
+        )
+        await interaction.response.send_message(
+            f"\u0110\u00e3 l\u01b0u gi\u00e1o \u00e1n Breach `{title or default_title}`. ID: `{comp_id}`\n"
+            "D\u00f9ng `/breach_comp_board` \u0111\u1ec3 m\u1edf b\u1ea3ng gi\u00e1o \u00e1n c\u1ee7a clan.",
+            ephemeral=True,
+        )
+
+    @app_commands.command(name="breach_comp_board", description="Open the clan Breach Playbook board.")
+    async def breach_comp_board(self, interaction: discord.Interaction):
+        if not interaction.guild:
+            await interaction.response.send_message("Command n\u00e0y ch\u1ec9 d\u00f9ng trong server.", ephemeral=True)
+            return
+
+        entries = await breach_comps.get_breach_comps(interaction.guild.id)
+        view = breach_comp_views.BreachCompBoardView(entries)
+        await interaction.response.send_message(view=view)
+
 
     @threshold.command(name="limit", description="Set the SECOND threshold limit for the guild.")
     @app_commands.checks.has_permissions(administrator=True)
