@@ -14,46 +14,38 @@ _runtime_cooldowns: dict[tuple[str, int], int] = {}
 
 _CHANGELOG_CONTENT = {
     "en": {
-        "title": "Caeser Update Notes",
-        "subtitle": "Weekend Breach tools just got a real notebook.",
+        "title": "Caeser' changelogs",
+        "subtitle": "A few Breach updates for the weekend.",
         "sections": [
             ("Breach Playbook", [
-                "New `/breach_comp_add` command lets clan members share Breach plans with comp, RNG notes, setup details, and results.",
-                "New `/breach_comp_board` opens a Components V2 board with avatars, paginated plans, Refresh, and per-plan upvotes.",
-                "Plans are saved per server in MongoDB, so each clan gets its own little strategy library.",
+                "Added `/breach_comp_add` so members can share Breach plans with the clan.",
+                "Each plan can include a team comp, RNG notes, extra setup notes, and the result it reached.",
+                "Added `/breach_comp_board` to browse shared plans in a prettier board with pages, avatars, and upvotes.",
             ]),
-            ("Breach weekly waiver", [
-                "Caeser reads AniGame's `Breach Clan Standings` component pages.",
-                "Clan members with **400,000+ damage** get next week's weekly donation waived automatically.",
-                "Waivers are tracked separately, so the bot does **not** fake a 100,000 gold donation in clan donation history.",
-            ]),
-            ("Multi-page support", [
-                "When you press AniGame's page arrows, Caeser listens to the edited standings page too.",
-                "Each Breach page is deduped, so the same page will not grant the same waiver twice.",
+            ("Weekly donation waiver", [
+                "When you show the Breach Clan Standings, Caeser can read member damage from the board.",
+                "Members who reach **400,000+ damage** will be counted as covered for next week's weekly donation.",
+                "This should make the new clan rule easier to run without manually tracking everyone after Breach ends.",
             ]),
         ],
         "footer": "You are seeing this once because the bot was updated.",
     },
     "vi": {
-        "title": "Caeser v\u1eeba \u0111\u01b0\u1ee3c c\u1eadp nh\u1eadt",
-        "subtitle": "Breach cu\u1ed1i tu\u1ea7n gi\u1edd c\u00f3 s\u1ed5 tay chi\u1ebfn thu\u1eadt \u0111\u00e0ng ho\u00e0ng r\u1ed3i.",
+        "title": "Caeser' changelogs",
+        "subtitle": "Vài cập nhật hỗ trợ Breach cuối tuần.",
         "sections": [
-            ("Breach Playbook \u2014 Gi\u00e1o \u00c1n Cu\u1ed1i Tu\u1ea7n", [
-                "Th\u00eam `/breach_comp_add` \u0111\u1ec3 member chia s\u1ebb gi\u00e1o \u00e1n Breach g\u1ed3m team comp, RNG note, setup chi ti\u1ebft v\u00e0 k\u1ebft qu\u1ea3.",
-                "Th\u00eam `/breach_comp_board` \u0111\u1ec3 m\u1edf b\u1ea3ng Components V2 c\u00f3 avatar ng\u01b0\u1eddi t\u1ea1o, chia trang, Refresh v\u00e0 upvote t\u1eebng gi\u00e1o \u00e1n.",
-                "Gi\u00e1o \u00e1n \u0111\u01b0\u1ee3c l\u01b0u ri\u00eang theo server trong MongoDB, n\u00ean m\u1ed7i clan c\u00f3 th\u01b0 vi\u1ec7n comp ri\u00eang.",
+            ("Breach Playbook", [
+                "Thêm lệnh `/breach_comp_add` để các thành viên chia sẻ giáo án Breach với nhau.",
+                "Mỗi giáo án có thể ghi team comp, ghi chú RNG, mô tả cách setup và kết quả đạt được.",
+                "Thêm lệnh `/breach_comp_board` để mở bảng giáo án của clan, có chia trang, avatar người tạo và nút upvote.",
             ]),
-            ("Mi\u1ec5n donate weekly nh\u1edd Breach", [
-                "Caeser c\u00f3 th\u1ec3 \u0111\u1ecdc b\u1ea3ng `Breach Clan Standings` d\u1ea1ng component c\u1ee7a AniGame.",
-                "Member \u0111\u1ea1t **400,000+ damage** s\u1ebd \u0111\u01b0\u1ee3c mi\u1ec5n donate weekly cho tu\u1ea7n sau t\u1ef1 \u0111\u1ed9ng.",
-                "Waiver \u0111\u01b0\u1ee3c l\u01b0u ri\u00eang, n\u00ean bot **kh\u00f4ng gi\u1ea3 l\u1eadp** donation 100,000 gold trong l\u1ecbch s\u1eed donate clan.",
-            ]),
-            ("H\u1ed7 tr\u1ee3 b\u1ea3ng nhi\u1ec1u trang", [
-                "Khi b\u1ea1n b\u1ea5m m\u0169i t\u00ean \u0111\u1ed5i trang tr\u00ean b\u1ea3ng AniGame, Caeser c\u0169ng \u0111\u1ecdc page m\u1edbi sau khi message edit.",
-                "M\u1ed7i page \u0111\u01b0\u1ee3c ch\u1ed1ng c\u1ed9ng tr\u00f9ng, n\u00ean c\u00f9ng m\u1ed9t page kh\u00f4ng c\u1ea5p waiver hai l\u1ea7n.",
+            ("Miễn donate tuần sau", [
+                "Khi bạn mở bảng Breach Clan Standings, Caeser có thể đọc damage của từng thành viên.",
+                "Ai đạt **400,000+ damage** sẽ được tính là đã hoàn thành donate weekly cho tuần sau.",
+                "Như vậy sau khi Breach kết thúc, clan đỡ phải tự ghi nhớ và cộng miễn donate thủ công cho từng người.",
             ]),
         ],
-        "footer": "B\u1ea1n th\u1ea5y th\u00f4ng b\u00e1o n\u00e0y v\u00ec bot v\u1eeba \u0111\u01b0\u1ee3c update.",
+        "footer": "Bạn thấy thông báo này vì bot vừa được cập nhật.",
     },
 }
 
@@ -75,8 +67,8 @@ def build_changelog_embed(language: str = "en") -> discord.Embed:
     )
     for section_title, bullets in content["sections"]:
         embed.add_field(
-            name=f"\u2726 {section_title}",
-            value="\n".join(f"\u2022 {bullet}" for bullet in bullets),
+            name=f"? {section_title}",
+            value="\n".join(f"? {bullet}" for bullet in bullets),
             inline=False,
         )
     embed.set_footer(text=content["footer"])
@@ -92,14 +84,14 @@ class ChangelogView(discord.ui.View):
     async def english_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.edit_message(embed=build_changelog_embed("en"), view=self)
 
-    @discord.ui.button(label="Ti\u1ebfng Vi\u1ec7t", style=discord.ButtonStyle.success)
+    @discord.ui.button(label="Tiếng Việt", style=discord.ButtonStyle.success)
     async def vietnamese_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.edit_message(embed=build_changelog_embed("vi"), view=self)
 
-    @discord.ui.button(label="G\u00f3p \u00fd", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(label="Góp ý", style=discord.ButtonStyle.secondary)
     async def feedback_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "Feedback button placeholder: ch\u1ed7 n\u00e0y sau c\u00f3 th\u1ec3 m\u1edf form, g\u1eedi link, ho\u1eb7c log g\u00f3p \u00fd v\u00e0o DB.",
+            "Feedback button placeholder: chỗ này sau có thể mở form, gửi link, hoặc log góp ý vào DB.",
             ephemeral=True,
         )
 
