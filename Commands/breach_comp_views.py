@@ -10,6 +10,7 @@ PLAYBOOK_DESCRIPTION = (
     "-# N\u01a1i clan gom team comp, RNG note, \u0111i\u1ec1u ki\u1ec7n setup v\u00e0 k\u1ebft qu\u1ea3 th\u1ef1c chi\u1ebfn cho Breach.\n"
     "-# D\u00f9ng `/breach_comp_add` \u0111\u1ec3 chia s\u1ebb gi\u00e1o \u00e1n. Upvote nh\u1eefng gi\u00e1o \u00e1n \u0111\u00e1ng th\u1eed \u0111\u1ec3 \u0111\u1ea9y l\u00ean \u0111\u1ea7u b\u1ea3ng."
 )
+DEFAULT_CLAN_GIF_URL = "https://media.discordapp.net/attachments/922869644648411236/1528002562240942121/gZXC8lKd4XcjtL9F.gif?ex=6a5cb6c7&is=6a5b6547&hm=993dadcdf9db44ef373c88e520220d561ca3542e64b1c2518acad6237d4da833&="
 EMPTY_AVATAR_URL = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif"
 PER_PAGE = 5
 
@@ -45,9 +46,10 @@ def _entry_text(entry: dict, absolute_index: int) -> str:
 
 
 class BreachCompBoardView(discord.ui.LayoutView):
-    def __init__(self, entries: list[dict], page: int = 0, *, timeout: int = 300):
+    def __init__(self, entries: list[dict], page: int = 0, clan_image_url: str | None = None, *, timeout: int = 300):
         super().__init__(timeout=timeout)
         self.entries = entries
+        self.clan_image_url = clan_image_url or DEFAULT_CLAN_GIF_URL
         self.page = max(0, page)
         self.max_pages = max(1, math.ceil(len(entries) / PER_PAGE))
         if self.page >= self.max_pages:
@@ -57,8 +59,10 @@ class BreachCompBoardView(discord.ui.LayoutView):
 
     def _build(self):
         container = ui.Container(id=1, accent_colour=0x71368A)
-        container.add_item(ui.TextDisplay(PLAYBOOK_TITLE))
-        container.add_item(ui.TextDisplay(PLAYBOOK_DESCRIPTION))
+        container.add_item(ui.Section(
+            ui.TextDisplay(f"{PLAYBOOK_TITLE}\n{PLAYBOOK_DESCRIPTION}"),
+            accessory=ui.Thumbnail(media=self.clan_image_url),
+        ))
         container.add_item(ui.Separator())
 
         if not self.entries:
@@ -115,7 +119,9 @@ class BreachCompBoardView(discord.ui.LayoutView):
         elif custom_id != "breach_refresh":
             return True
 
+        from db_methods import guilds
         entries = await breach_comps.get_breach_comps(interaction.guild.id)
-        new_view = BreachCompBoardView(entries, page=page)
+        clan_image_url = await guilds.get_breach_playbook_image_url(interaction.guild.id)
+        new_view = BreachCompBoardView(entries, page=page, clan_image_url=clan_image_url)
         await interaction.response.edit_message(view=new_view)
         return True

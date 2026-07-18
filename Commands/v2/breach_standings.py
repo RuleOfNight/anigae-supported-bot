@@ -9,6 +9,31 @@ BREACH_DAMAGE_WAIVER_THRESHOLD = 400_000
 _processed_breach_pages: deque[tuple[int, int]] = deque(maxlen=500)
 
 
+def _find_image_recursive(obj) -> str | None:
+    if hasattr(obj, "accessory") and obj.accessory:
+        accessory = obj.accessory
+        media = getattr(accessory, "media", None)
+        if media and getattr(media, "url", None):
+            return media.url
+    for item in getattr(obj, "items", []) or []:
+        media = getattr(item, "media", None)
+        if media and getattr(media, "url", None):
+            return media.url
+    for child in getattr(obj, "children", []) or []:
+        url = _find_image_recursive(child)
+        if url:
+            return url
+    return None
+
+
+def _extract_first_component_image(message) -> str | None:
+    for component in message.components:
+        url = _find_image_recursive(component)
+        if url:
+            return url
+    return None
+
+
 def _clean_player_name(raw_name: str) -> str:
     name = raw_name.strip()
     name = re.sub(r"[`*_~]", "", name)
@@ -46,6 +71,11 @@ async def v2_breach_standings_handler(message):
     """Grant next-week weekly donation waivers from Breach Clan Standings pages."""
     full_text = get_all_component_text(message)
     entries, page, total_pages, clan_name = parse_breach_standings(full_text)
+
+    if message.guild:
+        clan_image_url = _extract_first_component_image(message)
+        if clan_image_url:
+            await guilds.set_breach_playbook_image_url(message.guild.id, clan_image_url)
 
     if not entries:
         return

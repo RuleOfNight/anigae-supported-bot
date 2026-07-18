@@ -538,6 +538,26 @@ async def get_weekly_donation_channel(guild_id) -> int | None:
     return None
 
 
+async def set_breach_playbook_image_url(guild_id, image_url: str):
+    guilds_collection = get_guilds_collection()
+    await guilds_collection.update_one(
+        {"guild_id": guild_id},
+        {"$set": {"breach_playbook_image_url": image_url}},
+        upsert=True
+    )
+
+
+async def get_breach_playbook_image_url(guild_id) -> str | None:
+    guilds_collection = get_guilds_collection()
+    doc = await guilds_collection.find_one(
+        {"guild_id": guild_id},
+        {"breach_playbook_image_url": 1}
+    )
+    if doc:
+        return doc.get("breach_playbook_image_url")
+    return None
+
+
 async def get_guilds_with_weekly_channel() -> list:
     """Trả về tất cả guild document có cấu hình weekly_donation_channel_id."""
     guilds_collection = get_guilds_collection()
