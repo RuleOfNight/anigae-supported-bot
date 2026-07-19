@@ -558,13 +558,15 @@ async def get_breach_playbook_image_url(guild_id) -> str | None:
     return None
 
 
-async def set_breach_boss_info(guild_id, *, boss_name: str | None = None, image_url: str | None = None, week_start: int | None = None):
+async def set_breach_boss_info(guild_id, *, boss_name: str | None = None, image_url: str | None = None, phase: str | None = None, week_start: int | None = None):
     guilds_collection = get_guilds_collection()
     update_fields = {}
     if boss_name:
         update_fields["breach_boss_name"] = boss_name
     if image_url:
         update_fields["breach_boss_image_url"] = image_url
+    if phase:
+        update_fields["breach_boss_phase"] = phase
     if week_start is not None:
         update_fields["breach_boss_week_start"] = week_start
     if not update_fields:
@@ -580,7 +582,7 @@ async def get_breach_boss_info(guild_id) -> dict:
     guilds_collection = get_guilds_collection()
     doc = await guilds_collection.find_one(
         {"guild_id": guild_id},
-        {"breach_boss_name": 1, "breach_boss_image_url": 1, "breach_boss_week_start": 1}
+        {"breach_boss_name": 1, "breach_boss_image_url": 1, "breach_boss_phase": 1, "breach_boss_week_start": 1}
     )
     if not doc:
         return {}
@@ -592,6 +594,7 @@ async def get_breach_boss_info(guild_id) -> dict:
     return {
         "boss_name": doc.get("breach_boss_name"),
         "image_url": doc.get("breach_boss_image_url"),
+        "phase": doc.get("breach_boss_phase"),
         "week_start": doc.get("breach_boss_week_start"),
     }
 

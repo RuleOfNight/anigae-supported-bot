@@ -13,6 +13,15 @@ PLAYBOOK_DESCRIPTION = (
 DEFAULT_CLAN_GIF_URL = "https://media.discordapp.net/attachments/922869644648411236/1528002562240942121/gZXC8lKd4XcjtL9F.gif?ex=6a5cb6c7&is=6a5b6547&hm=993dadcdf9db44ef373c88e520220d561ca3542e64b1c2518acad6237d4da833&="
 EMPTY_AVATAR_URL = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif"
 PER_PAGE = 5
+PHASE_FILTERS = [
+    "Docile",
+    "Chaos",
+    "Herald - Damnation",
+    "Herald - Salvation",
+    "Gambit",
+    "Enraged",
+    "Collapse",
+]
 
 
 def _clip(text: str, limit: int) -> str:
@@ -54,10 +63,53 @@ def _entry_text(entry: dict, absolute_index: int) -> str:
     return "\n".join(lines)
 
 
+def _phase_key(phase: str | None) -> str:
+    return (phase or "").strip().casefold()
+
+
+def _filter_entries_by_phase(entries: list[dict], phase_filter: str | None) -> list[dict]:
+    if not phase_filter:
+        return entries
+    wanted = _phase_key(phase_filter)
+    return [entry for entry in entries if _phase_key(entry.get("phase")) == wanted]
+
+
+def _phase_select_options(selected_phase: str | None) -> list[discord.SelectOption]:
+    options = [
+        discord.SelectOption(
+            label="All phases",
+            value="all",
+            description="Xem t\u1ea5t c\u1ea3 gi\u00e1o \u00e1n Breach tu\u1ea7n n\u00e0y.",
+            emoji="\U0001f4da",
+            default=selected_phase is None,
+        )
+    ]
+    phase_emojis = {
+        "Docile": "\U0001f331",
+        "Chaos": "\U0001f300",
+        "Herald - Damnation": "\U0001f525",
+        "Herald - Salvation": "\U0001f6e1\ufe0f",
+        "Gambit": "\U0001f3b2",
+        "Enraged": "\U0001f4a2",
+        "Collapse": "\U0001f480",
+    }
+    for phase in PHASE_FILTERS:
+        options.append(discord.SelectOption(
+            label=phase,
+            value=phase,
+            description=f"Ch\u1ec9 xem gi\u00e1o \u00e1n phase {phase}.",
+            emoji=phase_emojis.get(phase),
+            default=selected_phase == phase,
+        ))
+    return options
+
+
 def _boss_heading(boss_info: dict) -> str:
     boss_name = (boss_info or {}).get("boss_name")
+    boss_phase = (boss_info or {}).get("phase")
     if boss_name:
-        return f"\n-# Boss tu\u1ea7n n\u00e0y: **{boss_name}** \u00b7 Gi\u00e1o \u00e1n t\u1ef1 reset theo tu\u1ea7n Breach."
+        phase_text = f" \u00b7 Phase hi\u1ec7n t\u1ea1i: **{boss_phase}**" if boss_phase else ""
+        return f"\n-# Boss tu\u1ea7n n\u00e0y: **{boss_name}**{phase_text} \u00b7 Gi\u00e1o \u00e1n t\u1ef1 reset theo tu\u1ea7n Breach."
     return "\n-# Boss tu\u1ea7n n\u00e0y ch\u01b0a \u0111\u01b0\u1ee3c c\u1eadp nh\u1eadt. D\u00f9ng `.br` \u0111\u1ec3 Caeser \u0111\u1ecdc boss m\u1edbi."
 
 
@@ -68,15 +120,18 @@ class BreachCompBoardView(discord.ui.LayoutView):
         page: int = 0,
         clan_image_url: str | None = None,
         boss_info: dict | None = None,
+        phase_filter: str | None = None,
         *,
         timeout: int = 300,
     ):
         super().__init__(timeout=timeout)
-        self.entries = entries
+        self.all_entries = entries
+        self.phase_filter = phase_filter if phase_filter in PHASE_FILTERS else None
+        self.entries = _filter_entries_by_phase(entries, self.phase_filter)
         self.boss_info = boss_info or {}
         self.clan_image_url = self.boss_info.get("image_url") or clan_image_url or DEFAULT_CLAN_GIF_URL
         self.page = max(0, page)
-        self.max_pages = max(1, math.ceil(len(entries) / PER_PAGE))
+        self.max_pages = max(1, math.ceil(len(self.entries) / PER_PAGE))
         if self.page >= self.max_pages:
             self.page = self.max_pages - 1
         self.visible_entries = self.entries[self.page * PER_PAGE:(self.page + 1) * PER_PAGE]
@@ -89,11 +144,13 @@ class BreachCompBoardView(discord.ui.LayoutView):
             accessory=ui.Thumbnail(media=self.clan_image_url),
         ))
         container.add_item(ui.Separator())
+        self._add_phase_select(container)
+        container.add_item(ui.Separator())
 
         if not self.entries:
             container.add_item(ui.TextDisplay(
                 "### Ch\u01b0a c\u00f3 gi\u00e1o \u00e1n n\u00e0o\n"
-                "H\u00e3y m\u1edf h\u00e0ng b\u1eb1ng `/breach_comp_add` \u2014 m\u1ed9t comp t\u1ed1t h\u00f4m nay c\u00f3 th\u1ec3 c\u1ee9u c\u1ea3 clan cu\u1ed1i tu\u1ea7n sau."
+                "H\u00e3y m\u1edf h\u00e0ng b\u1eb1ng `/breach_comp_add` \u2014 n\u1ebfu \u0111ang l\u1ecdc theo phase, th\u1eed chuy\u1ec3n sang phase kh\u00e1c ho\u1eb7c All nh\u00e9."
             ))
         else:
             for offset, entry in enumerate(self.visible_entries):
@@ -114,7 +171,11 @@ class BreachCompBoardView(discord.ui.LayoutView):
                     container.add_item(ui.Separator())
 
         container.add_item(ui.Separator())
-        container.add_item(ui.TextDisplay(f"-# Page **{self.page + 1}/{self.max_pages}** \u00b7 Total plans: **{len(self.entries)}**"))
+        phase_text = self.phase_filter or "All phases"
+        container.add_item(ui.TextDisplay(
+            f"-# Phase: **{phase_text}** \u00b7 Page **{self.page + 1}/{self.max_pages}** "
+            f"\u00b7 Showing: **{len(self.entries)}** / **{len(self.all_entries)}** plans"
+        ))
         container.add_item(ui.ActionRow(
             ui.Button(label="\u25c0 Previous", style=discord.ButtonStyle.secondary, custom_id="breach_prev", disabled=self.page <= 0),
             ui.Button(label="Next \u25b6", style=discord.ButtonStyle.secondary, custom_id="breach_next", disabled=self.page >= self.max_pages - 1),
@@ -122,14 +183,31 @@ class BreachCompBoardView(discord.ui.LayoutView):
         ))
         self.add_item(container)
 
+    def _add_phase_select(self, container: ui.Container):
+        container.add_item(ui.ActionRow(
+            ui.Select(
+                placeholder="Ch\u1ecdn phase \u0111\u1ec3 l\u1ecdc gi\u00e1o \u00e1n...",
+                min_values=1,
+                max_values=1,
+                options=_phase_select_options(self.phase_filter),
+                custom_id="breach_phase_select",
+            )
+        ))
+
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         custom_id = interaction.data.get("custom_id", "")
         page = self.page
+
+        phase_filter = self.phase_filter
 
         if custom_id == "breach_prev":
             page -= 1
         elif custom_id == "breach_next":
             page += 1
+        elif custom_id == "breach_phase_select":
+            selected_value = (interaction.data.get("values") or ["all"])[0]
+            phase_filter = None if selected_value == "all" else selected_value
+            page = 0
         elif custom_id.startswith("breach_upvote:"):
             try:
                 offset = int(custom_id.split(":", 1)[1])
@@ -148,6 +226,12 @@ class BreachCompBoardView(discord.ui.LayoutView):
         entries = await breach_comps.get_breach_comps(interaction.guild.id)
         clan_image_url = await guilds.get_breach_playbook_image_url(interaction.guild.id)
         boss_info = await guilds.get_breach_boss_info(interaction.guild.id)
-        new_view = BreachCompBoardView(entries, page=page, clan_image_url=clan_image_url, boss_info=boss_info)
+        new_view = BreachCompBoardView(
+            entries,
+            page=page,
+            clan_image_url=clan_image_url,
+            boss_info=boss_info,
+            phase_filter=phase_filter,
+        )
         await interaction.response.edit_message(view=new_view)
         return True

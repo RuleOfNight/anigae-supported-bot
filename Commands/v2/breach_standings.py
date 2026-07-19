@@ -11,50 +11,82 @@ _processed_breach_pages: deque[tuple[int, int]] = deque(maxlen=500)
 
 
 def _find_image_recursive(obj) -> str | None:
+    images = _collect_images_recursive(obj)
+    return images[0] if images else None
+
+
+def _collect_images_recursive(obj) -> list[str]:
+    urls = []
     if hasattr(obj, "accessory") and obj.accessory:
         accessory = obj.accessory
         media = getattr(accessory, "media", None)
         if media and getattr(media, "url", None):
-            return media.url
+            urls.append(media.url)
     for item in getattr(obj, "items", []) or []:
         media = getattr(item, "media", None)
         if media and getattr(media, "url", None):
-            return media.url
+            urls.append(media.url)
+        urls.extend(_collect_images_recursive(item))
     for child in getattr(obj, "children", []) or []:
-        url = _find_image_recursive(child)
-        if url:
-            return url
-    return None
+        urls.extend(_collect_images_recursive(child))
+    return urls
+
+
+def _extract_component_images(message) -> list[str]:
+    urls = []
+    for component in message.components:
+        urls.extend(_collect_images_recursive(component))
+    return urls
 
 
 def _extract_first_component_image(message) -> str | None:
-    for component in message.components:
-        url = _find_image_recursive(component)
-        if url:
-            return url
-    return None
+    images = _extract_component_images(message)
+    return images[0] if images else None
+
+
+def _extract_last_component_image(message) -> str | None:
+    images = _extract_component_images(message)
+    return images[-1] if images else None
+
 
 def _parse_breach_boss_name(text: str) -> str | None:
     patterns = [
-        r"Boss(?:\s*Name)?\s*[:\-]\s*([^\n|]+)",
-        r"Breach\s+Boss\s*[:\-]\s*([^\n|]+)",
+        r"World\s+Ender\s*:\s*(?P<name>.+?)(?:\s+Level\b|\n|$)",
+        r"Boss(?:\s*Name)?\s*[:\-]\s*(?P<name>[^\n|]+)",
+        r"Breach\s+Boss\s*[:\-]\s*(?P<name>[^\n|]+)",
     ]
     for pattern in patterns:
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
-            boss_name = re.sub(r"[`*_~]", "", match.group(1)).strip()
+            boss_name = re.sub(r"[`*_~]", "", match.group("name")).strip()
             return boss_name[:120] or None
-
-    for line in text.splitlines():
-        clean = re.sub(r"^[#\-\s]+", "", line).strip()
-        clean = re.sub(r"[`*_~]", "", clean).strip()
-        if not clean:
-            continue
-        if "Breach Clan Standings" in clean:
-            continue
-        if "Breach" in clean and len(clean) <= 140:
-            return clean[:120]
     return None
+
+
+def _parse_breach_phase(text: str) -> str | None:
+    match = re.search(r"Phase\s*:\s*([^\n]+)", text, re.IGNORECASE)
+    if not match:
+        return None
+
+    raw_phase = re.sub(r"[`*_~]", "", match.group(1)).strip()
+    normalized = raw_phase.casefold()
+    phase_aliases = {
+        "docile": "Docile",
+        "chaos": "Chaos",
+        "herald of damnation": "Herald - Damnation",
+        "herald - damnation": "Herald - Damnation",
+        "herald of salvation": "Herald - Salvation",
+        "herald - salvation": "Herald - Salvation",
+        "gambit": "Gambit",
+        "enraged": "Enraged",
+        "collapse": "Collapse",
+    }
+    for alias, phase in phase_aliases.items():
+        if alias in normalized:
+            return phase
+
+    phase = re.sub(r"\s+", " ", raw_phase)
+    return phase[:80] or None
 
 
 async def maybe_track_breach_boss_info(message, full_text: str | None = None):
@@ -65,9 +97,10 @@ async def maybe_track_breach_boss_info(message, full_text: str | None = None):
     if "Breach" not in full_text or "Breach Clan Standings" in full_text:
         return
 
-    image_url = _extract_first_component_image(message)
+    image_url = _extract_last_component_image(message)
     boss_name = _parse_breach_boss_name(full_text)
-    if not image_url and not boss_name:
+    phase = _parse_breach_phase(full_text)
+    if not image_url and not boss_name and not phase:
         return
 
     week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
@@ -75,8 +108,10 @@ async def maybe_track_breach_boss_info(message, full_text: str | None = None):
         message.guild.id,
         boss_name=boss_name,
         image_url=image_url,
+        phase=phase,
         week_start=week_start,
     )
+
 
 def _clean_player_name(raw_name: str) -> str:
     name = raw_name.strip()
