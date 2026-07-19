@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import json
 import discord
 import re
@@ -903,7 +903,8 @@ class UserCommandsSlash(commands.Cog):
 
         entries = await breach_comps.get_breach_comps(interaction.guild.id)
         clan_image_url = await guilds.get_breach_playbook_image_url(interaction.guild.id)
-        view = breach_comp_views.BreachCompBoardView(entries, clan_image_url=clan_image_url)
+        boss_info = await guilds.get_breach_boss_info(interaction.guild.id)
+        view = breach_comp_views.BreachCompBoardView(entries, clan_image_url=clan_image_url, boss_info=boss_info)
         await interaction.response.send_message(view=view)
 
 

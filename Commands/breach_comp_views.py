@@ -54,11 +54,27 @@ def _entry_text(entry: dict, absolute_index: int) -> str:
     return "\n".join(lines)
 
 
+def _boss_heading(boss_info: dict) -> str:
+    boss_name = (boss_info or {}).get("boss_name")
+    if boss_name:
+        return f"\n-# Boss tu\u1ea7n n\u00e0y: **{boss_name}** \u00b7 Gi\u00e1o \u00e1n t\u1ef1 reset theo tu\u1ea7n Breach."
+    return "\n-# Boss tu\u1ea7n n\u00e0y ch\u01b0a \u0111\u01b0\u1ee3c c\u1eadp nh\u1eadt. D\u00f9ng `.br` \u0111\u1ec3 Caeser \u0111\u1ecdc boss m\u1edbi."
+
+
 class BreachCompBoardView(discord.ui.LayoutView):
-    def __init__(self, entries: list[dict], page: int = 0, clan_image_url: str | None = None, *, timeout: int = 300):
+    def __init__(
+        self,
+        entries: list[dict],
+        page: int = 0,
+        clan_image_url: str | None = None,
+        boss_info: dict | None = None,
+        *,
+        timeout: int = 300,
+    ):
         super().__init__(timeout=timeout)
         self.entries = entries
-        self.clan_image_url = clan_image_url or DEFAULT_CLAN_GIF_URL
+        self.boss_info = boss_info or {}
+        self.clan_image_url = self.boss_info.get("image_url") or clan_image_url or DEFAULT_CLAN_GIF_URL
         self.page = max(0, page)
         self.max_pages = max(1, math.ceil(len(entries) / PER_PAGE))
         if self.page >= self.max_pages:
@@ -69,7 +85,7 @@ class BreachCompBoardView(discord.ui.LayoutView):
     def _build(self):
         container = ui.Container(id=1, accent_colour=0x71368A)
         container.add_item(ui.Section(
-            ui.TextDisplay(f"{PLAYBOOK_TITLE}\n{PLAYBOOK_DESCRIPTION}"),
+            ui.TextDisplay(f"{PLAYBOOK_TITLE}\n{PLAYBOOK_DESCRIPTION}{_boss_heading(self.boss_info)}"),
             accessory=ui.Thumbnail(media=self.clan_image_url),
         ))
         container.add_item(ui.Separator())
@@ -131,6 +147,7 @@ class BreachCompBoardView(discord.ui.LayoutView):
         from db_methods import guilds
         entries = await breach_comps.get_breach_comps(interaction.guild.id)
         clan_image_url = await guilds.get_breach_playbook_image_url(interaction.guild.id)
-        new_view = BreachCompBoardView(entries, page=page, clan_image_url=clan_image_url)
+        boss_info = await guilds.get_breach_boss_info(interaction.guild.id)
+        new_view = BreachCompBoardView(entries, page=page, clan_image_url=clan_image_url, boss_info=boss_info)
         await interaction.response.edit_message(view=new_view)
         return True

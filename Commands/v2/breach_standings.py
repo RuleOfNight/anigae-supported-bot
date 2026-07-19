@@ -3,6 +3,7 @@ from collections import deque
 
 from db_methods import guilds, weekly_donations
 from Commands.v2.utils import get_all_component_text
+from misc.time_calculations import get_last_monday_berlin_time_from_current_time_in_unix
 
 BREACH_DAMAGE_WAIVER_THRESHOLD = 400_000
 
@@ -33,6 +34,49 @@ def _extract_first_component_image(message) -> str | None:
             return url
     return None
 
+def _parse_breach_boss_name(text: str) -> str | None:
+    patterns = [
+        r"Boss(?:\s*Name)?\s*[:\-]\s*([^\n|]+)",
+        r"Breach\s+Boss\s*[:\-]\s*([^\n|]+)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            boss_name = re.sub(r"[`*_~]", "", match.group(1)).strip()
+            return boss_name[:120] or None
+
+    for line in text.splitlines():
+        clean = re.sub(r"^[#\-\s]+", "", line).strip()
+        clean = re.sub(r"[`*_~]", "", clean).strip()
+        if not clean:
+            continue
+        if "Breach Clan Standings" in clean:
+            continue
+        if "Breach" in clean and len(clean) <= 140:
+            return clean[:120]
+    return None
+
+
+async def maybe_track_breach_boss_info(message, full_text: str | None = None):
+    if not message.guild:
+        return
+
+    full_text = full_text if full_text is not None else get_all_component_text(message)
+    if "Breach" not in full_text or "Breach Clan Standings" in full_text:
+        return
+
+    image_url = _extract_first_component_image(message)
+    boss_name = _parse_breach_boss_name(full_text)
+    if not image_url and not boss_name:
+        return
+
+    week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
+    await guilds.set_breach_boss_info(
+        message.guild.id,
+        boss_name=boss_name,
+        image_url=image_url,
+        week_start=week_start,
+    )
 
 def _clean_player_name(raw_name: str) -> str:
     name = raw_name.strip()

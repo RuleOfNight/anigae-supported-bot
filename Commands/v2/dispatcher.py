@@ -7,7 +7,7 @@ from Commands.v2.market import v2_global_market_update
 from Commands.v2.card_select import v2_card_select
 from Commands.v2.inventory import v2_inventory_mset
 from Commands.v2.raid import v2_raid_handler
-from Commands.v2.breach_standings import v2_breach_standings_handler
+from Commands.v2.breach_standings import maybe_track_breach_boss_info, v2_breach_standings_handler
 
 
 async def discord_components_v2(message, trigger: str):
@@ -33,6 +33,8 @@ async def discord_components_v2(message, trigger: str):
         if "Skin Equipped:" in _full_text and "Card ID:" in _full_text:
             await v2_card_info_instance(message)
 
+        if "Breach" in _full_text:
+            await maybe_track_breach_boss_info(message, _full_text)
         if "Breach Clan Standings" in _full_text:
             await v2_breach_standings_handler(message)
 
@@ -49,5 +51,7 @@ async def discord_components_v2(message, trigger: str):
             await v2_inventory_mset(message)
 
         _full_text = get_all_component_text(message)
+        if "Breach" in _full_text:
+            await maybe_track_breach_boss_info(message, _full_text)
         if "Breach Clan Standings" in _full_text:
             await v2_breach_standings_handler(message)
