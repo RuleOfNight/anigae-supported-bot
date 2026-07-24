@@ -49,6 +49,16 @@ def _extract_last_component_image(message) -> str | None:
     return images[-1] if images else None
 
 
+def _is_breach_overview(text: str) -> bool:
+    required_markers = [
+        "Aniverse Breach",
+        "World Ender:",
+        "Top Clans",
+        "Phase:",
+    ]
+    return all(marker in text for marker in required_markers)
+
+
 def _parse_breach_boss_name(text: str) -> str | None:
     patterns = [
         r"World\s+Ender\s*:\s*(?P<name>.+?)(?:\s+Level\b|\n|$)",
@@ -94,7 +104,7 @@ async def maybe_track_breach_boss_info(message, full_text: str | None = None):
         return
 
     full_text = full_text if full_text is not None else get_all_component_text(message)
-    if "Breach" not in full_text or "Breach Clan Standings" in full_text:
+    if "Breach Clan Standings" in full_text or not _is_breach_overview(full_text):
         return
 
     image_url = _extract_last_component_image(message)

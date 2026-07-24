@@ -5,7 +5,7 @@ import discord
 
 from db_methods.general import get_config_collection
 
-CURRENT_CHANGELOG_VERSION = "2026-07-18-breach-playbook"
+CURRENT_CHANGELOG_VERSION = "2026-07-24-breach-playbook-owner-actions"
 GUILD_CHANGELOG_COOLDOWN_SECONDS = 5 * 60
 CHANGELOG_COLOR = 0x71368A
 CHANGELOG_THUMBNAIL_URL = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
@@ -35,14 +35,8 @@ _CHANGELOG_CONTENT = {
         "subtitle": "Vài cập nhật hỗ trợ Breach cuối tuần.",
         "sections": [
             ("Breach Playbook", [
-                "Thêm lệnh `/breach_comp_add` để các thành viên chia sẻ giáo án Breach với nhau.",
-                "Mỗi giáo án có thể ghi team comp, ghi chú RNG, mô tả cách setup và kết quả đạt được.",
-                "Thêm lệnh `/breach_comp_board` để mở bảng giáo án của clan, có chia trang, avatar người tạo và nút upvote.",
-            ]),
-            ("Miễn donate tuần sau", [
-                "Khi bạn mở bảng Breach Clan Standings, Caeser có thể đọc damage của từng thành viên.",
-                "Ai đạt **400,000+ damage** sẽ được tính là đã hoàn thành donate weekly cho tuần sau.",
-                "Như vậy sau khi Breach kết thúc, clan đỡ phải tự ghi nhớ và cộng miễn donate thủ công cho từng người.",
+                "thêm lệnh /breach_comp_edit để sửa giáo án bản thân bằng id",
+                "thêm lệnh /breach_comp_delete để xóa giáo án bản thân bằng id",
             ]),
         ],
         "footer": "Bạn thấy thông báo này vì bot vừa được cập nhật.",
