@@ -45,10 +45,11 @@ def _entry_text(entry: dict, absolute_index: int) -> str:
     description = _clip(entry.get("description", ""), 260)
     result = _clip(entry.get("result", ""), 180)
     upvotes = entry.get("upvote_count", 0)
+    short_id = _entry_short_id(entry)
 
     lines = [
         f"### #{absolute_index} \u00b7 **{title}**",
-        f"-# shared by **{author}** \u00b7 \u25b2 **{upvotes}**",
+        f"-# shared by **{author}** \u00b7 ID: {short_id} \u00b7 \u25b2 **{upvotes}**",
         f"**Team:** {comp or '*ch\u01b0a ghi team*'}",
     ]
     if phase or difficulty:
@@ -161,12 +162,10 @@ class BreachCompBoardView(discord.ui.LayoutView):
             for offset, entry in enumerate(self.visible_entries):
                 absolute_index = self.page * PER_PAGE + offset + 1
                 avatar_url = entry.get("author_avatar_url") or EMPTY_AVATAR_URL
-                short_id = _entry_short_id(entry)
                 container.add_item(ui.Section(
                     ui.TextDisplay(_entry_text(entry, absolute_index)),
                     accessory=ui.Thumbnail(media=avatar_url),
                 ))
-                container.add_item(ui.TextDisplay(f"-# ID `{short_id}`"))
                 container.add_item(ui.ActionRow(
                     ui.Button(
                         label=f"\u25b2 Upvote ({entry.get('upvote_count', 0)})",

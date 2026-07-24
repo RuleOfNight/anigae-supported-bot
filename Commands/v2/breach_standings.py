@@ -63,13 +63,26 @@ def _is_breach_overview(text: str) -> bool:
 
 def _normalize_breach_boss_name(raw_name: str) -> str:
     boss_name = re.sub(r"[`*_~]", "", raw_name).strip()
+    # AniGame's component text may expose rarity emotes as plain ``:name:``
+    # tokens, full Discord emoji markup, or the textual ``UR`` prefix. We use
+    # our own known-good emotes below, so none of those source variants should
+    # leak into the board.
     boss_name = re.sub(
-        r"(?i)^(?:\s*:?ultra:?\s*)?(?:\s*:?rare3?:?\s*)?",
+        r"(?i)<a?:RedStar:\d+>",
+        BREACH_BOSS_ASCENSION_EMOTE,
+        boss_name,
+    )
+    boss_name = re.sub(r"(?i)<a?:(?!RedStar:)[^:>]+:\d+>", "", boss_name)
+    boss_name = re.sub(
+        r"(?i)^(?:(?:UR|Ultra\s+Rare)\s*)?(?:(?::?ultra:?|:?rare3?:?)\s*)+",
         "",
         boss_name,
-        count=1,
     ).strip()
-    boss_name = re.sub(r"(?i):?RedStar:?", BREACH_BOSS_ASCENSION_EMOTE, boss_name)
+    boss_name = re.sub(
+        r"(?i)<?:?RedStar(?::\d+)?[>:]?",
+        BREACH_BOSS_ASCENSION_EMOTE,
+        boss_name,
+    )
     boss_name = re.sub(r"\s+", " ", boss_name).strip()
     return f"{BREACH_BOSS_RARITY_PREFIX} {boss_name}"
 
