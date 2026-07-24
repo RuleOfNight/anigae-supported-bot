@@ -12,7 +12,7 @@ PLAYBOOK_DESCRIPTION = (
 )
 DEFAULT_CLAN_GIF_URL = "https://media.discordapp.net/attachments/922869644648411236/1528002562240942121/gZXC8lKd4XcjtL9F.gif?ex=6a5cb6c7&is=6a5b6547&hm=993dadcdf9db44ef373c88e520220d561ca3542e64b1c2518acad6237d4da833&="
 EMPTY_AVATAR_URL = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif"
-PER_PAGE = 5
+PER_PAGE = 3
 PHASE_FILTERS = [
     "Docile",
     "Chaos",
@@ -29,6 +29,10 @@ def _clip(text: str, limit: int) -> str:
     if len(text) <= limit:
         return text
     return text[: max(0, limit - 1)].rstrip() + "\u2026"
+
+
+def _entry_short_id(entry: dict) -> str:
+    return entry.get("short_id") or entry.get("id", "")[-6:]
 
 
 def _entry_text(entry: dict, absolute_index: int) -> str:
@@ -113,6 +117,7 @@ def _boss_heading(boss_info: dict) -> str:
     return "\n-# Boss tu\u1ea7n n\u00e0y ch\u01b0a \u0111\u01b0\u1ee3c c\u1eadp nh\u1eadt. D\u00f9ng `.br` \u0111\u1ec3 Caeser \u0111\u1ecdc boss m\u1edbi."
 
 
+
 class BreachCompBoardView(discord.ui.LayoutView):
     def __init__(
         self,
@@ -156,9 +161,10 @@ class BreachCompBoardView(discord.ui.LayoutView):
             for offset, entry in enumerate(self.visible_entries):
                 absolute_index = self.page * PER_PAGE + offset + 1
                 avatar_url = entry.get("author_avatar_url") or EMPTY_AVATAR_URL
+                short_id = _entry_short_id(entry)
                 container.add_item(ui.Section(
                     ui.TextDisplay(_entry_text(entry, absolute_index)),
-                    accessory=ui.Thumbnail(media=avatar_url),
+                    accessory=ui.Thumbnail(media=avatar_url, description=f"ID {short_id}"),
                 ))
                 container.add_item(ui.ActionRow(
                     ui.Button(

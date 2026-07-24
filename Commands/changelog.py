@@ -5,7 +5,7 @@ import discord
 
 from db_methods.general import get_config_collection
 
-CURRENT_CHANGELOG_VERSION = "2026-07-18-breach-playbook"
+CURRENT_CHANGELOG_VERSION = "2026-07-24-breach-playbook-owner-actions"
 GUILD_CHANGELOG_COOLDOWN_SECONDS = 5 * 60
 CHANGELOG_COLOR = 0x71368A
 CHANGELOG_THUMBNAIL_URL = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
@@ -38,6 +38,8 @@ _CHANGELOG_CONTENT = {
                 "Thêm lệnh `/breach_comp_add` để các thành viên chia sẻ giáo án Breach với nhau.",
                 "Mỗi giáo án có thể ghi team comp, ghi chú RNG, mô tả cách setup và kết quả đạt được.",
                 "Thêm lệnh `/breach_comp_board` để mở bảng giáo án của clan, có chia trang, avatar người tạo và nút upvote.",
+                "thêm lệnh /breach_comp_edit để sửa giáo án bản thân bằng id",
+                "hêm lệnh /breach_comp_delete để xóa giáo án bản thân bằng id",
             ]),
             ("Miễn donate tuần sau", [
                 "Khi bạn mở bảng Breach Clan Standings, Caeser có thể đọc damage của từng thành viên.",

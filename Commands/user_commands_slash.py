@@ -908,6 +908,92 @@ class UserCommandsSlash(commands.Cog):
         await interaction.response.send_message(view=view)
 
 
+    @app_commands.command(name="breach_comp_edit", description="Edit one of your Breach playbook plans by short ID.")
+    @app_commands.describe(
+        plan_id="Short ID shown on /breach_comp_board, e.g. a3f91c",
+        title="New short name for this playbook",
+        comp="New team comp",
+        phase="New Breach phase",
+        difficulty="New difficulty",
+        rng="New RNG notes",
+        description="New setup/details",
+        result="New result achieved")
+    @app_commands.choices(
+        phase=[
+            app_commands.Choice(name="Docile", value="Docile"),
+            app_commands.Choice(name="Chaos", value="Chaos"),
+            app_commands.Choice(name="Herald - Damnation", value="Herald - Damnation"),
+            app_commands.Choice(name="Herald - Salvation", value="Herald - Salvation"),
+            app_commands.Choice(name="Gambit", value="Gambit"),
+            app_commands.Choice(name="Enraged", value="Enraged"),
+            app_commands.Choice(name="Collapse", value="Collapse"),
+        ],
+        difficulty=[
+            app_commands.Choice(name="Easy", value="Easy"),
+            app_commands.Choice(name="Medium", value="Medium"),
+            app_commands.Choice(name="Hard", value="Hard"),
+            app_commands.Choice(name="Impossible", value="Impossible"),
+        ],
+    )
+    async def breach_comp_edit(
+        self,
+        interaction: discord.Interaction,
+        plan_id: str,
+        title: str = None,
+        comp: str = None,
+        phase: app_commands.Choice[str] = None,
+        difficulty: app_commands.Choice[str] = None,
+        rng: str = None,
+        description: str = None,
+        result: str = None,
+    ):
+        if not interaction.guild:
+            await interaction.response.send_message("Command n\u00e0y ch\u1ec9 d\u00f9ng trong server.", ephemeral=True)
+            return
+
+        if not any([title, comp, phase, difficulty, rng, description, result]):
+            await interaction.response.send_message("H\u00e3y \u0111i\u1ec1n \u00edt nh\u1ea5t m\u1ed9t field c\u1ea7n s\u1eeda nha.", ephemeral=True)
+            return
+
+        status = await breach_comps.update_breach_comp_by_plan_id(
+            guild_id=interaction.guild.id,
+            plan_id=plan_id,
+            user_id=interaction.user.id,
+            title=title,
+            comp=comp,
+            phase=phase.value if phase else None,
+            difficulty=difficulty.value if difficulty else None,
+            rng=rng,
+            description=description,
+            result=result,
+        )
+        if status == "not_found":
+            await interaction.response.send_message("Kh\u00f4ng t\u00ecm th\u1ea5y gi\u00e1o \u00e1n n\u00e0y trong tu\u1ea7n hi\u1ec7n t\u1ea1i. Ki\u1ec3m tra l\u1ea1i ID tr\u00ean board nh\u00e9.", ephemeral=True)
+        elif status == "not_owner":
+            await interaction.response.send_message("Ch\u1ec9 owner c\u1ee7a gi\u00e1o \u00e1n m\u1edbi s\u1eeda \u0111\u01b0\u1ee3c nha.", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"\u0110\u00e3 s\u1eeda gi\u00e1o \u00e1n `{plan_id.strip()}`. Refresh board \u0111\u1ec3 xem b\u1ea3n m\u1edbi nh\u00e9.", ephemeral=True)
+
+    @app_commands.command(name="breach_comp_delete", description="Delete one of your Breach playbook plans by short ID.")
+    @app_commands.describe(plan_id="Short ID shown on /breach_comp_board, e.g. a3f91c")
+    async def breach_comp_delete(self, interaction: discord.Interaction, plan_id: str):
+        if not interaction.guild:
+            await interaction.response.send_message("Command n\u00e0y ch\u1ec9 d\u00f9ng trong server.", ephemeral=True)
+            return
+
+        status = await breach_comps.archive_breach_comp_by_plan_id(
+            guild_id=interaction.guild.id,
+            plan_id=plan_id,
+            user_id=interaction.user.id,
+        )
+        if status == "not_found":
+            await interaction.response.send_message("Kh\u00f4ng t\u00ecm th\u1ea5y gi\u00e1o \u00e1n n\u00e0y trong tu\u1ea7n hi\u1ec7n t\u1ea1i. Ki\u1ec3m tra l\u1ea1i ID tr\u00ean board nh\u00e9.", ephemeral=True)
+        elif status == "not_owner":
+            await interaction.response.send_message("Ch\u1ec9 owner c\u1ee7a gi\u00e1o \u00e1n m\u1edbi x\u00f3a \u0111\u01b0\u1ee3c nha.", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"\u0110\u00e3 x\u00f3a gi\u00e1o \u00e1n `{plan_id.strip()}`. Refresh board \u0111\u1ec3 c\u1eadp nh\u1eadt nh\u00e9.", ephemeral=True)
+
+
     @threshold.command(name="limit", description="Set the SECOND threshold limit for the guild.")
     @app_commands.checks.has_permissions(administrator=True)
     async def threshold_limit(self, interaction: discord.Interaction, donation_amount: int):
