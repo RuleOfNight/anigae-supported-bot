@@ -6,6 +6,8 @@ from Commands.v2.utils import get_all_component_text
 from misc.time_calculations import get_last_monday_berlin_time_from_current_time_in_unix
 
 BREACH_DAMAGE_WAIVER_THRESHOLD = 400_000
+BREACH_BOSS_RARITY_PREFIX = "<a:ultra:1503300387917004850><a:rare3:1503300751496057017>"
+BREACH_BOSS_ASCENSION_EMOTE = "<:RedStar:1503299407720747119>"
 
 _processed_breach_pages: deque[tuple[int, int]] = deque(maxlen=500)
 
@@ -59,17 +61,30 @@ def _is_breach_overview(text: str) -> bool:
     return all(marker in text for marker in required_markers)
 
 
+def _normalize_breach_boss_name(raw_name: str) -> str:
+    boss_name = re.sub(r"[`*_~]", "", raw_name).strip()
+    boss_name = re.sub(
+        r"(?i)^(?:\s*:?ultra:?\s*)?(?:\s*:?rare3?:?\s*)?",
+        "",
+        boss_name,
+        count=1,
+    ).strip()
+    boss_name = re.sub(r"(?i):?RedStar:?", BREACH_BOSS_ASCENSION_EMOTE, boss_name)
+    boss_name = re.sub(r"\s+", " ", boss_name).strip()
+    return f"{BREACH_BOSS_RARITY_PREFIX} {boss_name}"
+
+
 def _parse_breach_boss_name(text: str) -> str | None:
     patterns = [
-        r"World\s+Ender\s*:\s*(?P<name>.+?)(?:\s+Level\b|\n|$)",
+        r"World\s+Ender\s*:\s*(?P<name>.+?)(?:\s+HP\b|\n|$)",
         r"Boss(?:\s*Name)?\s*[:\-]\s*(?P<name>[^\n|]+)",
         r"Breach\s+Boss\s*[:\-]\s*(?P<name>[^\n|]+)",
     ]
     for pattern in patterns:
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
-            boss_name = re.sub(r"[`*_~]", "", match.group("name")).strip()
-            return boss_name[:120] or None
+            boss_name = _normalize_breach_boss_name(match.group("name"))
+            return boss_name[:220] or None
     return None
 
 

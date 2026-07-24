@@ -178,7 +178,7 @@ _SKILL_EMOJI_MAP = {
     "Smokescreen":                 "<:Smokescreen:1503388127367266364>",              #done
     "Soul Stealer":                "<:Soul_Stealer:1503388387283959858>",             #done
     "Temporal Rewind":             "<:Temporal_Rewind:1503388665928224798>",          #done
-    "Time Attack":                 "<:Time_Attack:1503140758302232576>",              #done
+    "Time Attack":                 "<:Time_Attack:1503397661087105174>",              #done
     "Time Bomb":                   "<:Time_Bomb:1503388871914819657>",                #done
     "Trick Room":                  "<:Trick_Room:1503397702342545418>",               #done
     "Transformation":              "<:Transformation:1503389480567050240>",           #done
