@@ -61,30 +61,29 @@ def _is_breach_overview(text: str) -> bool:
     return all(marker in text for marker in required_markers)
 
 
-def _normalize_breach_boss_name(raw_name: str) -> str:
-    boss_name = re.sub(r"[`*_~]", "", raw_name).strip()
-    # AniGame's component text may expose rarity emotes as plain ``:name:``
-    # tokens, full Discord emoji markup, or the textual ``UR`` prefix. We use
-    # our own known-good emotes below, so none of those source variants should
-    # leak into the board.
-    boss_name = re.sub(
-        r"(?i)<a?:RedStar:\d+>",
-        BREACH_BOSS_ASCENSION_EMOTE,
-        boss_name,
+def _normalize_breach_boss_name(raw_name: str) -> str | None:
+    """Keep only boss name, level, and Evo; supply supported emotes ourselves."""
+    match = re.search(
+        r"(?is)(?P<name>.+?)\s+Level\s*(?P<level>\d+)\s*\[\s*Evo\s*(?P<evo>\d+)\s*\]",
+        raw_name,
     )
-    boss_name = re.sub(r"(?i)<a?:(?!RedStar:)[^:>]+:\d+>", "", boss_name)
-    boss_name = re.sub(
-        r"(?i)^(?:(?:UR|Ultra\s+Rare)\s*)?(?:(?::?ultra:?|:?rare3?:?)\s*)+",
-        "",
-        boss_name,
-    ).strip()
-    boss_name = re.sub(
-        r"(?i)<?:?RedStar(?::\d+)?[>:]?",
-        BREACH_BOSS_ASCENSION_EMOTE,
-        boss_name,
+    if not match:
+        return None
+
+    boss_name = re.sub(r"[`*_~]", "", match.group("name"))
+    boss_name = re.sub(r"<a?:[^>]+>", "", boss_name)
+    boss_name = re.sub(r"(?i)\b(?:UR|Ultra\s+Rare)\b", "", boss_name)
+    boss_name = re.sub(r"(?i):(?:ultra|rare\d*):", "", boss_name)
+    boss_name = re.sub(r"\s+", " ", boss_name).strip(" :-")
+    if not boss_name:
+        return None
+
+    level = match.group("level")
+    evo = match.group("evo")
+    return (
+        f"{BREACH_BOSS_RARITY_PREFIX} {boss_name} Level {level} [Evo {evo}] "
+        f"{BREACH_BOSS_ASCENSION_EMOTE}"
     )
-    boss_name = re.sub(r"\s+", " ", boss_name).strip()
-    return f"{BREACH_BOSS_RARITY_PREFIX} {boss_name}"
 
 
 def _parse_breach_boss_name(text: str) -> str | None:
@@ -97,7 +96,8 @@ def _parse_breach_boss_name(text: str) -> str | None:
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
             boss_name = _normalize_breach_boss_name(match.group("name"))
-            return boss_name[:220] or None
+            if boss_name:
+                return boss_name[:220]
     return None
 
 
