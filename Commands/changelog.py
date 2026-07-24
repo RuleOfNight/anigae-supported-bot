@@ -35,16 +35,8 @@ _CHANGELOG_CONTENT = {
         "subtitle": "Vài cập nhật hỗ trợ Breach cuối tuần.",
         "sections": [
             ("Breach Playbook", [
-                "Thêm lệnh `/breach_comp_add` để các thành viên chia sẻ giáo án Breach với nhau.",
-                "Mỗi giáo án có thể ghi team comp, ghi chú RNG, mô tả cách setup và kết quả đạt được.",
-                "Thêm lệnh `/breach_comp_board` để mở bảng giáo án của clan, có chia trang, avatar người tạo và nút upvote.",
                 "thêm lệnh /breach_comp_edit để sửa giáo án bản thân bằng id",
-                "hêm lệnh /breach_comp_delete để xóa giáo án bản thân bằng id",
-            ]),
-            ("Miễn donate tuần sau", [
-                "Khi bạn mở bảng Breach Clan Standings, Caeser có thể đọc damage của từng thành viên.",
-                "Ai đạt **400,000+ damage** sẽ được tính là đã hoàn thành donate weekly cho tuần sau.",
-                "Như vậy sau khi Breach kết thúc, clan đỡ phải tự ghi nhớ và cộng miễn donate thủ công cho từng người.",
+                "thêm lệnh /breach_comp_delete để xóa giáo án bản thân bằng id",
             ]),
         ],
         "footer": "Bạn thấy thông báo này vì bot vừa được cập nhật.",
