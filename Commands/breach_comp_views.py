@@ -166,17 +166,13 @@ class BreachCompBoardView(discord.ui.LayoutView):
                     ui.TextDisplay(_entry_text(entry, absolute_index)),
                     accessory=ui.Thumbnail(media=avatar_url),
                 ))
+                container.add_item(ui.TextDisplay(f"-# ID `{short_id}`"))
                 container.add_item(ui.ActionRow(
                     ui.Button(
                         label=f"\u25b2 Upvote ({entry.get('upvote_count', 0)})",
                         style=discord.ButtonStyle.success,
                         custom_id=f"breach_upvote:{offset}",
-                    ),
-                    ui.Button(
-                        label=f"ID {short_id}",
-                        style=discord.ButtonStyle.secondary,
-                        disabled=True,
-                    ),
+                    )
                 ))
                 if offset != len(self.visible_entries) - 1:
                     container.add_item(ui.Separator())
