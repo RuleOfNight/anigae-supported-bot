@@ -76,7 +76,6 @@ async def grant_next_week_waiver(
     player_name: str,
     discord_id,
     channel_id: int,
-    waiver_key: str,
     damage: int,
     source: str = "breach",
 ) -> bool:
@@ -91,6 +90,7 @@ async def grant_next_week_waiver(
     current_week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
     next_week_start = current_week_start + WEEK_SECONDS
     waiver_until = next_week_start + WEEK_SECONDS
+    waiver_key = f"{source}:{channel_id}:{next_week_start}:{player_name.casefold()}"
 
     existing = await _collection.find_one({
         "player_name": player_name,
@@ -108,11 +108,17 @@ async def grant_next_week_waiver(
     }
 
     if existing:
-        if waiver_key in existing.get("waiver_keys", []):
+        already_waived = any(
+            waiver.get("source") == source
+            and waiver.get("coverage_start_unix") == next_week_start
+            for waiver in existing.get("waivers", [])
+        )
+        if waiver_key in existing.get("waiver_keys", []) or already_waived:
             return False
 
         current_ping_due = existing.get("ping_due_unix", 0)
-        new_ping_due = max(current_ping_due, waiver_until)
+        # Preserve prepaid weeks instead of replacing one the player paid for.
+        new_ping_due = max(current_ping_due + WEEK_SECONDS, waiver_until)
         coverage_start = existing.get("coverage_start_unix", current_week_start)
         total_weeks = max(1, (new_ping_due - current_week_start) // WEEK_SECONDS)
 
@@ -157,6 +163,18 @@ async def get_weekly_donors(channel_id: int, week_start_unix: int) -> set:
              {"coverage_start_unix": {"$lte": week_start_unix}},
          ]}
     ).to_list(length=None)
+    return {doc["player_name"] for doc in docs}
+
+
+async def get_weekly_waivers(channel_id: int, week_start_unix: int) -> set:
+    """Return players whose Breach waiver covers the requested weekly reset."""
+    docs = await _collection.find({
+        "channel_id": channel_id,
+        "waivers": {"$elemMatch": {
+            "coverage_start_unix": {"$lte": week_start_unix},
+            "coverage_until_unix": {"$gt": week_start_unix},
+        }},
+    }).to_list(length=None)
     return {doc["player_name"] for doc in docs}
 
 

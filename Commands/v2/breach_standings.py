@@ -152,13 +152,16 @@ async def maybe_track_breach_boss_info(message, full_text: str | None = None):
 
 
 def _clean_player_name(raw_name: str) -> str:
-    name = raw_name.strip()
-    name = re.sub(r"[`*_~]", "", name)
-    return name.strip()
+    # Discord usernames may contain underscores; only trim markdown wrappers.
+    return raw_name.strip().strip("`*~ ")
 
 
 def parse_breach_standings(text: str) -> tuple[list[dict], int | None, int | None, str | None]:
     """Parse AniGame Breach Clan Standings text from a Components V2 message."""
+    # TextDisplay keeps Discord's bold markers (for example ``**Damage:**``).
+    # Removing only formatting characters keeps valid username underscores intact.
+    text = re.sub(r"[`*~]", "", text)
+
     page = total_pages = None
     page_match = re.search(r"Page\s+(\d+)\s*/\s*(\d+)", text, re.IGNORECASE)
     if page_match:
@@ -222,12 +225,10 @@ async def v2_breach_standings_handler(message):
         player_name = entry["player_name"]
         damage = entry["damage"]
         discord_id = await weekly_donations.get_discord_id_by_player_name(player_name)
-        waiver_key = f"breach:{message.id}:{page or 0}:{player_name.lower()}"
         applied = await weekly_donations.grant_next_week_waiver(
             player_name=player_name,
             discord_id=discord_id,
             channel_id=waiver_channel_id,
-            waiver_key=waiver_key,
             damage=damage,
             source="breach_clan_standings",
         )
