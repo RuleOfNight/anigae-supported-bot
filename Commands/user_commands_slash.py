@@ -825,7 +825,7 @@ class UserCommandsSlash(commands.Cog):
         await interaction.response.send_message(
             f"Raid AFK ping channel set to {channel.mention}.", ephemeral=True)
 
-    @app_commands.command(name="set_weekly_donation_channel", description="Đặt kênh nhận thông báo kiểm tra đóng tiền hàng tuần (gửi vào sáng Chủ Nhật).")
+    @app_commands.command(name="set_weekly_donation_channel", description="Đặt kênh nhận thông báo donate tuần mới (gửi lúc 0h Thứ Hai).")
     @app_commands.describe(channel="Kênh text để bot gửi bảng kiểm tra đóng tiền")
     @app_commands.checks.has_permissions(administrator=True)
     async def set_weekly_donation_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):

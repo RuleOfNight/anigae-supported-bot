@@ -373,13 +373,21 @@ async def update_donation_by_donation_id_manually(donation_id, new_amount, guild
     return "no changes"
 
 
-async def update_donations_weekly_automated():
+async def update_donations_weekly_automated(guild_id=None, waived_player_names=()):
     guilds_collection = get_guilds_collection()
-    await guilds_collection.update_many({"guild_reset": "weekly"},
+    query = {"guild_reset": "weekly"}
+    if guild_id is not None:
+        query["guild_id"] = guild_id
+    waived_player_names = list(waived_player_names)
+    await guilds_collection.update_many(query,
                                         [{"$set": {"guild_member": {"$map": {"input": "$guild_member",
                                                                              "as": "member",
                                                                              "in": {"$let": {"vars": {"is_threshold_2": {"$in": ["$$member.guild_member_id", {"$ifNull": ["$threshold_members", []]}]},
-                                                                                                      "threshold_value": {"$cond": [{"$in": ["$$member.guild_member_id", {"$ifNull": ["$threshold_members", []]}]}, "$guild_threshold_2", "$guild_threshold"]}},
+                                                                                                      "threshold_value": {"$cond": [
+                                                                                                          {"$in": ["$$member.guild_member_name", waived_player_names]},
+                                                                                                          0,
+                                                                                                          {"$cond": [{"$in": ["$$member.guild_member_id", {"$ifNull": ["$threshold_members", []]}]}, "$guild_threshold_2", "$guild_threshold"]}
+                                                                                                      ]}},
                                                                                              "in": {"$mergeObjects": ["$$member", {"donations": {"$cond": [{"$eq": [{"$ifNull": ["$guild_advanced_donation", True]}, True]},
                                                                                                                                                            {"$subtract": [{"$ifNull": ["$$member.donations", 0]},"$$threshold_value"]},
                                                                                                                                                            {"$cond": [{"$gte": [{"$ifNull": ["$$member.donations", 0]}, "$$threshold_value"]}, 0,
@@ -603,6 +611,15 @@ async def get_guilds_with_weekly_channel() -> list:
     guilds_collection = get_guilds_collection()
     return await guilds_collection.find(
         {"weekly_donation_channel_id": {"$exists": True, "$ne": None}}
+    ).to_list(length=None)
+
+
+async def get_weekly_guilds() -> list:
+    """Return weekly-reset guilds and their optional tracking channel."""
+    guilds_collection = get_guilds_collection()
+    return await guilds_collection.find(
+        {"guild_reset": "weekly"},
+        {"guild_id": 1, "weekly_donation_channel_id": 1},
     ).to_list(length=None)
 
 

@@ -20,6 +20,7 @@ from Commands.user_commands_prefix_v2 import UserCommandsPrefix_v2
 from Commands.user_commands_simulator import SimulatorCommand
 import pytz
 from pytz import utc
+from zoneinfo import ZoneInfo
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from scheduler_jobs import (
@@ -134,7 +135,7 @@ async def on_ready():
         scheduler.add_job(monthly_guild,              CronTrigger(day=1,           hour=1, minute=0, timezone=utc), id="monthly_guild")
         scheduler.add_job(monthly_channel_donations,  CronTrigger(day=1,           hour=1, minute=0, timezone=utc), id="monthly_channel_donations")
         scheduler.add_job(weekly_guild,               CronTrigger(day_of_week=0,   hour=1, minute=0, timezone=utc), id="weekly_guild")
-        scheduler.add_job(weekly_donation_check,      CronTrigger(day_of_week=6,   hour=0, minute=0, timezone=utc), id="weekly_donation_check")
+        scheduler.add_job(weekly_donation_check,      CronTrigger(day_of_week=0,   hour=0, minute=0, timezone=ZoneInfo("Asia/Bangkok")), id="weekly_donation_check")
         scheduler.add_job(daily_update,               CronTrigger(                 hour=1, minute=0, timezone=utc), id="daily_update")
         scheduler.add_job(check_raid_afk,             "interval", minutes=10,  id="check_raid_afk")
         scheduler.add_job(check_raid_bt_pending,      "interval", minutes=3,   id="check_raid_bt_pending")
@@ -199,6 +200,21 @@ async def on_message_edit(before, after):
     if after.author.bot and after.author.id == target_bot_id:
         if after.components and isinstance(after.components[0], Container):
             await user_commands_on_message_v2.discord_components_v2(after, "on_edit")
+
+
+@bot.event
+async def on_raw_message_edit(payload):
+    # on_message_edit only fires for cached messages. Fetch uncached page edits so
+    # every Breach standings page is still processed in busy channels.
+    if payload.cached_message is not None or not runtime.db_ready:
+        return
+    try:
+        channel = bot.get_channel(payload.channel_id) or await bot.fetch_channel(payload.channel_id)
+        after = await channel.fetch_message(payload.message_id)
+    except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+        return
+    if after.author.id == target_bot_id and after.components and isinstance(after.components[0], Container):
+        await user_commands_on_message_v2.discord_components_v2(after, "on_edit")
 
 
 @bot.event
