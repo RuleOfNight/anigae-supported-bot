@@ -5,7 +5,7 @@ import discord
 
 from db_methods.general import get_config_collection
 
-CURRENT_CHANGELOG_VERSION = "2026-07-24-breach-playbook-owner-actions"
+CURRENT_CHANGELOG_VERSION = "2026-08-08"
 GUILD_CHANGELOG_COOLDOWN_SECONDS = 5 * 60
 CHANGELOG_COLOR = 0x71368A
 CHANGELOG_THUMBNAIL_URL = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
@@ -13,33 +13,17 @@ CHANGELOG_THUMBNAIL_URL = "https://cdn.discordapp.com/attachments/10271515862601
 _runtime_cooldowns: dict[tuple[str, int], int] = {}
 
 _CHANGELOG_CONTENT = {
-    "en": {
+    "vi": {
         "title": "Caeser' changelogs",
-        "subtitle": "A few Breach updates for the weekend.",
+        "subtitle": "Quality of life.",
         "sections": [
-            ("Breach Playbook", [
-                "Added `/breach_comp_add` so members can share Breach plans with the clan.",
-                "Each plan can include a team comp, RNG notes, extra setup notes, and the result it reached.",
-                "Added `/breach_comp_board` to browse shared plans in a prettier board with pages, avatars, and upvotes.",
+            ("Remove /compare limit", [
+
             ]),
-            ("Weekly donation waiver", [
-                "When you show the Breach Clan Standings, Caeser can read member damage from the board.",
-                "Members who reach **400,000+ damage** will be counted as covered for next week's weekly donation.",
-                "This should make the new clan rule easier to run without manually tracking everyone after Breach ends.",
+            ("Fix attack needed in raid estimated time calculate", [
             ]),
         ],
         "footer": "You are seeing this once because the bot was updated.",
-    },
-    "vi": {
-        "title": "Caeser' changelogs",
-        "subtitle": "Vài cập nhật hỗ trợ Breach cuối tuần.",
-        "sections": [
-            ("Breach Playbook", [
-                "thêm lệnh /breach_comp_edit để sửa giáo án bản thân bằng id",
-                "thêm lệnh /breach_comp_delete để xóa giáo án bản thân bằng id",
-            ]),
-        ],
-        "footer": "Bạn thấy thông báo này vì bot vừa được cập nhật.",
     },
 }
 
@@ -74,18 +58,15 @@ class ChangelogView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=600)
 
-    @discord.ui.button(label="English", style=discord.ButtonStyle.primary)
-    async def english_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(embed=build_changelog_embed("en"), view=self)
 
-    @discord.ui.button(label="Tiếng Việt", style=discord.ButtonStyle.success)
+    @discord.ui.button(label="Changelogs", style=discord.ButtonStyle.success)
     async def vietnamese_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.edit_message(embed=build_changelog_embed("vi"), view=self)
 
     @discord.ui.button(label="Góp ý", style=discord.ButtonStyle.secondary)
     async def feedback_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "Feedback button placeholder: chỗ này sau có thể mở form, gửi link, hoặc log góp ý vào DB.",
+            "Có cái dái",
             ephemeral=True,
         )
 

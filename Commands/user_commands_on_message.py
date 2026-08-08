@@ -385,7 +385,7 @@ async def in_raid_lobby(
         )
         estimates_block = (
             f"\n\n**─── Raid Estimate ───**\n"
-            f"⚔️ Attacks needed: **{attacks_needed}**\n"
+            f"⚔️ Attacks needed: **{attacks_needed + 1}**\n"
             f"⏱️ Regen: **{regen_str}** {regen_unix}"
         )
         if count_afk > 0:

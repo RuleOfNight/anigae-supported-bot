@@ -42,9 +42,9 @@ class UserCommandsSlash(commands.Cog):
             await interaction.response.send_message("Please provide at least one filter.", ephemeral=True)
             return
         card_data_db = await cards.get_compare_data_from_cards(name_list, series_list, element_list, talent_list)
-        if len(card_data_db) > 18:
-            await interaction.response.send_message(f"Please provide only up to 18 results. Currently found: {len(card_data_db)}.", ephemeral=True)
-            return
+        # if len(card_data_db) > 18:
+        #     await interaction.response.send_message(f"Please provide only up to 18 results. Currently found: {len(card_data_db)}.", ephemeral=True)
+        #     return
         compare_cards = []
         for idx, card in enumerate(card_data_db):
             state_dict = {"card_rarity": "Base", "card_level": 1, "card_evo": 1, "card_asc": 0, "card_fam": 0,

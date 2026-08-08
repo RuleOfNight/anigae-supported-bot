@@ -40,7 +40,7 @@ async def calculate_end_time_including_afk(total_attacks_needed, current_energy,
         return "ending soon", ""
     regen_time_needed = (energy_needed / (energy_regen_rate * int(current_player_number)) * regen_interval)
     remaining_minutes = max(0, regen_time_needed)
-    if remaining_minutes < 5:
+    if remaining_minutes < 1:
         return "ending soon", ""
     else:
         current_unix_time = int(time.time())
