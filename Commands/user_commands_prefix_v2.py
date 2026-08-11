@@ -11,6 +11,7 @@ from discord.ext import commands
 from discord.ui import View, Button, MediaGallery, Thumbnail, Select
 from db_methods import cards, players
 from Commands import definitions, help_def_v2
+from profile_replace_utils import normalise_image_url
 from Commands.user_commands_on_message import rare_emote, super_rare_1, super_rare_2, ultra_rare_1, ultra_rare_2
 
 picture_caeser = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddess-of-victory.gif"
@@ -294,6 +295,22 @@ class UserCommandsPrefix_v2(commands.Cog):
         view = UpdateView()
         await ctx.send(view=view)
 
+    @commands.command(name="profileimage", aliases=["profilepic", "setprofileimage"])
+    async def profile_image(self, ctx, *, image_url: str = None):
+        if image_url and image_url.lower() in {"remove", "clear"}:
+            await players.remove_profile_image_url_by_discord_id(ctx.author.id)
+            await ctx.send("Profile image removed.")
+            return
+
+        image_url = normalise_image_url(image_url) if image_url else None
+        if not image_url:
+            await ctx.send(f"Usage: `{ctx.clean_prefix}profileimage <direct image URL>`. Use `remove` to clear it.")
+            return
+
+        await players.update_player(ctx.author.id, ctx.author.name)
+        await players.set_profile_image_url_by_discord_id(ctx.author.id, image_url)
+        await ctx.send(f"Profile image saved. Enable `profile replace` in `{ctx.clean_prefix}settings`.")
+
     @commands.command()
     async def settings(self, ctx):
         discord_id = ctx.author.id
@@ -344,6 +361,12 @@ class UserCommandsPrefix_v2(commands.Cog):
             else:
                 button_style_info_replace = discord.ButtonStyle.danger
                 status_info_replace = "off"
+            if player_settings["profile_replace"] == "yes":
+                button_style_profile_replace = discord.ButtonStyle.green
+                status_profile_replace = "on"
+            else:
+                button_style_profile_replace = discord.ButtonStyle.danger
+                status_profile_replace = "off"
             if player_settings["raid_afk_ping"] == "yes":
                 button_style_raid_afk = discord.ButtonStyle.green
                 status_raid_afk = "on"
@@ -362,6 +385,7 @@ class UserCommandsPrefix_v2(commands.Cog):
                                                         discord.ui.Button(label=f"cinfo picture {status_cinfopic}", style=button_style_cinfo_pic, custom_id="Cinfo Picture"),
                                                         discord.ui.Button(label=f"cinfo stats {status_cinfostat}", style=button_style_cinfo_stat, custom_id="Cinfo Stats"),
                                                         discord.ui.Button(label=f"info replace {status_info_replace}", style=button_style_info_replace, custom_id="Info Replace"))
+                button_row_profile = discord.ui.ActionRow(discord.ui.Button(label=f"profile replace {status_profile_replace}", style=button_style_profile_replace, custom_id="Profile Replace"))
 
             class SettingsView(discord.ui.LayoutView):
                 container = SettingsContainer(id=1, accent_colour=0x71368A)
@@ -385,6 +409,8 @@ class UserCommandsPrefix_v2(commands.Cog):
                         await players.update_player_settings_cinfo_stat_by_discord_id(discord_id)
                     elif button_id == "Info Replace":
                         await players.update_player_settings_info_replace_by_discord_id(discord_id)
+                    elif button_id == "Profile Replace":
+                        await players.update_player_settings_profile_replace_by_discord_id(discord_id)
                     elif button_id == "Raid Afk Ping":
                         await players.update_player_settings_raid_afk_ping_by_discord_id(discord_id)
                     nonlocal player_settings

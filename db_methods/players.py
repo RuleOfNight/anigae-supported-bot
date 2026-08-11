@@ -89,6 +89,7 @@ async def get_settings_from_player_by_discord_id(discord_id):
                            "cinfo_picture": user_entry.get("cinfo_picture", "original"),
                            "cselect_delete": user_entry.get("cselect_delete", "no"),
                            "info_replace": user_entry.get("info_replace", "no"),
+                           "profile_replace": user_entry.get("profile_replace", "no"),
                            "raid_afk_ping": user_entry.get("raid_afk_ping", "no")}
         return player_settings
     else:
@@ -113,6 +114,14 @@ async def get_premium_days_left_by_discord_name(discord_name):
     premium_days_left = found_player_name.get("premium_days_left", 0)
     player_id = found_player_name.get("discord_id", 0)
     return premium_days_left, player_id
+
+
+async def get_profile_image_url_by_discord_id(discord_id):
+    players_collection = get_players_collection()
+    user_entry = await players_collection.find_one(
+        {"discord_id": discord_id}, {"profile_image_url": 1}
+    )
+    return user_entry.get("profile_image_url") if user_entry else None
 
 
 # ------------
@@ -291,6 +300,35 @@ async def update_player_settings_info_replace_by_discord_id(discord_id):
         await players_collection.update_one({"discord_id": discord_id}, {"$set": {"info_replace": "yes"}})
     else:
         await players_collection.update_one({"discord_id": discord_id}, {"$set": {"info_replace": "no"}})
+
+
+async def update_player_settings_profile_replace_by_discord_id(discord_id):
+    players_collection = get_players_collection()
+    user_entry = await players_collection.find_one({"discord_id": discord_id})
+    profile_replace = user_entry.get("profile_replace", "no") if user_entry else "no"
+    new_value = "yes" if profile_replace == "no" else "no"
+    await players_collection.update_one(
+        {"discord_id": discord_id},
+        {"$set": {"profile_replace": new_value}},
+        upsert=True,
+    )
+
+
+async def set_profile_image_url_by_discord_id(discord_id, image_url):
+    players_collection = get_players_collection()
+    await players_collection.update_one(
+        {"discord_id": discord_id},
+        {"$set": {"profile_image_url": image_url}},
+        upsert=True,
+    )
+
+
+async def remove_profile_image_url_by_discord_id(discord_id):
+    players_collection = get_players_collection()
+    await players_collection.update_one(
+        {"discord_id": discord_id},
+        {"$unset": {"profile_image_url": ""}},
+    )
 
 
 async def update_player_settings_raid_afk_ping_by_discord_id(discord_id):

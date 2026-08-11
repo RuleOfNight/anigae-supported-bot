@@ -304,7 +304,9 @@ async def _handle_embed(message):
 
     if keyword_13 in embed_footer:
         await user_commands_on_message.profile_tracker(embed_fields, embed_footer)
+        await user_commands_on_message.replace_profile_embed(message)
         await bot.process_commands(message)
+        return
 
     # Detect raid embed: title or description contains raid keywords
     is_raid_embed = (keyword_raid_lobby_title_old in _all_text

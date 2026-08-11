@@ -12,6 +12,7 @@ import time
 import discord
 from discord.ui import View, Button
 from Commands import definitions, user_commands_slash_definition_v2
+from profile_replace_utils import profile_discord_id
 from db_methods import cards, players, guilds, weekly_donations, channel_donations, general as general_db
 
 # In-memory cache: raid_code → {last_time, last_attacks, observed_rate}
@@ -700,12 +701,41 @@ async def profile_tracker(embed_fields, embed_footer: str) -> None:
         if "Premium Days" not in field.name:
             continue
         try:
-            player_id        = int(embed_footer.replace("Summoner ID: ", ""))
+            player_id        = profile_discord_id(embed_footer)
             premium_days     = int(field.value)
-        except ValueError:
+        except (TypeError, ValueError):
             return
         try:
             await players.update_player_premium_days_left_by_discord_id(player_id, premium_days)
         except Exception:
             pass
         break  # only one "Premium Days" field expected
+
+
+async def replace_profile_embed(message: discord.Message) -> bool:
+    """Clone an AniGame profile embed and replace only its large image."""
+    if not message.embeds:
+        return False
+
+    original_embed = message.embeds[0]
+    footer = original_embed.footer.text if original_embed.footer else ""
+    discord_id = profile_discord_id(footer)
+    if discord_id is None:
+        return False
+
+    settings = await players.get_settings_from_player_by_discord_id(discord_id)
+    if settings == "No Player found." or settings.get("profile_replace") != "yes":
+        return False
+
+    image_url = await players.get_profile_image_url_by_discord_id(discord_id)
+    if not image_url:
+        return False
+
+    replacement = original_embed.copy()
+    replacement.set_image(url=image_url)
+    await message.channel.send(embed=replacement, view=DeleteButtonView())
+    try:
+        await message.delete()
+    except (discord.errors.NotFound, discord.errors.Forbidden):
+        pass
+    return True
