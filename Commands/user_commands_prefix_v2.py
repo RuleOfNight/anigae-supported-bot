@@ -10,7 +10,7 @@ from discord import MediaGalleryItem
 from discord.ext import commands
 from discord.ui import View, Button, MediaGallery, Thumbnail, Select
 from db_methods import cards, players
-from Commands import definitions, help_def_v2
+from Commands import breach, definitions, help_def_v2
 from profile_replace_utils import normalise_image_url
 from Commands.user_commands_on_message import rare_emote, super_rare_1, super_rare_2, ultra_rare_1, ultra_rare_2
 
@@ -20,6 +20,10 @@ picture_caeser = "https://media1.tenor.com/m/Gjw4udndPjsAAAAd/fight-nikke-goddes
 class UserCommandsPrefix_v2(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command()
+    async def breach(self, ctx):
+        await ctx.send(view=breach.BreachView())
 
     @commands.command()
     async def raidguide(self, ctx, *args):

@@ -5,7 +5,7 @@ import discord
 
 from db_methods.general import get_config_collection
 
-CURRENT_CHANGELOG_VERSION = "2026-08-08"
+CURRENT_CHANGELOG_VERSION = "2026-08-14"
 GUILD_CHANGELOG_COOLDOWN_SECONDS = 5 * 60
 CHANGELOG_COLOR = 0x71368A
 CHANGELOG_THUMBNAIL_URL = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
@@ -13,14 +13,12 @@ CHANGELOG_THUMBNAIL_URL = "https://cdn.discordapp.com/attachments/10271515862601
 _runtime_cooldowns: dict[tuple[str, int], int] = {}
 
 _CHANGELOG_CONTENT = {
-    "vi": {
+    "en": {
         "title": "Caeser' changelogs",
-        "subtitle": "Quality of life.",
+        "subtitle": "Breach battle helper.",
         "sections": [
-            ("Remove /compare limit", [
-
-            ]),
-            ("Fix attack needed in raid estimated time calculate", [
+            ("New command", [
+                "Added `5breach` with phase and difficulty selectors for Breach battle commands.",
             ]),
         ],
         "footer": "You are seeing this once because the bot was updated.",
@@ -52,23 +50,6 @@ def build_changelog_embed(language: str = "en") -> discord.Embed:
     embed.set_footer(text=content["footer"])
     embed.set_thumbnail(url=CHANGELOG_THUMBNAIL_URL)
     return embed
-
-
-class ChangelogView(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=600)
-
-
-    @discord.ui.button(label="Changelogs", style=discord.ButtonStyle.success)
-    async def vietnamese_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(embed=build_changelog_embed("vi"), view=self)
-
-    @discord.ui.button(label="Góp ý", style=discord.ButtonStyle.secondary)
-    async def feedback_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "Có cái dái",
-            ephemeral=True,
-        )
 
 
 async def _should_show_changelog(guild_id: int, user_id: int) -> bool:
@@ -123,7 +104,7 @@ async def _should_show_changelog(guild_id: int, user_id: int) -> bool:
 
 async def _send_changelog_to_channel(channel) -> None:
     try:
-        await channel.send(embed=build_changelog_embed("vi"), view=ChangelogView())
+        await channel.send(embed=build_changelog_embed())
     except (discord.Forbidden, discord.HTTPException):
         pass
 
