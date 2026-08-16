@@ -8,11 +8,13 @@ from Commands.v2.card_select import v2_card_select
 from Commands.v2.inventory import v2_inventory_mset
 from Commands.v2.raid import v2_raid_handler
 from Commands.v2.breach_standings import maybe_track_breach_boss_info, v2_breach_standings_handler
+from Commands.v2.compare import v2_compare_preview
 
 
 async def discord_components_v2(message, trigger: str):
     """Router chính — phát hiện loại message và gọi handler tương ứng."""
     if trigger == "on_message":
+        await v2_compare_preview(message)
         if find_text_in_components(message, "Clan Shop"):
             await v2_improved_clan_shop(message)
         if (find_text_in_components(message, "Copies In Existence (SR/UR)")
