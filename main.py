@@ -256,7 +256,7 @@ async def on_message(message):
             await bot.process_commands(message)
             return
 
-        if message.components and isinstance(message.components[0], Container):
+        if message.components:
             await user_commands_on_message_v2.discord_components_v2(message, "on_message")
 
         if message.embeds:
