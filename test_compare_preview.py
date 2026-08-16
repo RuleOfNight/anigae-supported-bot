@@ -6,7 +6,7 @@ import discord
 
 from Commands import definitions
 from Commands.v2.compare import (
-    ComparePreviewView, _extract_talent_emote, _parse_base_stats,
+    ComparePreviewView, _extract_talent_emote, _load_cards, _parse_base_stats,
     is_compare_message,
 )
 
@@ -30,6 +30,29 @@ def test_compare_detection_requires_full_control_signature():
         "hp": 85, "atk": 78, "def": 85, "spd": 78,
     }
     assert _extract_talent_emote(description) == "<:Final_Verdict:123>"
+
+
+def test_compare_does_not_require_database_when_embed_is_complete(monkeypatch):
+    async def check():
+        async def fail_database(*args, **kwargs):
+            raise RuntimeError("database unavailable")
+
+        monkeypatch.setattr(
+            "Commands.v2.compare.cards_db.get_compare_data_from_cards",
+            fail_database,
+        )
+        message = SimpleNamespace(embeds=[discord.Embed(
+            title="Ryomen Sukuna",
+            description=(
+                "**HP:** 85\n**ATK:** 78\n**DEF:** 85\n**SPD:** 78\n"
+                "**TALENT:** <:Final_Verdict:123>"
+            ),
+        )])
+        loaded = await _load_cards(message)
+        assert loaded[0]["base"] == {"hp": 85, "atk": 78, "def": 85, "spd": 78}
+        assert loaded[0]["talent_emote"] == "<:Final_Verdict:1503405518105088010>"
+
+    asyncio.run(check())
 
 
 def test_classic_preview_contains_expected_controls():

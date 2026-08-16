@@ -99,21 +99,31 @@ def _editor_buttons(editor: str):
 
 async def _load_cards(message):
     titles = [embed.title or "" for embed in message.embeds]
-    db_cards = (
-        await cards_db.get_compare_data_from_cards([titles], [], [], [])
-        if all(titles)
-        else []
-    )
+    parsed_embeds = []
+    for embed in message.embeds:
+        parsed = _parse_base_stats(embed.description or "")
+        source_talent = _extract_talent_emote(embed.description or "")
+        talent_emote = await definitions.skill_converter_from_emote(source_talent)
+        parsed_embeds.append((parsed, source_talent, talent_emote))
+
+    needs_db = any(len(parsed) < 4 or not talent for parsed, _, talent in parsed_embeds)
+    try:
+        db_cards = (
+            await cards_db.get_compare_data_from_cards([titles], [], [], [])
+            if all(titles) and needs_db
+            else []
+        )
+    except Exception as error:
+        print(f"[COMPARE] Database fallback: {error}")
+        db_cards = []
     loaded = []
     for index, embed in enumerate(message.embeds):
         card_data = db_cards[index] if index < len(db_cards) else {}
-        parsed = _parse_base_stats(embed.description or "")
+        parsed, source_talent, talent_emote = parsed_embeds[index]
         base = {
             key: parsed[key] if key in parsed else int(card_data.get(f"card_{key}") or 0)
             for key in ("hp", "atk", "def", "spd")
         }
-        source_talent = _extract_talent_emote(embed.description or "")
-        talent_emote = await definitions.skill_converter_from_emote(source_talent)
         if not talent_emote:
             talent_emote = await definitions.skill_converter_from_database(
                 card_data.get("card_talent", "")
