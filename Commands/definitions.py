@@ -5,6 +5,29 @@ from decimal import Decimal, ROUND_CEILING
 from math import floor
 
 
+ultra_rare_1 = "<a:ultra:1503300387917004850>"
+ultra_rare_2 = "<a:rare3:1503300751496057017>"
+super_rare_1 = "<:super:1503299742753361974>"
+super_rare_2 = "<:rare:1503300937396129852>"
+rare_emote = "<:r_rare:1378150486573580308>"
+uncommon_emote_1 = "<:u_uncommon:1378150471126225077>"
+uncommon_emote_2 = "<:c_uncommon:1378150446543142934>"
+common_emote_1 = "<:c_common:1378150629545082941>"
+ascension_emote = "<:RedStar:1503299407720747119>"
+
+RARITY_EMOTES = {
+    "Base": "",
+    "Common": common_emote_1,
+    "Uncommon": f"{uncommon_emote_1}{uncommon_emote_2}",
+    "Rare": rare_emote,
+    "Super Rare": f"{super_rare_1}{super_rare_2}",
+    "Ultra Rare": f"{ultra_rare_1}{ultra_rare_2}",
+}
+
+# GIF cho Ascension 1–5 chưa có; RedStar chỉ đại diện Ascension 0.
+ASCENSION_EMOTES = {0: ascension_emote}
+
+
 async def mask_single_underscores(text):
     return re.sub(r'(?<!_)_(?!_)', '\\_', text)
 

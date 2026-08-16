@@ -37,7 +37,6 @@ _MAX_STATES = {
     "Max UR": {"rarity": "Ultra Rare", "level": 60, "evo": 3, "ascension": 5},
 }
 
-
 def _walk_components(component):
     yield component
     for attr in ("children", "items"):
@@ -85,6 +84,27 @@ def _replace_line(lines, label: str, value) -> bool:
     return False
 
 
+def _familiarity_text(value, include_bonus=False):
+    if str(value).lower() in {"holo", "holorized", "h1", "12"}:
+        return "Holo (+12%)" if include_bonus else "Holo"
+    level = max(0, min(int(value), 3))
+    bonus = f" (+{level * 2}%)" if include_bonus and level else ""
+    return f"Fam {level}{bonus}"
+
+
+def _ascension_text(value):
+    emote = definitions.ASCENSION_EMOTES.get(value)
+    return f"{value} {emote}" if emote else f"Ascension {value}"
+
+
+def _comparison_suffix(value, other):
+    if value > other:
+        return f" ▲ (+{value - other:,})"
+    if value < other:
+        return " ▼"
+    return ""
+
+
 def _editor_buttons(editor: str):
     return [
         discord.ui.Button(
@@ -129,7 +149,14 @@ async def _load_cards(message):
                 card_data.get("card_talent", "")
             )
         familiarity = re.search(
-            r"FAMILIARITY:.*?Level\s+(\d+)", embed.description or "", re.IGNORECASE
+            r"FAMILIARITY:.*?(Holorized|Holo|(?:Level|Fam)\s*(\d+))",
+            embed.description or "",
+            re.IGNORECASE,
+        )
+        familiarity_value = (
+            "Holorized"
+            if familiarity and familiarity.group(1).lower() in {"holorized", "holo"}
+            else familiarity.group(2) if familiarity else "0"
         )
         loaded.append({
             "base": base,
@@ -140,7 +167,7 @@ async def _load_cards(message):
                 "level": 0,
                 "evo": 1,
                 "ascension": 0,
-                "familiarity": familiarity.group(1) if familiarity else "0",
+                "familiarity": familiarity_value,
             },
         })
     return loaded
@@ -252,7 +279,7 @@ class ComparePreviewView(discord.ui.View):
                 state.update(_MAX_STATES[selected])
 
     async def build_embeds(self):
-        embeds = []
+        calculated = []
         for card in self.cards:
             state = card["state"]
             base = card["base"]
@@ -261,18 +288,34 @@ class ComparePreviewView(discord.ui.View):
                 state["rarity"], state["level"], state["evo"], state["ascension"],
                 state["familiarity"], 0, 0, 0, 0,
             )
+            calculated.append({
+                "HP": hp, "ATK": atk, "DEF": def_, "SPD": spd,
+                "TOTAL": hp + atk + def_ + spd,
+            })
+
+        embeds = []
+        for index, card in enumerate(self.cards):
+            state = card["state"]
+            stats = calculated[index]
+            other_stats = calculated[1 - index] if len(calculated) == 2 else None
             embed = discord.Embed.from_dict(card["embed"])
+            rarity_emote = definitions.RARITY_EMOTES[state["rarity"]]
+            title_parts = [
+                rarity_emote,
+                embed.title or "Card",
+                f"Level {state['level']} [Evo {state['evo']}]",
+                _ascension_text(state["ascension"]),
+                _familiarity_text(state["familiarity"]),
+            ]
+            embed.title = " ".join(part for part in title_parts if part)
             lines = (embed.description or "").splitlines()
-            for label, value in (
-                ("HP", hp), ("ATK", atk), ("DEF", def_), ("SPD", spd),
-                ("TOTAL", hp + atk + def_ + spd),
-            ):
-                _replace_line(lines, label, value)
+            for label, value in stats.items():
+                suffix = _comparison_suffix(value, other_stats[label]) if other_stats else ""
+                _replace_line(lines, label, f"{value:,}{suffix}")
             if card["talent_emote"]:
                 _replace_line(lines, "TALENT", card["talent_emote"])
             familiarity = state["familiarity"]
-            fam_text = familiarity if familiarity == "Holorized" else f"Level {familiarity}"
-            _replace_line(lines, "FAMILIARITY", fam_text)
+            _replace_line(lines, "FAMILIARITY", _familiarity_text(familiarity, True))
             if self.mode == "Detailed":
                 rarity_mult = definitions._RARITY_CONFIG[state["rarity"]][0]
                 lines.extend([

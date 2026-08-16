@@ -90,9 +90,15 @@ def test_classic_preview_contains_expected_controls():
             "ascension": 5, "familiarity": "0",
         }
         embeds = await view.build_embeds()
-        assert "**HP:** 359" in embeds[1].description
-        assert "**TOTAL:** 1378" in embeds[1].description
+        assert "**HP:** 85 ▼" in embeds[0].description
+        assert "**HP:** 359 ▲ (+274)" in embeds[1].description
+        assert "**TOTAL:** 1,378 ▲ (+1,052)" in embeds[1].description
         assert "<:Final_Verdict:1503405518105088010>" in embeds[1].description
+        assert "0 <:RedStar:1503299407720747119> Fam 0" in embeds[0].title
+        assert "<a:ultra:1503300387917004850>" in embeds[1].title
+        assert "Level 60 [Evo 3]" in embeds[1].title
+        assert "Ascension 5 Fam 0" in embeds[1].title
+        assert "<:RedStar:1503299407720747119>" not in embeds[1].title
 
         view.selected_index = 0
         view.apply_option("rarity", "Super Rare")
