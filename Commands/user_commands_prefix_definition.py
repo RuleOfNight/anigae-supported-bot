@@ -9,8 +9,8 @@ from Commands.user_commands_on_message import gold_emote
 from Commands import user_commands_prefix, definitions
 from db_methods import players, guilds, general, cards
 
-# Familiarity display labels map to AniGame's internal stack count (0, 2, 4, 6, 12 stacks).
-_FAM_VALUE = {"Fam 0": 0, "Fam 1": 2, "Fam 2": 4, "Fam 3": 6, "Holo": 12}
+# Familiarity levels add 2% base stats per level; Holo adds 12%.
+_FAM_VALUE = {"Fam 0": 0, "Fam 1": 1, "Fam 2": 2, "Fam 3": 3, "Holo": 12}
 
 # Base categories for the Compare stat editor, mapping label to View class.
 # Defined at call time (inside methods) to avoid forward-reference issues.
@@ -803,8 +803,7 @@ class CompareViewAscension(View):
 class CompareViewFamiliarity(View):
     """Stat editor: choose a familiarity tier for one or all cards.
 
-    The internal `card_fam` value is the game's familiarity stack count:
-    Fam 0 = 0 stacks, Fam 1 = 2, Fam 2 = 4, Fam 3 = 6, Holo = 12.
+    Fam 1/2/3 add 2%/4%/6% base stats; Holo adds 12%.
     """
 
     def __init__(self, ctx, old_message, old_embed, card_data_db, edit_mode="all", selected_index=0):
@@ -846,7 +845,7 @@ class CompareViewFamiliarity(View):
         await interaction.followup.edit_message(view=view, message_id=interaction.message.id)
 
     async def select_category_callback(self, interaction: discord.Interaction):
-        """Apply the selected familiarity (converted to stack count) and refresh the embed."""
+        """Apply the selected familiarity and refresh the embed."""
         await interaction.response.defer(ephemeral=True)
         new_value = _FAM_VALUE[self.select_category.values[0]]
         _apply_stat(self.card_data_db, "card_fam", new_value, self.edit_mode, self.selected_index)
@@ -1016,7 +1015,7 @@ async def compare_embed_builder(ctx_interaction, card_data_db):
 
     # Short display labels for rarity, familiarity, and clan level
     rarity_map = {"Base": "Base", "Common": "C", "Uncommon": "UC", "Rare": "R", "Super Rare": "SR", "Ultra Rare": "UR"}
-    fam_holo_map = {0: "F0", 2: "F1", 4: "F2", 6: "F3", 12: "H1"}
+    fam_holo_map = {0: "F0", 1: "F1", 2: "F2", 3: "F3", 12: "H1"}
     # Clan level N+5 → display "N" (inverse of the level+5 formula applied on save)
     clan_map = {0: "0", **{lvl + 5: str(lvl) for lvl in range(1, 16)}}
 

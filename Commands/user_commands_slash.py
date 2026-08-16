@@ -75,7 +75,7 @@ class UserCommandsSlash(commands.Cog):
                     state_dict["card_asc"] = min(int(m.group(1)), 5)
                 m = re.search(r"F(\d+)", code)
                 if m:
-                    state_dict["card_fam"] = min(int(m.group(1)), 3) * 2
+                    state_dict["card_fam"] = min(int(m.group(1)), 3)
                 m = re.search(r"H(\d+)", code)
                 if m:
                     state_dict["card_fam"] = min(int(m.group(1)), 1) * 12

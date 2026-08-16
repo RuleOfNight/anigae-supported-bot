@@ -102,7 +102,7 @@ class UserCommandsPrefix(commands.Cog):
                     state["card_asc"] = min(int(m.group(1)), 5)
                 m = re.search(r"F(\d+)", code)
                 if m:
-                    state["card_fam"] = min(int(m.group(1)), 3) * 2
+                    state["card_fam"] = min(int(m.group(1)), 3)
                 m = re.search(r"H(\d+)", code)
                 if m:
                     state["card_fam"] = min(int(m.group(1)), 1) * 12

@@ -5,7 +5,7 @@ from discord import MediaGalleryItem
 from Commands import definitions
 from Commands.v2.utils import picture_caeser, normalize_picture_url
 from db_methods import cards, general, players
-from math import floor, ceil
+from math import floor
 import runtime
 
 
@@ -322,27 +322,15 @@ async def v2_improved_card_info(message):
     )
     container.thumbnail.children[0].content = thumbnail_text
 
-    # --- Base stats table ---
-    sr_hp  = ceil(int(card_hp)    * 3.5)
-    sr_atk = ceil(int(card_atk)   * 3.5)
-    sr_def = ceil(int(card_def)   * 3.5)
-    sr_spd = ceil(int(card_speed) * 3.5)
-    ur_hp  = ceil(int(card_hp)    * 4.2)
-    ur_atk = ceil(int(card_atk)   * 4.2)
-    ur_def = ceil(int(card_def)   * 4.2)
-    ur_spd = ceil(int(card_speed) * 4.2)
-    W = 16
+    # --- Base stats ---
     base_total = int(card_hp) + int(card_atk) + int(card_def) + int(card_speed)
     container.card_stats.content = (
-        f"```\n"
-        f"{'Base Stats':<{W}}{'SR A4':<{W}}UR A5\n"
-        f"{'HP: '+card_hp:<{W}}{'HP: '+str(sr_hp):<{W}}HP: {ur_hp}\n"
-        f"{'ATK: '+card_atk:<{W}}{'ATK: '+str(sr_atk):<{W}}ATK: {ur_atk}\n"
-        f"{'DEF: '+card_def:<{W}}{'DEF: '+str(sr_def):<{W}}DEF: {ur_def}\n"
-        f"{'SPEED: '+card_speed:<{W}}{'SPEED: '+str(sr_spd):<{W}}SPEED: {ur_spd}\n"
-        f"{'TOTAL: '+str(base_total):<{W}}"
-        f"{'TOTAL: '+f'{sr_hp+sr_atk+sr_def+sr_spd:,}':<{W}}"
-        f"TOTAL: {ur_hp+ur_atk+ur_def+ur_spd:,}\n```"
+        f"**__Base Stats__**\n"
+        f"**HP:** {card_hp}\n"
+        f"**ATK:** {card_atk}\n"
+        f"**DEF:** {card_def}\n"
+        f"**SPEED:** {card_speed}\n"
+        f"**TOTAL:** {base_total:,}"
     )
     container.card_talent.content = (
         f"**__SR Talent__**\n{card_talent_emote} **{card_talent_name.group(1)}:** {card_talent_text_sr}\n\n"

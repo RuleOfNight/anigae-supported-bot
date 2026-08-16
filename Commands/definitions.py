@@ -204,6 +204,24 @@ async def skill_converter_from_database(card_skill_name):
     return _SKILL_EMOJI_MAP.get(card_skill_name, "")
 
 
+def _normalized_emote_name(value):
+    match = re.search(r"<a?:([^:>]+):\d+>", value or "")
+    name = match.group(1) if match else value or ""
+    return re.sub(r"[^a-z0-9]", "", name.lower())
+
+
+async def skill_converter_from_emote(source_emote):
+    """Map an AniGame talent emote to this bot's matching definitions emote."""
+    source_name = _normalized_emote_name(source_emote)
+    for talent_name, mapped_emote in _SKILL_EMOJI_MAP.items():
+        if source_name in {
+            _normalized_emote_name(talent_name),
+            _normalized_emote_name(mapped_emote),
+        }:
+            return mapped_emote
+    return ""
+
+
 _RARITY_CONFIG = {
     "Base":       (1.0, 1),
     "Common":     (1.2, 20),
@@ -212,6 +230,14 @@ _RARITY_CONFIG = {
     "Super Rare": (1.8, 50),
     "Ultra Rare": (2.0, 60),
 }
+
+
+def familiarity_multiplier(familiarity):
+    """Return compare multiplier: F1/F2/F3 = 2%/4%/6%, Holo = 12%."""
+    if str(familiarity).strip().lower() in {"holo", "holorized", "h1", "12"}:
+        return 1.12
+    level = max(0, min(int(familiarity), 3))
+    return 1 + level * 0.02
 
 
 async def calc_card_stats(card_hp, card_atk, card_def, card_spd, rarity, evolution, ascension, familiarity, clan_hp, clan_atk, clan_def, clan_spd):
@@ -224,9 +250,15 @@ async def calc_card_stats(card_hp, card_atk, card_def, card_spd, rarity, evoluti
 
 
 async def calc_card_stats_compare(card_hp, card_atk, card_def, card_spd, rarity, card_level, evolution, ascension, familiarity, clan_hp, clan_atk, clan_def, clan_spd):
+    """Calculate compare stats; clan args remain only for caller compatibility."""
     rarity_scaling = _RARITY_CONFIG.get(rarity, (1.0, None))[0]
-    calc_card_hp = floor(int(card_hp) * rarity_scaling * (1 + 0.005 * card_level) * (0.85 + (0.15 * evolution)) * (1 + (0.05 * ascension)) * (1 + (familiarity / 100)) * (1 + (clan_hp / 100)))
-    calc_card_atk = floor(int(card_atk) * rarity_scaling * (1 + 0.005 * card_level) * (0.85 + (0.15 * evolution)) * (1 + (0.05 * ascension)) * (1 + (familiarity / 100)) * (1 + (clan_atk / 100)))
-    calc_card_def = floor(int(card_def) * rarity_scaling * (1 + 0.005 * card_level) * (0.85 + (0.15 * evolution)) * (1 + (0.05 * ascension)) * (1 + (familiarity / 100)) * (1 + (clan_def / 100)))
-    calc_card_spd = floor(int(card_spd) * rarity_scaling * (1 + 0.005 * card_level) * (0.85 + (0.15 * evolution)) * (1 + (0.05 * ascension)) * (1 + (familiarity / 100)) * (1 + (clan_spd / 100)))
-    return calc_card_hp, calc_card_atk, calc_card_def, calc_card_spd
+    multiplier = (
+        (1 + card_level * 0.005)
+        * (1 + 0.15 * (evolution - 1))
+        * (1 + ascension * 0.05)
+        * rarity_scaling
+        * familiarity_multiplier(familiarity)
+    )
+    return tuple(round(int(stat) * multiplier) for stat in (
+        card_hp, card_atk, card_def, card_spd
+    ))
