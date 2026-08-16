@@ -92,11 +92,12 @@ def _replace_line(lines, label: str, value) -> bool:
 def _familiarity_text(value, include_bonus=False):
     if str(value).lower() in {"holo", "holorized", "h1", "12"}:
         bonus = " (+12%)" if include_bonus else ""
-        return f"Holo {definitions.FAMILIARITY_EMOTES['Holo']}{bonus}"
+        return f"{definitions.FAMILIARITY_EMOTES['Holo']}{bonus}"
     level = max(0, min(int(value), 3))
+    if level == 0:
+        return "0 (+0%)" if include_bonus else ""
     bonus = f" (+{level * 2}%)" if include_bonus and level else ""
-    emote = definitions.FAMILIARITY_EMOTES.get(level, "")
-    return f"Fam {level}{f' {emote}' if emote else ''}{bonus}"
+    return f"{definitions.FAMILIARITY_EMOTES[level]}{bonus}"
 
 
 def _ascension_text(value):
@@ -204,7 +205,6 @@ class CompareOptionView(discord.ui.View):
         await interaction.response.defer(ephemeral=True)
         self.parent_view.apply_option(editor, selected)
         await self.parent_view.refresh()
-        await interaction.followup.send(f"Đã áp dụng **{selected}**.", ephemeral=True)
         return False
 
 

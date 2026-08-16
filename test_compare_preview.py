@@ -90,14 +90,15 @@ def test_classic_preview_contains_expected_controls():
             "ascension": 5, "familiarity": "0",
         }
         embeds = await view.build_embeds()
-        assert "**HP:** 85 <:downtriangle:1538530623399006238>" in embeds[0].description
+        assert "**HP:** 85 <:downtriangle:1538537116718473226>" in embeds[0].description
         assert "**HP:** 359 <:UpTriangle:1538527712904351744> (+274)" in embeds[1].description
         assert "**TOTAL:** 1,378 <:UpTriangle:1538527712904351744> (+1,052)" in embeds[1].description
         assert "<:Final_Verdict:1503405518105088010>" in embeds[1].description
-        assert "0 <:RedStar:1503299407720747119> Fam 0" in embeds[0].title
+        assert "0 <:RedStar:1503299407720747119>" in embeds[0].title
         assert "<a:ultra:1503300387917004850>" in embeds[1].title
         assert "Level 60 [Evo 3]" in embeds[1].title
-        assert "Ascension 5 Fam 0" in embeds[1].title
+        assert "Ascension 5" in embeds[1].title
+        assert "Fam 0" not in embeds[1].title
         assert "<:RedStar:1503299407720747119>" not in embeds[1].title
         assert embeds[1].colour.value == 0xA855F7
 
@@ -112,7 +113,8 @@ def test_classic_preview_contains_expected_controls():
         }
         view.apply_option("familiarity", "3")
         embeds = await view.build_embeds()
-        assert "Fam 3 <:FullFamiliarityHeart:1538525196338733137>" in embeds[0].title
+        assert "<:FullFamiliarityHeart:1538525196338733137>" in embeds[0].title
+        assert "Fam 3" not in embeds[0].title
         assert embeds[0].colour.value == 0xF5A623
 
     asyncio.run(check())
