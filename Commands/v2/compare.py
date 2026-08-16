@@ -37,6 +37,11 @@ _MAX_STATES = {
     "Max UR": {"rarity": "Ultra Rare", "level": 60, "evo": 3, "ascension": 5},
 }
 
+_RARITY_COLOURS = {
+    "Super Rare": 0xF5A623,
+    "Ultra Rare": 0xA855F7,
+}
+
 def _walk_components(component):
     yield component
     for attr in ("children", "items"):
@@ -86,10 +91,12 @@ def _replace_line(lines, label: str, value) -> bool:
 
 def _familiarity_text(value, include_bonus=False):
     if str(value).lower() in {"holo", "holorized", "h1", "12"}:
-        return "Holo (+12%)" if include_bonus else "Holo"
+        bonus = " (+12%)" if include_bonus else ""
+        return f"Holo {definitions.FAMILIARITY_EMOTES['Holo']}{bonus}"
     level = max(0, min(int(value), 3))
     bonus = f" (+{level * 2}%)" if include_bonus and level else ""
-    return f"Fam {level}{bonus}"
+    emote = definitions.FAMILIARITY_EMOTES.get(level, "")
+    return f"Fam {level}{f' {emote}' if emote else ''}{bonus}"
 
 
 def _ascension_text(value):
@@ -99,9 +106,9 @@ def _ascension_text(value):
 
 def _comparison_suffix(value, other):
     if value > other:
-        return f" ▲ (+{value - other:,})"
+        return f" {definitions.up_triangle_emote} (+{value - other:,})"
     if value < other:
-        return " ▼"
+        return f" {definitions.down_triangle_emote}"
     return ""
 
 
@@ -299,6 +306,9 @@ class ComparePreviewView(discord.ui.View):
             stats = calculated[index]
             other_stats = calculated[1 - index] if len(calculated) == 2 else None
             embed = discord.Embed.from_dict(card["embed"])
+            colour = _RARITY_COLOURS.get(state["rarity"])
+            if colour is not None:
+                embed.colour = discord.Colour(colour)
             rarity_emote = definitions.RARITY_EMOTES[state["rarity"]]
             title_parts = [
                 rarity_emote,

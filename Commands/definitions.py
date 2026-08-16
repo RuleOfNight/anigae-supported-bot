@@ -14,6 +14,12 @@ uncommon_emote_1 = "<:u_uncommon:1378150471126225077>"
 uncommon_emote_2 = "<:c_uncommon:1378150446543142934>"
 common_emote_1 = "<:c_common:1378150629545082941>"
 ascension_emote = "<:RedStar:1503299407720747119>"
+up_triangle_emote = "<:UpTriangle:1538527712904351744>"
+down_triangle_emote = "<:downtriangle:1538530623399006238>"
+fam_1_emote = "<:Fam1:1538508910258954260>"
+fam_2_emote = "<:Familarity2:1538524962195775559>"
+fam_3_emote = "<:FullFamiliarityHeart:1538525196338733137>"
+familiarity_holo_emote = "<:FamiliarityHolo:1538526814958264330>"
 
 RARITY_EMOTES = {
     "Base": "",
@@ -26,6 +32,13 @@ RARITY_EMOTES = {
 
 # GIF cho Ascension 1–5 chưa có; RedStar chỉ đại diện Ascension 0.
 ASCENSION_EMOTES = {0: ascension_emote}
+
+FAMILIARITY_EMOTES = {
+    1: fam_1_emote,
+    2: fam_2_emote,
+    3: fam_3_emote,
+    "Holo": familiarity_holo_emote,
+}
 
 
 async def mask_single_underscores(text):
