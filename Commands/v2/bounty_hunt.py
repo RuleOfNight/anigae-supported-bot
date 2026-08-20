@@ -23,10 +23,16 @@ def _clean_bounty_line(line: str) -> str:
     return re.sub(r"\s+", " ", line).strip()
 
 
+def _normalize_bounty_text(text: str) -> str:
+    text = re.sub(r"[`*_~]", "", text)
+    text = re.sub(r"<a?:[^>]+>", "", text)
+    return re.sub(r"\s+", " ", text).strip().casefold()
+
+
 def _extract_card_name(line: str) -> str | None:
     line = _clean_bounty_line(line)
     match = re.search(
-        r"^(?:R|SR|UR|Rare|Super Rare|Ultra Rare)\s+(.+?)\s+Level\s+\d+\s+\[Evo\s+\d+\]",
+        r"\b(?:R|SR|UR|Rare|Super Rare|Ultra Rare)\b\s+(.+?)\s+Level\s+\d+\s+\[Evo\s+\d+\]",
         line,
         re.IGNORECASE,
     )
@@ -38,7 +44,7 @@ def _extract_card_name(line: str) -> str | None:
 def parse_bounty_slots(text: str) -> list[dict]:
     cleaned_text = re.sub(r"\r", "", text)
     slot_pattern = re.compile(
-        r"(?ms)^#(?P<slot>\d+)\s+.*?(?=^#\d+\s+|Fresh Bounties Arrive:|\Z)"
+        r"(?ms)^#(?P<slot>\d+)\s+.*?(?=^#\d+\s+|Fresh Bounties Arrive\b|\Z)"
     )
     slots: list[dict] = []
 
@@ -64,7 +70,8 @@ def parse_bounty_slots(text: str) -> list[dict]:
 
 
 def _is_bounty_hunt_message(full_text: str) -> bool:
-    return "Bounty Hunt #" in full_text and "Fresh Bounties Arrive:" in full_text
+    normalized = _normalize_bounty_text(full_text)
+    return "bounty hunt #" in normalized and "fresh bounties arrive" in normalized
 
 
 async def maybe_add_bounty_hunt_reaction(message, full_text: str | None = None):
