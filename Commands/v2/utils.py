@@ -40,6 +40,6 @@ def _collect_text_recursive(obj, results: list[str]):
 def get_all_component_text(message) -> str:
     """Trả về toàn bộ text trong component tree của message, ghép bằng newline."""
     results: list[str] = []
-    for component in message.components:
+    for component in getattr(message, "components", ()) or ():
         _collect_text_recursive(component, results)
     return "\n".join(results)

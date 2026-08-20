@@ -14,6 +14,7 @@ from discord.ext import commands, tasks
 from discord import app_commands, Container
 from db_methods import general, players, guilds
 from Commands import changelog, help_def_v2, user_commands_on_message, user_commands_on_message_v2
+from Commands.v2.bounty_hunt import maybe_add_bounty_hunt_reaction
 from Commands.admin_commands import AdminCommands
 from Commands.user_commands_prefix import UserCommandsPrefix
 from Commands.user_commands_prefix_v2 import UserCommandsPrefix_v2
@@ -258,6 +259,7 @@ async def on_message(message):
 
         if message.components:
             await user_commands_on_message_v2.discord_components_v2(message, "on_message")
+        await maybe_add_bounty_hunt_reaction(message)
 
         if message.embeds:
             await _handle_embed(message)

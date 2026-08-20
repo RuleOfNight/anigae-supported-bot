@@ -71,21 +71,24 @@ def parse_bounty_slots(text: str) -> list[dict]:
 
 def _is_bounty_hunt_message(full_text: str) -> bool:
     normalized = _normalize_bounty_text(full_text)
-    if "bounty hunt #" not in normalized:
-        return False
-    if "fresh bounties arrive" in normalized:
-        return True
-    return len(parse_bounty_slots(full_text)) >= 3
+    # AniGame marks bounty list end with this bold text. Header format can change.
+    return "fresh bounties arrive" in normalized
+
+
+def _get_bounty_message_text(message) -> str:
+    parts = [message.content or "", get_all_component_text(message)]
+    for embed in message.embeds:
+        parts.extend((embed.title or "", embed.description or "", embed.footer.text or ""))
+        parts.extend(f"{field.name}\n{field.value}" for field in embed.fields)
+    return "\n".join(part for part in parts if part)
 
 
 async def maybe_add_bounty_hunt_reaction(message, full_text: str | None = None):
     if message.author.id != TARGET_BOT_ID:
         return
 
-    full_text = full_text if full_text is not None else get_all_component_text(message)
+    full_text = full_text if full_text is not None else _get_bounty_message_text(message)
     if not _is_bounty_hunt_message(full_text):
-        return
-    if not parse_bounty_slots(full_text):
         return
     if message.id in _processed_bounty_messages:
         return
@@ -93,8 +96,8 @@ async def maybe_add_bounty_hunt_reaction(message, full_text: str | None = None):
     _processed_bounty_messages.append(message.id)
     try:
         await message.add_reaction(BOUNTY_HUNT_REACTION)
-    except Exception:
-        pass
+    except discord.HTTPException as exc:
+        print(f"[bounty] react failed message={message.id}: {exc}")
 
 
 async def on_raw_reaction_add(payload, bot):
@@ -116,7 +119,7 @@ async def on_raw_reaction_add(payload, bot):
     if message.author.id != TARGET_BOT_ID or not message.components:
         return
 
-    full_text = get_all_component_text(message)
+    full_text = _get_bounty_message_text(message)
     if not _is_bounty_hunt_message(full_text):
         return
 
