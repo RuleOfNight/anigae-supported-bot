@@ -5,7 +5,7 @@ import discord
 
 from db_methods.general import get_config_collection
 
-CURRENT_CHANGELOG_VERSION = "2026-08-14"
+CURRENT_CHANGELOG_VERSION = "2026-08-20"
 GUILD_CHANGELOG_COOLDOWN_SECONDS = 5 * 60
 CHANGELOG_COLOR = 0x71368A
 CHANGELOG_THUMBNAIL_URL = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
@@ -15,10 +15,13 @@ _runtime_cooldowns: dict[tuple[str, int], int] = {}
 _CHANGELOG_CONTENT = {
     "en": {
         "title": "Caeser' changelogs",
-        "subtitle": "Breach battle helper.",
+        "subtitle": "Latest updates.",
         "sections": [
             ("New command", [
                 "Added `5breach` with phase and difficulty selectors for Breach battle commands.",
+            ]),
+            ("New feature", [
+                "Added Bounty Hunt helper reactions.",
             ]),
         ],
         "footer": "You are seeing this once because the bot was updated.",
