@@ -42,9 +42,9 @@ def _extract_card_name(line: str) -> str | None:
 
 
 def parse_bounty_slots(text: str) -> list[dict]:
-    cleaned_text = re.sub(r"\r", "", text)
+    cleaned_text = re.sub(r"[`*_~]", "", text.replace("\r", ""))
     slot_pattern = re.compile(
-        r"(?ms)^#(?P<slot>\d+)\s+.*?(?=^#\d+\s+|Fresh Bounties Arrive\b|\Z)"
+        r"(?ms)^[ \t]*#(?P<slot>\d+)\s+.*?(?=^[ \t]*#\d+\s+|Fresh Bounties Arrive\b|\Z)"
     )
     slots: list[dict] = []
 
@@ -103,7 +103,7 @@ async def maybe_add_bounty_hunt_reaction(message, full_text: str | None = None):
 async def on_raw_reaction_add(payload, bot):
     if payload.user_id == bot.user.id:
         return
-    if payload.emoji.name != BOUNTY_HUNT_REACTION:
+    if payload.emoji.name.rstrip("\ufe0f") != BOUNTY_HUNT_REACTION.rstrip("\ufe0f"):
         return
 
     message = discord.utils.get(bot.cached_messages, id=payload.message_id)
@@ -116,7 +116,7 @@ async def on_raw_reaction_add(payload, bot):
         except (discord.NotFound, discord.Forbidden, discord.HTTPException):
             return
 
-    if message.author.id != TARGET_BOT_ID or not message.components:
+    if message.author.id != TARGET_BOT_ID:
         return
 
     full_text = _get_bounty_message_text(message)
@@ -125,6 +125,7 @@ async def on_raw_reaction_add(payload, bot):
 
     slots = parse_bounty_slots(full_text)
     if len(slots) < 3:
+        print(f"[bounty] menu skipped message={message.id}: parsed {len(slots)} slots")
         return
 
     view = BountyHuntView(message=message, user_id=payload.user_id, slots=slots[:3])
