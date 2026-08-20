@@ -71,7 +71,11 @@ def parse_bounty_slots(text: str) -> list[dict]:
 
 def _is_bounty_hunt_message(full_text: str) -> bool:
     normalized = _normalize_bounty_text(full_text)
-    return "bounty hunt #" in normalized and "fresh bounties arrive" in normalized
+    if "bounty hunt #" not in normalized:
+        return False
+    if "fresh bounties arrive" in normalized:
+        return True
+    return len(parse_bounty_slots(full_text)) >= 3
 
 
 async def maybe_add_bounty_hunt_reaction(message, full_text: str | None = None):

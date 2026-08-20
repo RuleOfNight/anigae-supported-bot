@@ -28,8 +28,10 @@ def find_text_in_components(message, pattern: str) -> bool:
 
 def _collect_text_recursive(obj, results: list[str]):
     """Đệ quy thu thập tất cả text content từ component tree."""
-    if hasattr(obj, "content") and isinstance(obj.content, str):
-        results.append(obj.content)
+    for attr in ("content", "label", "description", "placeholder", "text", "title"):
+        value = getattr(obj, attr, None)
+        if isinstance(value, str) and value:
+            results.append(value)
     for attr in ("children", "items"):
         for child in getattr(obj, attr, []) or []:
             _collect_text_recursive(child, results)
