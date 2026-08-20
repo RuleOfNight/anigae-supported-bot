@@ -32,7 +32,7 @@ def _normalize_bounty_text(text: str) -> str:
 def _extract_card_name(line: str) -> str | None:
     line = _clean_bounty_line(line)
     match = re.search(
-        r"\b(?:R|SR|UR|Rare|Super Rare|Ultra Rare)\b\s+(.+?)\s+Level\s+\d+\s+\[Evo\s+\d+\]",
+        r"^(?:(?:R|SR|UR|Rare|Super Rare|Ultra Rare)\s+)?(.+?)\s+Level\s+\d+\s+\[Evo\s+\d+\]",
         line,
         re.IGNORECASE,
     )
@@ -129,7 +129,10 @@ async def on_raw_reaction_add(payload, bot):
         return
 
     view = BountyHuntView(message=message, user_id=payload.user_id, slots=slots[:3])
-    await message.channel.send(view=view)
+    try:
+        await message.channel.send(view=view)
+    except discord.HTTPException as exc:
+        print(f"[bounty] menu send failed message={message.id}: {exc}")
 
 
 class BountyHuntView(discord.ui.LayoutView):
