@@ -14,6 +14,7 @@ from discord.ext import commands, tasks
 from discord import app_commands, Container
 from db_methods import general, players, guilds
 from Commands import changelog, help_def_v2, user_commands_on_message, user_commands_on_message_v2
+from Commands.breach_chaos import get_breach_chaos_role_id
 from Commands.v2.bounty_hunt import maybe_add_bounty_hunt_reaction
 from Commands.admin_commands import AdminCommands
 from Commands.user_commands_prefix import UserCommandsPrefix
@@ -302,7 +303,19 @@ async def _handle_embed(message):
     embed_thumb_url   = embed.thumbnail.url if embed.thumbnail else None
 
     # Combine all text for keyword searching (bot gốc moves keywords between fields)
-    _all_text = f"{embed_title}\n{embed_description}\n{embed_footer}"
+    _all_text = f"{embed_title}\n{embed_description}\n{embed_footer}\n" + "\n".join(
+        f"{field.name or ''}\n{field.value or ''}" for field in embed_fields
+    )
+
+    breach_role_id = get_breach_chaos_role_id(message.channel.id, embed_title, _all_text)
+    if breach_role_id:
+        breach_element = re.search(
+            r"World-Ender's type is now\s+(\w+)", _all_text, re.IGNORECASE
+        ).group(1).title()
+        await message.channel.send(
+            f"<@&{breach_role_id}> Elemental Chaos: **{breach_element}**",
+            allowed_mentions=discord.AllowedMentions(roles=True),
+        )
 
     if keyword_13 in embed_footer:
         await user_commands_on_message.profile_tracker(embed_fields, embed_footer)
