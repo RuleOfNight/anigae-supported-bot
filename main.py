@@ -15,6 +15,7 @@ from discord import app_commands, Container
 from db_methods import general, players, guilds
 from Commands import changelog, help_def_v2, user_commands_on_message, user_commands_on_message_v2
 from Commands.breach_chaos import get_breach_chaos_role_id
+from Commands.v2.utils import get_all_component_text
 from Commands.v2.bounty_hunt import maybe_add_bounty_hunt_reaction
 from Commands.admin_commands import AdminCommands
 from Commands.user_commands_prefix import UserCommandsPrefix
@@ -260,6 +261,8 @@ async def on_message(message):
 
         if message.components:
             await user_commands_on_message_v2.discord_components_v2(message, "on_message")
+            if not message.embeds:
+                await _maybe_ping_breach_chaos(message, "", get_all_component_text(message))
         await maybe_add_bounty_hunt_reaction(message)
 
         if message.embeds:
@@ -307,15 +310,7 @@ async def _handle_embed(message):
         f"{field.name or ''}\n{field.value or ''}" for field in embed_fields
     )
 
-    breach_role_id = get_breach_chaos_role_id(message.channel.id, embed_title, _all_text)
-    if breach_role_id:
-        breach_element = re.search(
-            r"World-Ender's type is now\s+(\w+)", _all_text, re.IGNORECASE
-        ).group(1).title()
-        await message.channel.send(
-            f"<@&{breach_role_id}> Elemental Chaos: **{breach_element}**",
-            allowed_mentions=discord.AllowedMentions(roles=True),
-        )
+    await _maybe_ping_breach_chaos(message, embed_title, _all_text)
 
     if keyword_13 in embed_footer:
         await user_commands_on_message.profile_tracker(embed_fields, embed_footer)
@@ -378,6 +373,19 @@ async def _handle_embed(message):
 
     else:
         await bot.process_commands(message)
+
+
+async def _maybe_ping_breach_chaos(message, title, text):
+    breach_role_id = get_breach_chaos_role_id(message.channel.id, title, text)
+    if not breach_role_id:
+        return
+    breach_element = re.search(
+        r"World-Ender's type is now\s+(\w+)", text, re.IGNORECASE
+    ).group(1).title()
+    await message.channel.send(
+        f"<@&{breach_role_id}> Elemental Chaos: **{breach_element}**",
+        allowed_mentions=discord.AllowedMentions(roles=True),
+    )
 
 
 async def _replace_embed(message, title, description, footer, image_url, thumb_url):

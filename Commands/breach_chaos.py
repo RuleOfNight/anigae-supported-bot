@@ -15,7 +15,8 @@ ELEMENT_ROLE_IDS = {
 
 def get_breach_chaos_role_id(channel_id: int, title: str, text: str) -> int | None:
     """Return role for an official Elemental Chaos notification."""
-    if channel_id != BREACH_CHANNEL_ID or title.strip().casefold() != "elemental chaos":
+    is_chaos = title.strip().casefold() == "elemental chaos" or "elemental chaos" in text.casefold()
+    if channel_id != BREACH_CHANNEL_ID or not is_chaos:
         return None
     match = re.search(r"world-ender's type is now\s+(ground|water|grass|electric|fire|dark|light)\b", text, re.IGNORECASE)
     return ELEMENT_ROLE_IDS.get(match.group(1).casefold()) if match else None
