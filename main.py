@@ -14,7 +14,7 @@ from discord.ext import commands, tasks
 from discord import app_commands, Container
 from db_methods import general, players, guilds
 from Commands import changelog, help_def_v2, user_commands_on_message, user_commands_on_message_v2
-from Commands.breach_chaos import get_breach_chaos_role_id
+from Commands.breach_chaos import BREACH_CHANNEL_ID, get_breach_chaos_role_id
 from Commands.v2.utils import get_all_component_text
 from Commands.v2.bounty_hunt import maybe_add_bounty_hunt_reaction
 from Commands.admin_commands import AdminCommands
@@ -254,8 +254,8 @@ async def on_message(message):
     if not runtime.db_ready:
         return
 
-    if message.author.bot:
-        if message.author.id != target_bot_id:
+    if message.author.bot or message.channel.id == BREACH_CHANNEL_ID:
+        if message.author.id != target_bot_id and message.channel.id != BREACH_CHANNEL_ID:
             await bot.process_commands(message)
             return
 
@@ -267,6 +267,8 @@ async def on_message(message):
 
         if message.embeds:
             await _handle_embed(message)
+        elif message.channel.id == BREACH_CHANNEL_ID:
+            await _maybe_ping_breach_chaos(message, "", message.content)
         elif "has already been defeated" in message.content:
             await _handle_raid_already_defeated(message)
         elif keyword_10_1 in message.content:
@@ -380,7 +382,7 @@ async def _maybe_ping_breach_chaos(message, title, text):
     if not breach_role_id:
         return
     breach_element = re.search(
-        r"World-Ender's type is now\s+(\w+)", text, re.IGNORECASE
+        r"World-Ender's type is now\s+(?:\*\*)?(\w+)", text, re.IGNORECASE
     ).group(1).title()
     await message.channel.send(
         f"<@&{breach_role_id}> Elemental Chaos: **{breach_element}**",
