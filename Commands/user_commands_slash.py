@@ -9,6 +9,7 @@ from discord.ext import commands
 from db_methods import breach_comps, cards, guilds, players, channel_donations
 from Commands.user_commands_on_message import MONTHLY_DONATION_CHANNEL_ID
 from Commands import breach_comp_views, definitions, user_commands_prefix_definition, user_commands_slash_definition_v2, help_def_v2, user_commands_slash_definiton_embed
+from Commands.breach_waiver_view import AUTHORIZED_BREACH_REVIEWERS, BreachWaiverView, load_breach_members
 from misc import time_calculations
 from Commands.user_commands_prefix import ViewDeleteButtonPrefix
 from Commands.user_commands_on_message import gold_emote, rare_emote, super_rare_1, super_rare_2, ultra_rare_1, ultra_rare_2
@@ -832,6 +833,21 @@ class UserCommandsSlash(commands.Cog):
         await guilds.set_weekly_donation_channel(interaction.guild.id, channel.id)
         await interaction.response.send_message(
             f"Kênh kiểm tra đóng tiền weekly đã được đặt thành {channel.mention}.", ephemeral=True)
+
+    @app_commands.command(name="breach_waiver", description="Duyệt thủ công người đủ damage Breach.")
+    async def breach_waiver(self, interaction: discord.Interaction):
+        if interaction.user.id not in AUTHORIZED_BREACH_REVIEWERS:
+            await interaction.response.send_message("Không có quyền duyệt Breach.", ephemeral=True)
+            return
+        if not interaction.guild:
+            await interaction.response.send_message("Chỉ dùng trong server.", ephemeral=True)
+            return
+        await interaction.response.defer()
+        members = await load_breach_members(interaction.guild)
+        if not members:
+            await interaction.followup.send("Clan chưa có member active.", ephemeral=True)
+            return
+        await interaction.followup.send(view=BreachWaiverView(interaction.guild.id, members), ephemeral=False)
 
     @app_commands.command(name="breach_comp_add", description="Share a Breach team comp/playbook with your clan.")
     @app_commands.describe(

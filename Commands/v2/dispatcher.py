@@ -7,7 +7,7 @@ from Commands.v2.market import v2_global_market_update
 from Commands.v2.card_select import v2_card_select
 from Commands.v2.inventory import v2_inventory_mset
 from Commands.v2.raid import v2_raid_handler
-from Commands.v2.breach_standings import maybe_track_breach_boss_info, v2_breach_standings_handler
+from Commands.v2.breach_standings import maybe_track_breach_boss_info
 from Commands.v2.compare import v2_compare_preview
 from Commands.v2.bounty_hunt import maybe_add_bounty_hunt_reaction
 
@@ -38,8 +38,6 @@ async def discord_components_v2(message, trigger: str):
 
         if "Breach" in _full_text:
             await maybe_track_breach_boss_info(message, _full_text)
-        if "Breach Clan Standings" in _full_text:
-            await v2_breach_standings_handler(message)
         await maybe_add_bounty_hunt_reaction(message, _full_text)
 
         # ── V2 Raid handler ──
@@ -57,6 +55,4 @@ async def discord_components_v2(message, trigger: str):
         _full_text = get_all_component_text(message)
         if "Breach" in _full_text:
             await maybe_track_breach_boss_info(message, _full_text)
-        if "Breach Clan Standings" in _full_text:
-            await v2_breach_standings_handler(message)
         await maybe_add_bounty_hunt_reaction(message, _full_text)
