@@ -3,7 +3,8 @@ import math
 
 import discord
 
-from db_methods import guilds, weekly_donations
+from db_methods import guilds
+from misc.time_calculations import get_last_monday_berlin_time_from_current_time_in_unix
 
 
 AUTHORIZED_BREACH_REVIEWERS = {703335523925753903, 634761405299556352, 798523920747724800}
@@ -102,19 +103,12 @@ class BreachWaiverView(discord.ui.LayoutView):
         await self._replace(interaction, self.page + 1)
 
     async def _apply(self, interaction: discord.Interaction):
-        channel_id = await guilds.get_weekly_donation_channel(self.guild_id) or interaction.channel_id
-        applied = 0
-        for index in self.qualified:
-            member = self.members[index]
-            if await weekly_donations.grant_next_week_waiver(
-                player_name=member["guild_member_name"],
-                discord_id=member.get("guild_member_id"),
-                channel_id=channel_id,
-                damage=0,
-                source="breach_manual_review",
-            ):
-                applied += 1
+        week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
+        selected_names = [self.members[index]["guild_member_name"] for index in self.qualified]
+        await guilds.set_breach_manual_waivers(
+            self.guild_id, selected_names, week_start + 604800
+        )
         await interaction.response.send_message(
-            f"Đã lưu **{applied}** miễn donate. {len(self.members) - len(self.qualified)} người phải donate bình thường.",
+            f"Đã lưu **{len(selected_names)}** miễn donate. {len(self.members) - len(self.qualified)} người phải donate bình thường.",
             ephemeral=True,
         )

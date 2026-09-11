@@ -546,6 +546,28 @@ async def get_weekly_donation_channel(guild_id) -> int | None:
     return None
 
 
+async def set_breach_manual_waivers(guild_id, player_names, week_start: int):
+    guilds_collection = get_guilds_collection()
+    await guilds_collection.update_one(
+        {"guild_id": guild_id},
+        {"$set": {
+            "breach_manual_waiver_members": list(player_names),
+            "breach_manual_waiver_week_start": week_start,
+        }},
+    )
+
+
+async def get_breach_manual_waivers(guild_id, week_start: int) -> set | None:
+    guilds_collection = get_guilds_collection()
+    doc = await guilds_collection.find_one(
+        {"guild_id": guild_id},
+        {"breach_manual_waiver_members": 1, "breach_manual_waiver_week_start": 1},
+    )
+    if not doc or doc.get("breach_manual_waiver_week_start") != week_start:
+        return None
+    return set(doc.get("breach_manual_waiver_members", []))
+
+
 async def set_breach_playbook_image_url(guild_id, image_url: str):
     guilds_collection = get_guilds_collection()
     await guilds_collection.update_one(

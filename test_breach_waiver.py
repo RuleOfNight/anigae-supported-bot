@@ -15,4 +15,7 @@ def test_manual_breach_defaults_to_qualified_and_limits_access():
         703335523925753903, 634761405299556352, 798523920747724800
     }
     assert "set(range(len(members)))" in source
-    assert "source=\"breach_manual_review\"" in source
+    assert "set_breach_manual_waivers" in source
+    assert "week_start + 604800" in source
+    scheduler_source = Path("scheduler_jobs.py").read_text(encoding="utf-8")
+    assert "get_breach_manual_waivers" in scheduler_source

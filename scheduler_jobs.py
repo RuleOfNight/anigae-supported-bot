@@ -54,7 +54,9 @@ async def weekly_guild():
     week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
     for guild_doc in await guilds.get_weekly_guilds():
         channel_id = guild_doc.get("weekly_donation_channel_id")
-        waived = await wd.get_weekly_waivers(channel_id, week_start) if channel_id else set()
+        waived = await guilds.get_breach_manual_waivers(guild_doc["guild_id"], week_start)
+        if waived is None:
+            waived = await wd.get_weekly_waivers(channel_id, week_start) if channel_id else set()
         await guilds.update_donations_weekly_automated(guild_doc["guild_id"], waived)
 
 
@@ -84,8 +86,12 @@ async def weekly_donation_check():
         if not members:
             continue
 
-        covered_set = await wd.get_weekly_donors(channel_id, week_start)
-        waived_set = await wd.get_weekly_waivers(channel_id, week_start)
+        waived_set = await guilds.get_breach_manual_waivers(guild_id, week_start)
+        if waived_set is None:
+            covered_set = await wd.get_weekly_donors(channel_id, week_start)
+            waived_set = await wd.get_weekly_waivers(channel_id, week_start)
+        else:
+            covered_set = waived_set
         covered = [m for m in members if m["guild_member_name"] in covered_set]
         needs_payment = [m for m in members if m["guild_member_name"] not in covered_set]
 
