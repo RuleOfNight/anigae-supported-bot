@@ -29,6 +29,22 @@ async def load_breach_members(guild: discord.Guild) -> list[dict]:
     return await asyncio.gather(*(add_avatar(member) for member in members))
 
 
+async def get_next_breach_week_start() -> int:
+    return await get_last_monday_berlin_time_from_current_time_in_unix() + 604800
+
+
+async def load_saved_qualified(guild_id: int, members: list[dict]) -> set | None:
+    saved_names = await guilds.get_breach_manual_waivers(
+        guild_id, await get_next_breach_week_start()
+    )
+    if saved_names is None:
+        return None
+    return {
+        index for index, member in enumerate(members)
+        if member["guild_member_name"] in saved_names
+    }
+
+
 class BreachWaiverView(discord.ui.LayoutView):
     def __init__(self, guild_id: int, members: list[dict], qualified: set | None = None, page: int = 0):
         super().__init__(timeout=900)
@@ -103,10 +119,9 @@ class BreachWaiverView(discord.ui.LayoutView):
         await self._replace(interaction, self.page + 1)
 
     async def _apply(self, interaction: discord.Interaction):
-        week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
         selected_names = [self.members[index]["guild_member_name"] for index in self.qualified]
         await guilds.set_breach_manual_waivers(
-            self.guild_id, selected_names, week_start + 604800
+            self.guild_id, selected_names, await get_next_breach_week_start()
         )
         await interaction.response.send_message(
             f"Đã lưu **{len(selected_names)}** miễn donate. {len(self.members) - len(self.qualified)} người phải donate bình thường.",

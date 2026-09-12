@@ -16,6 +16,8 @@ def test_manual_breach_defaults_to_qualified_and_limits_access():
     }
     assert "set(range(len(members)))" in source
     assert "set_breach_manual_waivers" in source
-    assert "week_start + 604800" in source
+    assert "load_saved_qualified" in source
+    command_source = Path("Commands/user_commands_slash.py").read_text(encoding="utf-8")
+    assert "BreachWaiverView(interaction.guild.id, members, qualified)" in command_source
     scheduler_source = Path("scheduler_jobs.py").read_text(encoding="utf-8")
     assert "get_breach_manual_waivers" in scheduler_source
