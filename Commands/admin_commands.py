@@ -154,7 +154,10 @@ class AdminCommands(commands.Cog):
             await channel_id_shop_ping.send(f"It's now Location {current_counter} daily!\n{user_mention_list}")
             await user_commands_prefix_definition.send_daily_watch_embed(channel_id_shop_ping)
         next_tick = self.get_next_tick_from_base_daily_watch(base_tick)
-        embeds = await self.create_daily_watch_embeds(next_tick, current_counter)
+        embeds = await self.create_daily_watch_embeds(
+            next_tick - self.daily_watch_tick_interval,
+            current_counter,
+        )
         try:
             if self.daily_watch_message_id_shop_view:
                 message = channel_id_shop_view.get_partial_message(self.daily_watch_message_id_shop_view)
