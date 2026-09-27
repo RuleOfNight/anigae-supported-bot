@@ -91,12 +91,21 @@ async def increase_daily_watch_counter():
     doc = await config_collection.find_one({"_id": _CONFIG_ID})
     if not doc:
         return
-    daily_watch_counter = doc.get("daily_watch_counter", 0)
-    max_loc = await cards_collection.find_one({"location": {"$type": "int"}}, sort=[("location", -1)])
-    if int(daily_watch_counter) >= int(max_loc["location"]):
-        await config_collection.update_one({"_id": _CONFIG_ID}, {"$set": {"daily_watch_counter": 1}})
-    else:
-        await config_collection.update_one({"_id": _CONFIG_ID}, {"$inc": {"daily_watch_counter": 1}})
+
+    import runtime
+
+    daily_watch_counter = int(doc.get("daily_watch_counter", 0))
+    total_locations = len(await runtime.retrieve_data("locations"))
+
+    next_counter = (
+        1 if daily_watch_counter >= total_locations
+        else daily_watch_counter + 1
+    )
+
+    await config_collection.update_one(
+        {"_id": _CONFIG_ID},
+        {"$set": {"daily_watch_counter": next_counter}},
+    )
 
 
 async def get_daily_watch_counter():
