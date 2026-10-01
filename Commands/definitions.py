@@ -182,6 +182,7 @@ _SKILL_EMOJI_MAP = {
     "Brutality":                   "<:Brutality:1503382068216991754>",                #done
     "Celestial Blessing":          "<:Celestial_Blessing:1503383124271304764>",       #done
     "Celestial Influence":         "<:Celestial_Influence:1503408225339310111>",      #done
+    "Copy Cat":                    "<:Copy_Cat:1555206558021976064>",
     "Cursed":                      "<:Cursed:1503383448499523784>",                   #done
     "Devour":                      "<:Devour:1503383579978108959>",                   #done
     "Dexterity Drive":             "<:Dexterity_Drive:1503383848652636190>",          #done
@@ -212,6 +213,7 @@ _SKILL_EMOJI_MAP = {
     "Reversion":                   "<:Reversion:1503313135287668867>",                #done
     "Rising Resolve":              "<:Rising_Resolve:1503313022586851328>",           #done
     "Smokescreen":                 "<:Smokescreen:1503388127367266364>",              #done
+    "Soul Reservoir":              "<:Soul_Reservoir:1555203449883336744>",
     "Soul Stealer":                "<:Soul_Stealer:1503388387283959858>",             #done
     "Temporal Rewind":             "<:Temporal_Rewind:1503388665928224798>",          #done
     "Time Attack":                 "<:Time_Attack:1503397661087105174>",              #done
