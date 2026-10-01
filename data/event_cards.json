@@ -1,5 +1,13 @@
 {
-  "clan_shop": ["Amagi", "Fuyo", "Hana Usami", "Ichika Kishimojin", "Jiro Azuma", "Koga", "Rago", "Reiji Kirihara", "Ryosuke Shiba", "Toshimasa Azuma"],
+  "clan_shop": ["Ai Hoshino","Kana Arima","Linie","Wirbel","Ruby Hoshino","Abel Walker","Akane Kurokawa","Aquamarine Hoshino","Atom",
+    "Aura","Brando","Calcifer","Denken","Eisen","Epsilon","Fern","Frill Shiranui","Frieren","Himmel","Laufen","Mem Cho","Minami Kotobuki",
+    "Serie","Stark","Ubel","Yuki Sumi","Akutarou Shindo","Arajin Tomoshibi","Asamine Matakara","Ichiya","Kakeru Zabu","Komao Sakigake",
+    "Mahoro Jin","Marito Jin","Nagare Jabashiri","Senya","Uran","Gesicht","Hercules","North No.2","Melt Narushima","Mash Burnedead",
+    "Dot Barrett","Finn Ames","Lemon Irvine","Love Cute","Rayne Ames","Prince Justin","Howl Jenkins Pendragon","Markl","Sophie Hatter",
+    "Turnip Head","Witch Of The Waste","Ahu","Dragon Boy","E Soul (Yang Cheng)","Ghostblade","Hero X","Lin Ling","Loli","Lucky Cyan",
+    "Nice","Queen","The Johnnies", "Chisato Nishikigi", "Fuki Harukawa", "Kurumi (Walnut)", "Majima", "Mika" , "Mizuki Nakahara",
+    "Robota", "Sakura Otome", "Shinji Yoshimatsu", "Takina Inoue",
+    "Amagi", "Fuyo", "Hana Usami", "Ichika Kishimojin", "Jiro Azuma", "Koga", "Rago", "Reiji Kirihara", "Ryosuke Shiba", "Toshimasa Azuma"],
 
   "monthly_vote": ["Ekko","Mai Sakurajima","Ruby Rose","Yang Xiao Long","Holo","Batman","Blake Belladonna","Caitlyn Kiramman",
     "Chihiro Rokuhira","Cloud Strife","Conan Edogawa","Kairi","Joker","Komi Shouko","Kusuo Saiki","Riku","Sephiroth","Tifa Lockhart",
