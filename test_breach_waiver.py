@@ -17,7 +17,13 @@ def test_manual_breach_defaults_to_qualified_and_limits_access():
     assert "set(range(len(members)))" in source
     assert "set_breach_manual_waivers" in source
     assert "load_saved_qualified" in source
+    assert "Xác nhận không có Breach" in source
+    assert 'mode="no_breach"' in source
     command_source = Path("Commands/user_commands_slash.py").read_text(encoding="utf-8")
-    assert "BreachWaiverView(interaction.guild.id, members, qualified)" in command_source
+    assert "BreachWaiverView(interaction.guild.id, members, qualified, mode=mode)" in command_source
     scheduler_source = Path("scheduler_jobs.py").read_text(encoding="utf-8")
     assert "get_breach_manual_waivers" in scheduler_source
+    assert "paid_set | waived_set" in scheduler_source
+    assert 'member.get("donations", 0)' in scheduler_source
+    main_source = Path("main.py").read_text(encoding="utf-8")
+    assert main_source.count("CronTrigger(day_of_week=1") >= 2

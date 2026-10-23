@@ -137,8 +137,8 @@ async def on_ready():
     if not scheduler.running:
         scheduler.add_job(monthly_guild,              CronTrigger(day=1,           hour=1, minute=0, timezone=utc), id="monthly_guild")
         scheduler.add_job(monthly_channel_donations,  CronTrigger(day=1,           hour=1, minute=0, timezone=utc), id="monthly_channel_donations")
-        scheduler.add_job(weekly_guild,               CronTrigger(day_of_week=0,   hour=1, minute=0, timezone=utc), id="weekly_guild")
-        scheduler.add_job(weekly_donation_check,      CronTrigger(day_of_week=0,   hour=0, minute=0, timezone=ZoneInfo("Asia/Bangkok")), id="weekly_donation_check")
+        scheduler.add_job(weekly_guild,               CronTrigger(day_of_week=1,   hour=1, minute=0, timezone=utc), id="weekly_guild")
+        scheduler.add_job(weekly_donation_check,      CronTrigger(day_of_week=1,   hour=0, minute=0, timezone=ZoneInfo("Asia/Bangkok")), id="weekly_donation_check")
         scheduler.add_job(daily_update,               CronTrigger(                 hour=1, minute=0, timezone=utc), id="daily_update")
         scheduler.add_job(check_raid_afk,             "interval", minutes=10,  id="check_raid_afk")
         scheduler.add_job(check_raid_bt_pending,      "interval", minutes=3,   id="check_raid_bt_pending")

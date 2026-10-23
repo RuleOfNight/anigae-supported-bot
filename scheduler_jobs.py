@@ -68,11 +68,8 @@ async def weekly_donation_check():
     from db_methods import weekly_donations as wd
     from misc.time_calculations import get_last_monday_berlin_time_from_current_time_in_unix
 
-    # Runs at 00:00 Monday in Vietnam, before the 01:00 UTC clan reset.
-    # The report is for the incoming week targeted by Sunday's Breach result.
-    week_start = (
-        await get_last_monday_berlin_time_from_current_time_in_unix()
-    ) + wd.WEEK_SECONDS
+    # Runs at 00:00 Tuesday in Vietnam, after Breach closes Monday at 23:00.
+    week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
     guild_docs = await guilds.get_guilds_with_weekly_channel()
 
     for guild_doc in guild_docs:
@@ -86,12 +83,20 @@ async def weekly_donation_check():
         if not members:
             continue
 
+        threshold_members = set(guild_doc.get("threshold_members", []))
+        paid_set = {
+            member["guild_member_name"]
+            for member in members
+            if member.get("donations", 0) >= (
+                guild_doc.get("guild_threshold_2", 0)
+                if member.get("guild_member_id") in threshold_members
+                else guild_doc.get("guild_threshold", 0)
+            )
+        }
         waived_set = await guilds.get_breach_manual_waivers(guild_id, week_start)
         if waived_set is None:
-            covered_set = await wd.get_weekly_donors(channel_id, week_start)
             waived_set = await wd.get_weekly_waivers(channel_id, week_start)
-        else:
-            covered_set = waived_set
+        covered_set = paid_set | waived_set
         covered = [m for m in members if m["guild_member_name"] in covered_set]
         needs_payment = [m for m in members if m["guild_member_name"] not in covered_set]
 
@@ -108,8 +113,11 @@ async def weekly_donation_check():
         week_end_dt = week_start_dt + timedelta(days=6)
         week_label = f"{week_start_dt.strftime('%d/%m')} – {week_end_dt.strftime('%d/%m')}"
 
+        mode = await guilds.get_breach_manual_mode(guild_id, week_start)
+        breach_note = "🚫 **Tuần này không có Breach.**\n\n" if mode == "no_breach" else ""
         msg = (
             f"📋 **Donate clan tuần {week_label}**\n\n"
+            + breach_note
             + "\n".join(lines)
             + f"\n\nKhông cần đóng: **{len(covered)}/{len(members)}**"
             + f" | Cần đóng: **{len(needs_payment)}**"

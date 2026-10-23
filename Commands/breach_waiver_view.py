@@ -1,5 +1,6 @@
 import asyncio
 import math
+import time
 
 import discord
 
@@ -30,7 +31,8 @@ async def load_breach_members(guild: discord.Guild) -> list[dict]:
 
 
 async def get_next_breach_week_start() -> int:
-    return await get_last_monday_berlin_time_from_current_time_in_unix() + 604800
+    week_start = await get_last_monday_berlin_time_from_current_time_in_unix()
+    return week_start if time.time() < week_start + 86400 else week_start + 604800
 
 
 async def load_saved_qualified(guild_id: int, members: list[dict]) -> set | None:
@@ -45,12 +47,19 @@ async def load_saved_qualified(guild_id: int, members: list[dict]) -> set | None
     }
 
 
+async def load_saved_mode(guild_id: int) -> str:
+    return await guilds.get_breach_manual_mode(
+        guild_id, await get_next_breach_week_start()
+    ) or "reviewed"
+
+
 class BreachWaiverView(discord.ui.LayoutView):
-    def __init__(self, guild_id: int, members: list[dict], qualified: set | None = None, page: int = 0):
+    def __init__(self, guild_id: int, members: list[dict], qualified: set | None = None, page: int = 0, mode: str = "reviewed"):
         super().__init__(timeout=900)
         self.guild_id = guild_id
         self.members = members
         self.qualified = qualified if qualified is not None else set(range(len(members)))
+        self.mode = mode
         self.page = max(0, page)
         self.max_pages = max(1, math.ceil(len(members) / PER_PAGE))
         self.page = min(self.page, self.max_pages - 1)
@@ -62,6 +71,12 @@ class BreachWaiverView(discord.ui.LayoutView):
             "## Breach — duyệt damage\n"
             "✅ = đủ damage, miễn donate tuần sau. Bỏ check = phải donate như thường."
         ))
+        no_breach = discord.ui.Button(
+            label="🚫 Đã đặt: Không có Breach" if self.mode == "no_breach" else "Tuần này không có Breach",
+            style=discord.ButtonStyle.danger,
+        )
+        no_breach.callback = self._confirm_no_breach
+        container.add_item(discord.ui.ActionRow(no_breach))
 
         start = self.page * PER_PAGE
         visible_members = self.members[start:start + PER_PAGE]
@@ -101,10 +116,12 @@ class BreachWaiverView(discord.ui.LayoutView):
 
     async def _replace(self, interaction: discord.Interaction, page: int | None = None):
         await interaction.response.edit_message(view=BreachWaiverView(
-            self.guild_id, self.members, self.qualified, self.page if page is None else page
+            self.guild_id, self.members, self.qualified,
+            self.page if page is None else page, self.mode
         ))
 
     async def _toggle(self, interaction: discord.Interaction):
+        self.mode = "reviewed"
         index = int(interaction.data["custom_id"].rsplit(":", 1)[1])
         if index in self.qualified:
             self.qualified.remove(index)
@@ -121,9 +138,45 @@ class BreachWaiverView(discord.ui.LayoutView):
     async def _apply(self, interaction: discord.Interaction):
         selected_names = [self.members[index]["guild_member_name"] for index in self.qualified]
         await guilds.set_breach_manual_waivers(
-            self.guild_id, selected_names, await get_next_breach_week_start()
+            self.guild_id, selected_names, await get_next_breach_week_start(), mode="reviewed"
         )
         await interaction.response.send_message(
             f"Đã lưu **{len(selected_names)}** miễn donate. {len(self.members) - len(self.qualified)} người phải donate bình thường.",
+            ephemeral=True,
+        )
+
+    async def _confirm_no_breach(self, interaction: discord.Interaction):
+        confirm_view = discord.ui.View(timeout=60)
+        confirm = discord.ui.Button(label="Xác nhận không có Breach", style=discord.ButtonStyle.danger)
+        cancel = discord.ui.Button(label="Hủy", style=discord.ButtonStyle.secondary)
+
+        async def confirm_callback(confirm_interaction: discord.Interaction):
+            if confirm_interaction.user.id != interaction.user.id:
+                await confirm_interaction.response.send_message("Không phải phiên xác nhận của bạn.", ephemeral=True)
+                return
+            await guilds.set_breach_manual_waivers(
+                self.guild_id, [], await get_next_breach_week_start(), mode="no_breach"
+            )
+            await interaction.message.edit(
+                view=BreachWaiverView(self.guild_id, self.members, set(), self.page, "no_breach")
+            )
+            await confirm_interaction.response.edit_message(
+                content="Đã xác nhận tuần này không có Breach. Không ai được miễn donate nhờ Breach.",
+                view=None,
+            )
+
+        async def cancel_callback(cancel_interaction: discord.Interaction):
+            if cancel_interaction.user.id != interaction.user.id:
+                await cancel_interaction.response.send_message("Không phải phiên xác nhận của bạn.", ephemeral=True)
+                return
+            await cancel_interaction.response.edit_message(content="Đã hủy.", view=None)
+
+        confirm.callback = confirm_callback
+        cancel.callback = cancel_callback
+        confirm_view.add_item(confirm)
+        confirm_view.add_item(cancel)
+        await interaction.response.send_message(
+            "Xác nhận tuần này không có Breach? Mọi người sẽ áp dụng donate bình thường.",
+            view=confirm_view,
             ephemeral=True,
         )

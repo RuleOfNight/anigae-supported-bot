@@ -9,7 +9,7 @@ from discord.ext import commands
 from db_methods import breach_comps, cards, guilds, players, channel_donations
 from Commands.user_commands_on_message import MONTHLY_DONATION_CHANNEL_ID
 from Commands import breach_comp_views, definitions, user_commands_prefix_definition, user_commands_slash_definition_v2, help_def_v2, user_commands_slash_definiton_embed
-from Commands.breach_waiver_view import AUTHORIZED_BREACH_REVIEWERS, BreachWaiverView, load_breach_members, load_saved_qualified
+from Commands.breach_waiver_view import AUTHORIZED_BREACH_REVIEWERS, BreachWaiverView, load_breach_members, load_saved_mode, load_saved_qualified
 from misc import time_calculations
 from Commands.user_commands_prefix import ViewDeleteButtonPrefix
 from Commands.user_commands_on_message import gold_emote, rare_emote, super_rare_1, super_rare_2, ultra_rare_1, ultra_rare_2
@@ -848,8 +848,9 @@ class UserCommandsSlash(commands.Cog):
             await interaction.followup.send("Clan chưa có member active.", ephemeral=True)
             return
         qualified = await load_saved_qualified(interaction.guild.id, members)
+        mode = await load_saved_mode(interaction.guild.id)
         await interaction.followup.send(
-            view=BreachWaiverView(interaction.guild.id, members, qualified), ephemeral=False
+            view=BreachWaiverView(interaction.guild.id, members, qualified, mode=mode), ephemeral=False
         )
 
     @app_commands.command(name="breach_comp_add", description="Share a Breach team comp/playbook with your clan.")
