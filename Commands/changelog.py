@@ -5,7 +5,7 @@ import discord
 
 from db_methods.general import get_config_collection
 
-CURRENT_CHANGELOG_VERSION = "2026-08-20"
+CURRENT_CHANGELOG_VERSION = "2026-10-24"
 GUILD_CHANGELOG_COOLDOWN_SECONDS = 5 * 60
 CHANGELOG_COLOR = 0x71368A
 CHANGELOG_THUMBNAIL_URL = "https://cdn.discordapp.com/attachments/1027151586260156516/1337016553954213898/Memory_Diamonds.jpg"
@@ -17,11 +17,13 @@ _CHANGELOG_CONTENT = {
         "title": "Caeser' changelogs",
         "subtitle": "Latest updates.",
         "sections": [
-            ("New command", [
-                "Added `5breach` with phase and difficulty selectors for Breach battle commands.",
+            ("Dredeem Watch", [
+                "Added `/dredeem_watch` with Hot Series and paginated location lists.",
+                "Select multiple series and get notified during all 3 consecutive shop rotations.",
+                "Added an independent Dredeem rotation timer.",
             ]),
-            ("New feature", [
-                "Added Bounty Hunt helper reactions.",
+            ("Daily Shop fix", [
+                "Fixed rotation tracking after restarts and missed updates.",
             ]),
         ],
         "footer": "You are seeing this once because the bot was updated.",
