@@ -105,10 +105,19 @@ class AdminCommands(commands.Cog):
             await ctx.channel.send("You don't have that permission peasant.")
             return
         try:
+            if timer <= 0 or str(counter) not in self.bot.locations:
+                await ctx.send('Use a positive UNIX timestamp and a valid location.')
+                return
+            now = int(time.time())
+            current_tick = timer + ((now - timer) // self.daily_watch_tick_interval) * self.daily_watch_tick_interval
             config = general.get_config_collection()
             await config.update_one(
                 {"_id": "global"},
-                {"$set": {"daily_watch_timer": timer, "daily_watch_counter": counter}},
+                {"$set": {
+                    "daily_watch_timer": timer,
+                    "daily_watch_counter": counter,
+                    "daily_watch_last_rotation_timer": current_tick,
+                }},
                 upsert=True,
             )
             await ctx.channel.send(
@@ -130,17 +139,19 @@ class AdminCommands(commands.Cog):
         """Đồng bộ với tick gần nhất rồi bắt đầu vòng lặp rotation mỗi 12 tiếng."""
         if base_tick is None:
             return
-        next_tick = self.get_next_tick_from_base_daily_watch(base_tick)
-        wait_time = next_tick - int(time.time())
-        print(f"[DAILY WATCH ROTATION] Sync on tick {next_tick} (in {wait_time} sec.)")
-        await asyncio.sleep(wait_time)
         while True:
-            await self.daily_watch_rotation(bot, base_tick)
-            await asyncio.sleep(self.daily_watch_tick_interval)
+            try:
+                base_tick = await general.get_global_daily_watch_timer()
+                if base_tick is not None:
+                    await self.daily_watch_rotation(bot, base_tick)
+            except Exception as exc:
+                print(f'[DAILY WATCH ROTATION] Retry next poll: {exc}')
+            await asyncio.sleep(30)
 
     async def daily_watch_rotation(self, bot, base_tick):
         """Tăng counter, ping user đăng ký, và cập nhật embed lịch location."""
-        await general.increase_daily_watch_counter()
+        if not await general.catch_up_daily_watch_counter(self.daily_watch_tick_interval):
+            return
         channel_id_shop_view = self.bot.get_channel(self.daily_watch_channel_id_shop_view)
         if not channel_id_shop_view:
             return

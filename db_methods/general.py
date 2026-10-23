@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 
@@ -87,25 +88,33 @@ async def get_global_daily_watch_timer():
     return int(timer) if timer else None
 
 
-async def increase_daily_watch_counter():
-    doc = await config_collection.find_one({"_id": _CONFIG_ID})
-    if not doc:
-        return
+def daily_watch_state(counter, last_timer, base_timer, now, interval, total):
+    current_tick = base_timer + ((now - base_timer) // interval) * interval
+    if last_timer is None:
+        # Legacy counters already include historical ticks; establish a baseline only.
+        return counter, current_tick
+    steps = max(0, (now - last_timer) // interval)
+    return (counter - 1 + steps) % total + 1, last_timer + steps * interval
 
+
+async def catch_up_daily_watch_counter(interval):
     import runtime
-
-    daily_watch_counter = int(doc.get("daily_watch_counter", 0))
-    total_locations = len(await runtime.retrieve_data("locations"))
-
-    next_counter = (
-        1 if daily_watch_counter >= total_locations
-        else daily_watch_counter + 1
-    )
-
-    await config_collection.update_one(
-        {"_id": _CONFIG_ID},
-        {"$set": {"daily_watch_counter": next_counter}},
-    )
+    config = get_config_collection()
+    doc = await config.find_one({"_id": _CONFIG_ID})
+    if not doc or doc.get('daily_watch_timer') is None:
+        return False
+    last = doc.get('daily_watch_last_rotation_timer')
+    counter, tick = daily_watch_state(int(doc['daily_watch_counter']),
+        int(last) if last is not None else None, int(doc['daily_watch_timer']),
+        int(time.time()), interval, len(await runtime.retrieve_data('locations')))
+    if last is not None and tick == int(last):
+        return False
+    result = await config.update_one(
+        {'_id': _CONFIG_ID, 'daily_watch_timer': doc['daily_watch_timer'],
+         'daily_watch_counter': doc['daily_watch_counter'],
+         'daily_watch_last_rotation_timer': last},
+        {'$set': {'daily_watch_counter': counter, 'daily_watch_last_rotation_timer': tick}})
+    return result.modified_count == 1 and last is not None
 
 
 async def get_daily_watch_counter():
