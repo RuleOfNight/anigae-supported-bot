@@ -130,6 +130,8 @@ async def on_ready():
     await bot.add_cog(UserCommandsPrefix_v2(bot))
     await bot.add_cog(SimulatorCommand(bot))
     await bot.load_extension("Commands.user_commands_slash")
+    if "Commands.dredeem" not in bot.extensions:
+        await bot.load_extension("Commands.dredeem")
     admin_cog = AdminCommands(bot)
     await bot.add_cog(admin_cog)
     bot.add_listener(reaction_add_listener, "on_raw_reaction_add")
